@@ -195,12 +195,7 @@ const AdminDashboard = ({ posts = [], lang = 'en' }: { posts?: any[], lang?: str
           </div>
         </div>
 
-        {/* Footer Signature */}
-        <footer className="p-4 flex justify-center border-t border-slate-100 bg-white">
-          <a href="https://deerflow.tech" target="_blank" className="text-[10px] font-bold text-slate-300 uppercase tracking-[0.2em] hover:text-blue-400 transition-all">
-            Created By Deerflow ✦
-          </a>
-        </footer>
+
       </main>
     </div>
   );

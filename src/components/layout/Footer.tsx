@@ -38,15 +38,7 @@ export default function Footer({ lang }: { lang: string }) {
                 <div className="w-10 h-10 border-2 border-white flex items-center justify-center font-black hover:bg-white hover:text-black transition-all cursor-pointer">YT</div>
               </div>
             </div>
-            <div className="mt-8">
-              <a 
-                href="https://deerflow.tech" 
-                target="_blank" 
-                className="inline-block bg-white text-black px-4 py-2 font-black text-[10px] uppercase tracking-widest hover:bg-[#ef4444] hover:text-white transition-all"
-              >
-                ✦ Created By Deerflow
-              </a>
-            </div>
+
           </div>
         </div>
         
