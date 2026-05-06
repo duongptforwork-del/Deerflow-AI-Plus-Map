@@ -16,7 +16,7 @@ const bricolage = Bricolage_Grotesque({
 
 export const metadata: Metadata = {
   title: "AI Plus Map | The Intelligence Cartography",
-  description: "Latest AI news, market trends, and intelligence guides.",
+  description: "Leading the intelligence cartography. We map the ever-changing landscape of AI to bring you the most critical updates and guides.",
 };
 
 export default function RootLayout({

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { ChevronDown } from 'lucide-react';
 import GlobalSearch from '@/components/search/GlobalSearch';
 
@@ -15,10 +16,14 @@ export default function Navbar({ lang }: { lang: string }) {
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex flex-col md:flex-row justify-between items-center gap-6">
           <Link href={`/${lang}`} className="flex items-center gap-2 group">
-            <div className="bg-black p-2 group-hover:rotate-6 transition-transform">
-              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 20l-5.447-2.724A2 2 0 013 15.488V5.111a2 2 0 011.164-1.815l7-3.5a2 2 0 011.672 0l7 3.5A2 2 0 0121 5.111v10.377a2 2 0 01-1.553 1.944L14 20l-5 5z"></path>
-              </svg>
+            <div className="bg-white border-2 border-black p-1 group-hover:rotate-6 transition-transform shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+              <Image 
+                src="/logo.png" 
+                alt="AI Plus Map Logo" 
+                width={40} 
+                height={40} 
+                className="block object-contain"
+              />
             </div>
             <div>
               <span className="text-3xl font-display font-black tracking-tighter block leading-none">AI PLUS MAP</span>
