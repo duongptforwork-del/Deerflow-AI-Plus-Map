@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   LayoutDashboard, 
   FileText, 
@@ -12,13 +12,114 @@ import {
   Search, 
   Bell, 
   LogOut,
-  ChevronRight,
   MoreVertical,
-  Globe
+  Globe,
+  Lock
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+
+// Security configuration (PBKDF2)
+const AUTH_SALT = '128431c8252060cd971adbdaf3ae4b6a';
+const AUTH_HASH = '5cb6ea6355ff5a7bc32458db87ab92c9dffd3da456b4ed6d7c995c295fd39048';
+
+async function verifyPassword(password: string): Promise<boolean> {
+  try {
+    const encoder = new TextEncoder();
+    const saltBuffer = new Uint8Array(AUTH_SALT.match(/.{1,2}/g)!.map(byte => parseInt(byte, 16)));
+    const passwordKey = await crypto.subtle.importKey(
+      'raw', 
+      encoder.encode(password), 
+      { name: 'PBKDF2' }, 
+      false, 
+      ['deriveBits']
+    );
+    const hashBuffer = await crypto.subtle.deriveBits(
+      { 
+        name: 'PBKDF2', 
+        salt: saltBuffer, 
+        iterations: 100000, 
+        hash: 'SHA-256' 
+      },
+      passwordKey, 
+      256
+    );
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    return hashHex === AUTH_HASH;
+  } catch (e) {
+    return false;
+  }
+}
 
 const AdminDashboard = ({ posts = [], lang = 'en' }: { posts?: any[], lang?: string }) => {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState('posts');
+  const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
+  const [password, setPassword] = useState('');
+  const [isChecking, setIsChecking] = useState(false);
+
+  useEffect(() => {
+    const auth = localStorage.getItem('admin_auth_session');
+    if (auth === 'true') {
+      setIsAuthorized(true);
+    } else {
+      setIsAuthorized(false);
+    }
+  }, []);
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsChecking(true);
+    const isValid = await verifyPassword(password);
+    if (isValid) {
+      localStorage.setItem('admin_auth_session', 'true');
+      setIsAuthorized(true);
+    } else {
+      alert('Sai mật khẩu rồi Sếp ơi!');
+    }
+    setIsChecking(false);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('admin_auth_session');
+    setIsAuthorized(false);
+    router.refresh();
+  };
+
+  if (isAuthorized === null) return null;
+
+  if (!isAuthorized) {
+    return (
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center p-6 font-sans">
+        <div className="bg-white p-8 rounded-3xl border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] max-w-md w-full">
+          <div className="flex justify-center mb-6">
+            <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center text-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+              <Lock size={32} />
+            </div>
+          </div>
+          <h1 className="font-black text-2xl mb-2 uppercase tracking-tight text-center">Admin Access</h1>
+          <p className="text-slate-500 text-center text-sm mb-6 font-medium">Vui lòng nhập mật khẩu để tiếp tục, Sếp.</p>
+          <form onSubmit={handleLogin} className="space-y-4">
+            <input 
+              type="password" 
+              placeholder="Password..."
+              className="w-full border-2 border-black p-4 rounded-xl outline-none font-bold text-center tracking-widest"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoFocus
+              disabled={isChecking}
+            />
+            <button 
+              disabled={isChecking}
+              className="w-full bg-blue-600 text-white p-4 rounded-xl font-black uppercase tracking-widest border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all disabled:opacity-50"
+            >
+              {isChecking ? 'Verifying...' : 'Unlock Dashboard'}
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
   
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -58,7 +159,10 @@ const AdminDashboard = ({ posts = [], lang = 'en' }: { posts?: any[], lang?: str
         </nav>
 
         <div className="p-4 border-t border-slate-100">
-          <button className="w-full flex items-center gap-3 px-4 py-3 text-slate-500 hover:text-red-500 transition-colors">
+          <button 
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-4 py-3 text-slate-500 hover:text-red-500 transition-colors font-bold"
+          >
             <LogOut size={20} />
             <span>Logout</span>
           </button>
@@ -83,7 +187,7 @@ const AdminDashboard = ({ posts = [], lang = 'en' }: { posts?: any[], lang?: str
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2 text-sm font-medium text-slate-600 bg-slate-100 px-3 py-1.5 rounded-full">
               <Globe size={14} />
-              <span>English (/en)</span>
+              <span>{lang === 'en' ? 'English (/en)' : 'Tiếng Việt (/vi)'}</span>
             </div>
             <button className="text-slate-500 hover:text-blue-600 relative">
               <Bell size={22} />
@@ -91,7 +195,7 @@ const AdminDashboard = ({ posts = [], lang = 'en' }: { posts?: any[], lang?: str
             </button>
             <div className="flex items-center gap-3 border-l border-slate-200 pl-6">
               <div className="text-right">
-                <p className="text-sm font-bold">Jessica</p>
+                <p className="text-sm font-bold">Sếp</p>
                 <p className="text-xs text-slate-500">Administrator</p>
               </div>
               <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 border-2 border-white shadow-sm"></div>
@@ -107,7 +211,10 @@ const AdminDashboard = ({ posts = [], lang = 'en' }: { posts?: any[], lang?: str
                 <h1 className="text-3xl font-black text-slate-900 tracking-tight capitalize">{activeTab}</h1>
                 <p className="text-slate-500 mt-1">Manage your {activeTab} and magazine content.</p>
               </div>
-              <button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-lg shadow-blue-600/20 transition-all transform hover:-translate-y-0.5">
+              <button 
+                onClick={() => router.push(`/${lang}/admin/new`)}
+                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-lg shadow-blue-600/20 transition-all transform hover:-translate-y-0.5"
+              >
                 <Plus size={20} />
                 <span>Create New {activeTab.slice(0, -1)}</span>
               </button>
@@ -116,10 +223,10 @@ const AdminDashboard = ({ posts = [], lang = 'en' }: { posts?: any[], lang?: str
             {/* Quick Stats */}
             <div className="grid grid-cols-4 gap-6 mb-8">
               {[
-                { label: 'Total Posts', value: '124', change: '+12%', color: 'blue' },
-                { label: 'Live Events', value: '8', change: 'Stable', color: 'purple' },
-                { label: 'Page Views', value: '45.2k', change: '+24%', color: 'emerald' },
-                { label: 'SEO Score', value: '92/100', change: '+5%', color: 'amber' },
+                { label: 'Total Posts', value: posts.length.toString(), change: '+12%', color: 'blue' },
+                { label: 'Live Events', value: '0', change: 'Stable', color: 'purple' },
+                { label: 'Page Views', value: '1.2k', change: '+24%', color: 'emerald' },
+                { label: 'SEO Score', value: '98/100', change: '+5%', color: 'amber' },
               ].map((stat, i) => (
                 <div key={i} className="bg-white p-6 rounded-2xl border border-slate-200">
                   <p className="text-sm font-medium text-slate-500">{stat.label}</p>
@@ -152,17 +259,17 @@ const AdminDashboard = ({ posts = [], lang = 'en' }: { posts?: any[], lang?: str
                     <tr key={post.id} className="hover:bg-slate-50/50 transition-colors group">
                       <td className="px-6 py-4">
                         <p className="font-bold text-slate-900 group-hover:text-blue-600 transition-colors">{post.title}</p>
-                        <p className="text-xs text-slate-400 mt-0.5">By {post.author || 'Admin'}</p>
+                        <p className="text-xs text-slate-400 mt-0.5">By {post.author || 'Sếp'}</p>
                       </td>
                       <td className="px-6 py-4 text-sm text-slate-600">
                         <span className="px-2.5 py-1 bg-slate-100 rounded-md font-medium">{post.category || 'Uncategorized'}</span>
                       </td>
                       <td className="px-6 py-4">
                         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${
-                          post.status === 'Published' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'
+                          post.is_published ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'
                         }`}>
-                          <span className={`w-1.5 h-1.5 rounded-full ${post.status === 'Published' ? 'bg-emerald-500' : 'bg-amber-500'}`}></span>
-                          {post.status || 'Draft'}
+                          <span className={`w-1.5 h-1.5 rounded-full ${post.is_published ? 'bg-emerald-500' : 'bg-amber-500'}`}></span>
+                          {post.is_published ? 'Published' : 'Draft'}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-sm text-slate-500">
