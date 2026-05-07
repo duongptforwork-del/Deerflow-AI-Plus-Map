@@ -19,19 +19,28 @@ export default async function AdminPage({
   }
 
   // Fetch posts from Supabase
-  const { data: posts, error } = await supabase
+  const { data: posts, error: postsError } = await supabase
     .from('posts')
     .select('*, categories(name)')
     .eq('lang', lang)
     .order('created_at', { ascending: false });
 
-  if (error) {
-    console.error('Supabase error:', error);
-    // Return empty array to avoid crash during build/dev
-    return <AdminDashboard posts={[]} lang={lang} />;
+  // Fetch categories for the current language
+  const { data: categories, error: catsError } = await supabase
+    .from('categories')
+    .select('*')
+    .eq('lang', lang)
+    .order('name');
+
+  if (postsError || catsError) {
+    console.error('Supabase error:', postsError || catsError);
   }
 
   return (
-    <AdminDashboard posts={posts || []} lang={lang} />
+    <AdminDashboard 
+      posts={posts || []} 
+      categories={categories || []} 
+      lang={lang} 
+    />
   );
 }
