@@ -52,6 +52,19 @@ export default async function HomePage({ params: { lang } }: { params: { lang: s
       </div>
 
       <main className="max-w-7xl mx-auto px-4 py-12">
+        {/* Magazine Header - SEO Optimized H1 */}
+        <div className="mb-12 border-b-8 border-black pb-8">
+          <h1 className="text-6xl md:text-8xl font-display font-black tracking-tighter leading-none uppercase">
+            AI News <span className="text-[#ef4444]">Today</span>
+          </h1>
+          <div className="flex justify-between items-center mt-4 font-black uppercase text-sm italic">
+            <div className="flex gap-4">
+              <span className="bg-black text-white px-2">Intelligence Cartography</span>
+              <span className="hidden md:inline">Daily AI Ranking & Best AI Updates</span>
+            </div>
+            <span>Vol. 2026.05</span>
+          </div>
+        </div>
         
         {/* Hero Section */}
         {hero && (

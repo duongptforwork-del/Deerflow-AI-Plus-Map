@@ -15,8 +15,28 @@ const bricolage = Bricolage_Grotesque({
 });
 
 export const metadata: Metadata = {
-  title: "AI Plus Map | The Intelligence Cartography",
-  description: "Leading the intelligence cartography. We map the ever-changing landscape of AI to bring you the most critical updates and guides.",
+  title: {
+    default: "AI News Today, AI Ranking & Best AI Updates | AI Plus Map",
+    template: "%s | AI Plus Map",
+  },
+  description: "Stay ahead with AI News Today and the latest AI Ranking. AI Plus Map delivers the Best AI updates, expert reviews, and a mapped landscape of artificial intelligence.",
+  keywords: [
+    "AI news today", 
+    "AI Ranking", 
+    "Best AI", 
+    "AI updates", 
+    "Artificial Intelligence", 
+    "AI leaderboard"
+  ],
+  openGraph: {
+    title: "AI News Today, AI Ranking & Best AI Updates | AI Plus Map",
+    description: "Leading the intelligence cartography. Discover the top AI tools with our exclusive AI Ranking and daily news updates.",
+    url: "https://aiplusmap.com",
+    siteName: "AI Plus Map",
+    images: [{ url: "/og-image.png", width: 1200, height: 630 }],
+    locale: "en_US",
+    type: "website",
+  },
 };
 
 export default function RootLayout({

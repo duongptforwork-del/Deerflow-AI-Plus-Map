@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
 import { 
@@ -14,7 +14,14 @@ import {
   Type, 
   Layout, 
   Globe,
-  Lock
+  Lock,
+  Heading1,
+  Heading2,
+  Heading3,
+  Bold,
+  List,
+  Upload,
+  Loader2
 } from 'lucide-react';
 
 // Security configuration (PBKDF2)
@@ -54,6 +61,8 @@ export default function NewPostPage({ params }: { params: { lang: string } }) {
   const router = useRouter();
   const supabase = createClient();
   const lang = params.lang || 'en';
+  const contentRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Auth State
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
@@ -67,10 +76,10 @@ export default function NewPostPage({ params }: { params: { lang: string } }) {
   const [content, setContent] = useState('');
   const [categoryId, setCategoryId] = useState('');
   const [featuredImage, setFeaturedImage] = useState('');
-  const [isPublished, setIsPublished] = useState(false);
   
   const [categories, setCategories] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
     const auth = localStorage.getItem('admin_auth_session');
@@ -111,6 +120,7 @@ export default function NewPostPage({ params }: { params: { lang: string } }) {
       const generatedSlug = title
         .toLowerCase()
         .trim()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // Remove Vietnamese tones
         .replace(/[^\w\s-]/g, '')
         .replace(/[\s_-]+/g, '-')
         .replace(/^-+|-+$/g, '');
@@ -118,9 +128,66 @@ export default function NewPostPage({ params }: { params: { lang: string } }) {
     }
   }, [title]);
 
+  const insertText = (before: string, after: string = '') => {
+    if (!contentRef.current) return;
+    const start = contentRef.current.selectionStart;
+    const end = contentRef.current.selectionEnd;
+    const text = contentRef.current.value;
+    const selected = text.substring(start, end);
+    const newText = text.substring(0, start) + before + selected + after + text.substring(end);
+    setContent(newText);
+    
+    // Reset focus and selection
+    setTimeout(() => {
+      contentRef.current?.focus();
+      contentRef.current?.setSelectionRange(start + before.length, end + before.length);
+    }, 0);
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Check format (prefer webp, but allow others)
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    if (!allowedTypes.includes(file.type)) {
+      alert('Sếp ơi, chỉ nhận ảnh JPEG, PNG, hoặc WebP thôi!');
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random()}.${fileExt}`;
+      const filePath = `posts/${fileName}`;
+
+      const { data, error } = await supabase.storage
+        .from('article-images')
+        .upload(filePath, file);
+
+      if (error) throw error;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('article-images')
+        .getPublicUrl(filePath);
+
+      setFeaturedImage(publicUrl);
+    } catch (error: any) {
+      alert('Lỗi tải ảnh: ' + error.message + '\nSếp nhớ tạo bucket "article-images" trong Supabase nhé!');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   const handleSave = async (published = false) => {
+    if (!title || !slug || !content) {
+      alert('Sếp điền thiếu Title, Slug hoặc Content kìa!');
+      return;
+    }
+
     setIsLoading(true);
     
+    // Payload preparation - check your Supabase schema columns!
     const postData = {
       title,
       slug,
@@ -138,7 +205,8 @@ export default function NewPostPage({ params }: { params: { lang: string } }) {
       .insert([postData]);
 
     if (error) {
-      alert('Lỗi rồi Sếp: ' + error.message);
+      console.error('Save error:', error);
+      alert('Lỗi rồi Sếp: ' + error.message + '\n\nTips: Sếp check xem bảng "posts" có đủ cột (lang, author) chưa?');
     } else {
       alert(published ? 'Đã xuất bản thành công!' : 'Đã lưu nháp!');
       router.push(`/${lang}/admin`);
@@ -183,13 +251,9 @@ export default function NewPostPage({ params }: { params: { lang: string } }) {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] font-sans pb-20">
-      {/* Top Header */}
       <header className="h-16 bg-white border-b border-slate-200 sticky top-0 z-10 px-6 flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <button 
-            onClick={() => router.push(`/${lang}/admin`)}
-            className="p-2 hover:bg-slate-100 rounded-lg transition-colors text-slate-500"
-          >
+          <button onClick={() => router.push(`/${lang}/admin`)} className="p-2 hover:bg-slate-100 rounded-lg transition-colors text-slate-500">
             <ArrowLeft size={20} />
           </button>
           <div className="h-6 w-[1px] bg-slate-200 mx-2"></div>
@@ -204,19 +268,11 @@ export default function NewPostPage({ params }: { params: { lang: string } }) {
             <Globe size={14} />
             <span className="uppercase">{lang}</span>
           </div>
-          <button 
-            onClick={() => handleSave(false)}
-            disabled={isLoading}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-50 rounded-lg transition-all"
-          >
-            <Save size={18} />
+          <button onClick={() => handleSave(false)} disabled={isLoading} className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-50 rounded-lg transition-all">
+            {isLoading ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
             <span>Save Draft</span>
           </button>
-          <button 
-            onClick={() => handleSave(true)}
-            disabled={isLoading}
-            className="flex items-center gap-2 px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl shadow-lg shadow-blue-600/20 transition-all transform hover:-translate-y-0.5"
-          >
+          <button onClick={() => handleSave(true)} disabled={isLoading} className="flex items-center gap-2 px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl shadow-lg shadow-blue-600/20 transition-all transform hover:-translate-y-0.5">
             <Send size={18} />
             <span>Publish Post</span>
           </button>
@@ -224,7 +280,6 @@ export default function NewPostPage({ params }: { params: { lang: string } }) {
       </header>
 
       <div className="max-w-7xl mx-auto p-8 grid grid-cols-12 gap-8">
-        {/* Editor Side */}
         <div className="col-span-8 space-y-6">
           <div className="bg-white rounded-3xl border border-slate-200 p-8 shadow-sm">
             <input 
@@ -253,13 +308,24 @@ export default function NewPostPage({ params }: { params: { lang: string } }) {
             />
 
             <div className="min-h-[400px]">
+              {/* Markdown Toolbar */}
+              <div className="flex items-center gap-2 mb-4 p-2 bg-slate-50 rounded-xl border border-slate-200 overflow-x-auto">
+                <button onClick={() => insertText('# ', '')} className="p-2 hover:bg-white hover:shadow-sm rounded-lg transition-all text-slate-600" title="Heading 1"><Heading1 size={20} /></button>
+                <button onClick={() => insertText('## ', '')} className="p-2 hover:bg-white hover:shadow-sm rounded-lg transition-all text-slate-600" title="Heading 2"><Heading2 size={20} /></button>
+                <button onClick={() => insertText('### ', '')} className="p-2 hover:bg-white hover:shadow-sm rounded-lg transition-all text-slate-600" title="Heading 3"><Heading3 size={20} /></button>
+                <div className="w-[1px] h-6 bg-slate-200 mx-1"></div>
+                <button onClick={() => insertText('**', '**')} className="p-2 hover:bg-white hover:shadow-sm rounded-lg transition-all text-slate-600" title="Bold"><Bold size={20} /></button>
+                <button onClick={() => insertText('- ', '')} className="p-2 hover:bg-white hover:shadow-sm rounded-lg transition-all text-slate-600" title="List"><List size={20} /></button>
+              </div>
+
               <div className="flex items-center gap-2 mb-4 text-slate-400 border-b border-slate-100 pb-2">
                 <Type size={18} />
-                <span className="text-sm font-bold uppercase tracking-widest">Content Body</span>
+                <span className="text-sm font-bold uppercase tracking-widest">Content Body (Markdown Supported)</span>
               </div>
               <textarea 
-                placeholder="Start writing your story here..."
-                className="w-full h-[600px] text-slate-800 placeholder:text-slate-200 outline-none resize-none leading-relaxed text-lg"
+                ref={contentRef}
+                placeholder="Start writing your story here... Use # for H1, ## for H2, ** for Bold."
+                className="w-full h-[600px] text-slate-800 placeholder:text-slate-200 outline-none resize-none leading-relaxed text-lg font-medium"
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
               />
@@ -267,9 +333,7 @@ export default function NewPostPage({ params }: { params: { lang: string } }) {
           </div>
         </div>
 
-        {/* Settings Side */}
         <div className="col-span-4 space-y-6">
-          {/* Publishing Settings */}
           <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
             <div className="p-5 border-b border-slate-100 bg-slate-50/50 flex items-center gap-2">
               <Settings size={18} className="text-slate-400" />
@@ -277,7 +341,6 @@ export default function NewPostPage({ params }: { params: { lang: string } }) {
             </div>
             
             <div className="p-6 space-y-6">
-              {/* Category */}
               <div>
                 <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Category</label>
                 <div className="relative">
@@ -295,49 +358,60 @@ export default function NewPostPage({ params }: { params: { lang: string } }) {
                 </div>
               </div>
 
-              {/* Featured Image */}
               <div>
-                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Featured Image URL</label>
-                <div className="relative group">
-                  <div className="absolute left-3 top-3.5 text-slate-400">
-                    <ImageIcon size={18} />
-                  </div>
+                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Featured Image</label>
+                <input 
+                  type="file" 
+                  ref={fileInputRef} 
+                  onChange={handleImageUpload} 
+                  className="hidden" 
+                  accept="image/*" 
+                />
+                
+                <div 
+                  onClick={() => fileInputRef.current?.click()}
+                  className="relative group border-2 border-dashed border-slate-200 rounded-2xl aspect-video flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50 hover:border-blue-400 transition-all overflow-hidden"
+                >
+                  {isUploading ? (
+                    <div className="flex flex-col items-center gap-2">
+                      <Loader2 className="animate-spin text-blue-500" size={32} />
+                      <span className="text-xs font-bold text-slate-400">Đang tải lên...</span>
+                    </div>
+                  ) : featuredImage ? (
+                    <>
+                      <img src={featuredImage} alt="Preview" className="w-full h-full object-cover" />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <Upload className="text-white" size={24} />
+                      </div>
+                    </>
+                  ) : (
+                    <div className="flex flex-col items-center gap-2">
+                      <ImageIcon className="text-slate-300" size={32} />
+                      <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Click to upload</span>
+                    </div>
+                  )}
+                </div>
+                
+                <div className="mt-4">
+                  <label className="block text-[10px] font-black text-slate-300 uppercase tracking-widest mb-1">Or Paste URL</label>
                   <input 
                     type="text" 
                     placeholder="https://..."
-                    className="w-full pl-10 p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none font-medium text-slate-600 focus:ring-2 focus:ring-blue-500/20"
+                    className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs outline-none"
                     value={featuredImage}
                     onChange={(e) => setFeaturedImage(e.target.value)}
                   />
                 </div>
-                {featuredImage && (
-                  <div className="mt-4 rounded-2xl overflow-hidden border-2 border-slate-100 aspect-video relative group">
-                    <img src={featuredImage} alt="Preview" className="w-full h-full object-cover" />
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <Eye className="text-white" size={24} />
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
           </div>
 
-          {/* Quick Help/Status */}
           <div className="bg-slate-900 rounded-3xl p-6 text-white border-4 border-slate-800 shadow-xl">
             <h4 className="font-black uppercase tracking-tighter text-xl mb-4">Pro Tips</h4>
             <ul className="space-y-3 text-sm text-slate-400 font-medium">
-              <li className="flex gap-2">
-                <span className="text-blue-400">●</span> 
-                Slugs are auto-generated but can be overridden.
-              </li>
-              <li className="flex gap-2">
-                <span className="text-blue-400">●</span> 
-                Make sure to select the correct language (/en or /vi).
-              </li>
-              <li className="flex gap-2">
-                <span className="text-blue-400">●</span> 
-                Images should be high resolution (1200x630px).
-              </li>
+              <li className="flex gap-2"><span className="text-blue-400">●</span> Ưu tiên định dạng **WebP** để SEO tốt nhất.</li>
+              <li className="flex gap-2"><span className="text-blue-400">●</span> Sử dụng Heading (H1, H2) để Google hiểu cấu trúc bài.</li>
+              <li className="flex gap-2"><span className="text-blue-400">●</span> Kích thước ảnh chuẩn: 1200x630px.</li>
             </ul>
           </div>
         </div>

@@ -15,7 +15,7 @@ export default function Footer({ lang }: { lang: string }) {
               <span className="text-4xl font-display font-black tracking-tighter">AI PLUS MAP</span>
             </div>
             <p className="text-slate-400 max-w-md font-bold leading-relaxed">
-              Leading the intelligence cartography. We map the ever-changing landscape of AI to bring you the most critical updates and guides.
+              AI Plus Map: Your daily source for AI News Today, Best AI Updates, and AI Ranking. Mapping the intelligence landscape for the future.
             </p>
           </div>
           
