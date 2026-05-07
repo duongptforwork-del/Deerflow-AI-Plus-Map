@@ -106,25 +106,26 @@ export default async function HomePage({ params: { lang } }: { params: { lang: s
                 </div>
               </div>
 
-              {/* Column 2: 3 Sub-features Horizontal */}
-              <div className="lg:col-span-7 grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Column 2: 3 Sub-features Vertical Stack (3 Rows) */}
+              <div className="lg:col-span-7 flex flex-col gap-6">
                 {subHeroes.map((post) => (
-                  <article key={post.id} className="group flex flex-col border-4 border-black bg-white shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
-                    <div className="aspect-square relative overflow-hidden border-b-4 border-black">
+                  <article key={post.id} className="group flex flex-col sm:flex-row border-4 border-black bg-white shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] h-full overflow-hidden">
+                    <div className="w-full sm:w-1/3 aspect-[16/9] sm:aspect-square relative overflow-hidden border-b-4 sm:border-b-0 sm:border-r-4 border-black shrink-0">
                       <img 
                         src={post.featured_image} 
                         alt={post.title} 
                         className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" 
                       />
                     </div>
-                    <div className="p-4 flex flex-col flex-grow">
+                    <div className="p-4 flex flex-col flex-grow justify-center">
                       <span className="font-black text-[10px] text-[#ef4444] uppercase mb-1 italic">{post.categories?.name}</span>
-                      <h3 className="text-lg font-black leading-none tracking-tight mb-2 group-hover:underline">
+                      <h3 className="text-xl font-black leading-none tracking-tight mb-2 group-hover:underline">
                         <Link href={`/${lang}/news/${post.slug}`}>{post.title}</Link>
                       </h3>
-                      <p className="text-xs font-bold text-slate-600 line-clamp-4 mb-4">{post.excerpt}</p>
-                      <div className="mt-auto pt-2 border-t-2 border-black/10 text-[9px] font-black uppercase">
-                         {new Date(post.created_at).toLocaleDateString()}
+                      <p className="text-xs font-bold text-slate-600 line-clamp-2 mb-4">{post.excerpt}</p>
+                      <div className="mt-auto pt-2 border-t-2 border-black/10 flex justify-between items-center text-[9px] font-black uppercase">
+                         <span>{new Date(post.created_at).toLocaleDateString()}</span>
+                         <span className="bg-[#ef4444] text-white px-1">NEW</span>
                       </div>
                     </div>
                   </article>
