@@ -34,19 +34,22 @@ export default function Navbar({ lang }: { lang: string }) {
     <header className="bg-white border-b-2 border-black py-4 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-          <Link href={`/${lang}`} className="flex items-center gap-2 group">
-            <div className="bg-white border-2 border-black p-1 group-hover:rotate-6 transition-transform shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+          <Link href={`/${lang}`} className="flex items-center gap-3 group">
+            <div className="bg-black border-2 border-black p-1.5 group-hover:-rotate-6 transition-transform shadow-[4px_4px_0px_0px_rgba(239,68,68,1)]">
               <Image 
                 src="/logo.png" 
                 alt="AI Plus Map Logo" 
-                width={40} 
-                height={40} 
-                className="block object-contain"
+                width={36} 
+                height={36} 
+                className="block object-contain invert"
               />
             </div>
             <div>
-              <span className="text-3xl font-display font-black tracking-tighter block leading-none">AI PLUS MAP</span>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">The Intelligence Cartography</span>
+              <div className="flex items-baseline gap-1">
+                <span className="text-3xl font-display font-black tracking-tighter block leading-none">AI PLUS</span>
+                <span className="text-xl font-display font-black tracking-tighter block leading-none bg-black text-white px-1">MAP</span>
+              </div>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-black/40">The Intelligence Cartography</span>
             </div>
           </Link>
 

@@ -94,7 +94,7 @@ export default function NewPostPage({ params }: { params: { lang: string } }) {
   }, []);
 
   const fetchCategories = async () => {
-    const targetLang = lang === 'vn' ? 'vi' : lang;
+    const targetLang = lang;
     const { data, error } = await supabase
       .from('categories')
       .select('id, name')
@@ -109,7 +109,7 @@ export default function NewPostPage({ params }: { params: { lang: string } }) {
     if (!newCategoryName.trim()) return;
     
     setIsAddingCategory(true);
-    const targetLang = lang === 'vn' ? 'vi' : lang;
+    const targetLang = lang;
     const slug = newCategoryName
       .toLowerCase()
       .trim()
@@ -120,18 +120,24 @@ export default function NewPostPage({ params }: { params: { lang: string } }) {
 
     const { data, error } = await supabase
       .from('categories')
-      .insert([{ 
+      .upsert({ 
         name: newCategoryName, 
-        slug, 
+        slug: slug, 
         lang: targetLang, 
         type: 'post' 
-      }])
+      }, { onConflict: 'slug,lang' })
       .select();
 
     if (error) {
-      alert('Lỗi tạo category: ' + error.message);
-    } else if (data) {
-      setCategories([...categories, data[0]]);
+      console.error('Upsert category error:', error);
+      alert('Lỗi category: ' + error.message);
+    } else if (data && data[0]) {
+      // If category already exists in local state, don't duplicate
+      setCategories(prev => {
+        const exists = prev.find(c => c.id === data[0].id);
+        if (exists) return prev;
+        return [...prev, data[0]].sort((a, b) => a.name.localeCompare(b.name));
+      });
       setCategoryId(data[0].id);
       setNewCategoryName('');
     }
@@ -224,7 +230,7 @@ export default function NewPostPage({ params }: { params: { lang: string } }) {
     }
 
     setIsLoading(true);
-    const targetLang = lang === 'vn' ? 'vi' : lang;
+    const targetLang = lang;
     
     // Payload preparation - check your Supabase schema columns!
     const postData = {

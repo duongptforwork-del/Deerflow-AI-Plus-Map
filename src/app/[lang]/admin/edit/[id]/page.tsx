@@ -105,7 +105,7 @@ export default function EditPostPage({ params }: { params: { lang: string, id: s
   };
 
   const fetchCategories = async () => {
-    const targetLang = lang === 'vn' ? 'vi' : lang;
+    const targetLang = lang;
     const { data, error } = await supabase
       .from('categories')
       .select('id, name')
@@ -147,7 +147,7 @@ export default function EditPostPage({ params }: { params: { lang: string, id: s
     if (!newCategoryName.trim()) return;
     
     setIsAddingCategory(true);
-    const targetLang = lang === 'vn' ? 'vi' : lang;
+    const targetLang = lang;
     const catSlug = newCategoryName
       .toLowerCase()
       .trim()

@@ -10,8 +10,7 @@ export default async function AdminPage({
 }: {
   params: { lang: string };
 }) {
-  const { lang: rawLang } = params;
-  const lang = rawLang === 'vn' ? 'vi' : rawLang;
+  const { lang } = params;
 
   // Simple check for valid lang
   if (lang !== 'vi' && lang !== 'en') {

@@ -121,7 +121,7 @@ const AdminDashboard = ({ posts = [], categories = [], lang = 'en' }: { posts?: 
       .insert([{ 
         name: newCatName, 
         slug, 
-        lang: lang === 'vn' ? 'vi' : lang, 
+        lang: lang, 
         type: 'post' 
       }]);
 

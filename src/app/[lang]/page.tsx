@@ -16,12 +16,12 @@ export default async function HomePage({ params: { lang } }: { params: { lang: s
     { data: comparePosts },
     { data: guidePosts }
   ] = await Promise.all([
-    // Hero
-    supabase.from('posts').select('*, categories(*)').eq('lang', lang).eq('is_published', true).order('created_at', { ascending: false }).limit(1),
+    // Hero (4 posts total)
+    supabase.from('posts').select('*, categories(*)').eq('lang', lang).eq('is_published', true).order('created_at', { ascending: false }).limit(4),
     // Trending (Top 5)
     supabase.from('posts').select('*, categories(*)').eq('lang', lang).eq('is_published', true).order('created_at', { ascending: false }).limit(5),
-    // Latest News (excluding hero)
-    supabase.from('posts').select('*, categories(*)').eq('lang', lang).eq('is_published', true).order('created_at', { ascending: false }).range(1, 4),
+    // Latest News (starting from 5th post)
+    supabase.from('posts').select('*, categories(*)').eq('lang', lang).eq('is_published', true).order('created_at', { ascending: false }).range(4, 7),
     // Compare Sections
     supabase.from('posts').select('*, categories(*)').eq('lang', lang).eq('is_published', true).ilike('title', '%Compare%').limit(3),
     // AI Guide
@@ -29,6 +29,7 @@ export default async function HomePage({ params: { lang } }: { params: { lang: s
   ]);
 
   const hero = heroPosts?.[0];
+  const subHeroes = heroPosts?.slice(1, 4) || [];
 
   return (
     <div className="min-h-screen text-black">
@@ -63,44 +64,71 @@ export default async function HomePage({ params: { lang } }: { params: { lang: s
               <span className="bg-black text-white px-2">Intelligence Cartography</span>
               <span className="hidden md:inline">Daily AI Ranking & Best AI Updates</span>
             </div>
-            <span>Vol. 2026.05</span>
           </div>
         </div>
         
-        {/* Hero Section */}
+        {/* Hero Section - 2 Columns (1 Big + 3 Horizontal) */}
         {hero && (
           <section className="mb-20">
-            <div className="relative border-4 border-black group bg-white shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]">
-              <div className="grid grid-cols-1 lg:grid-cols-2">
-                <div className="aspect-[4/3] lg:aspect-auto relative overflow-hidden border-b-4 lg:border-b-0 lg:border-r-4 border-black">
-                  <img 
-                    src={hero.featured_image} 
-                    alt={hero.title} 
-                    className="absolute inset-0 w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-500" 
-                  />
-                  <div className="absolute top-6 left-6">
-                    <span className="bg-[#ef4444] text-white px-4 py-1 font-black text-xs uppercase tracking-widest border-2 border-black skew-x-[-10deg]">
-                      FEATURED STORY
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+              {/* Column 1: Main Feature */}
+              <div className="lg:col-span-5">
+                <div className="relative border-4 border-black group bg-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] h-full flex flex-col">
+                  <div className="aspect-[16/10] relative overflow-hidden border-b-4 border-black">
+                    <img 
+                      src={hero.featured_image} 
+                      alt={hero.title} 
+                      className="absolute inset-0 w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-500" 
+                    />
+                    <div className="absolute top-4 left-4">
+                      <span className="bg-[#ef4444] text-white px-3 py-1 font-black text-[10px] uppercase tracking-widest border-2 border-black">
+                        FEATURED
+                      </span>
+                    </div>
+                  </div>
+                  <div className="p-6 flex flex-col flex-grow justify-center">
+                    <span className="font-black text-[#ef4444] text-xs uppercase mb-2 italic">
+                      {hero.categories?.name || 'Uncategorized'}
                     </span>
+                    <h2 className="text-3xl lg:text-4xl font-display font-black leading-none tracking-tighter mb-4 group-hover:text-[#ef4444] transition-colors">
+                      <Link href={`/${lang}/news/${hero.slug}`}>{hero.title}</Link>
+                    </h2>
+                    <p className="text-sm font-bold leading-tight mb-6 text-slate-700 line-clamp-3">
+                      {hero.excerpt}
+                    </p>
+                    <Link 
+                      href={`/${lang}/news/${hero.slug}`}
+                      className="mt-auto inline-block border-2 border-black px-4 py-2 bg-black text-white font-black uppercase text-xs text-center hover:bg-white hover:text-black transition-all"
+                    >
+                      READ REPORT
+                    </Link>
                   </div>
                 </div>
-                <div className="p-8 lg:p-12 flex flex-col justify-center">
-                  <span className="font-black text-[#ef4444] text-sm uppercase mb-4 tracking-tighter italic">
-                    {hero.categories?.name || 'Uncategorized'}
-                  </span>
-                  <h1 className="text-5xl lg:text-7xl font-display font-black leading-[0.9] tracking-tighter mb-8 group-hover:text-[#ef4444] transition-colors">
-                    <Link href={`/${lang}/news/${hero.slug}`}>{hero.title}</Link>
-                  </h1>
-                  <p className="text-xl font-bold leading-tight mb-8 text-slate-700 line-clamp-3">
-                    {hero.excerpt}
-                  </p>
-                  <Link 
-                    href={`/${lang}/news/${hero.slug}`}
-                    className="inline-block border-4 border-black px-8 py-4 bg-black text-white font-black uppercase text-center hover:bg-white hover:text-black transition-all"
-                  >
-                    READ THE FULL REPORT
-                  </Link>
-                </div>
+              </div>
+
+              {/* Column 2: 3 Sub-features Horizontal */}
+              <div className="lg:col-span-7 grid grid-cols-1 md:grid-cols-3 gap-6">
+                {subHeroes.map((post) => (
+                  <article key={post.id} className="group flex flex-col border-4 border-black bg-white shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
+                    <div className="aspect-square relative overflow-hidden border-b-4 border-black">
+                      <img 
+                        src={post.featured_image} 
+                        alt={post.title} 
+                        className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" 
+                      />
+                    </div>
+                    <div className="p-4 flex flex-col flex-grow">
+                      <span className="font-black text-[10px] text-[#ef4444] uppercase mb-1 italic">{post.categories?.name}</span>
+                      <h3 className="text-lg font-black leading-none tracking-tight mb-2 group-hover:underline">
+                        <Link href={`/${lang}/news/${post.slug}`}>{post.title}</Link>
+                      </h3>
+                      <p className="text-xs font-bold text-slate-600 line-clamp-4 mb-4">{post.excerpt}</p>
+                      <div className="mt-auto pt-2 border-t-2 border-black/10 text-[9px] font-black uppercase">
+                         {new Date(post.created_at).toLocaleDateString()}
+                      </div>
+                    </div>
+                  </article>
+                ))}
               </div>
             </div>
           </section>
