@@ -10,7 +10,8 @@ export default async function AdminPage({
 }: {
   params: { lang: string };
 }) {
-  const { lang } = params;
+  const { lang: rawLang } = params;
+  const lang = rawLang === 'vn' ? 'vi' : rawLang;
 
   // Simple check for valid lang
   if (lang !== 'vi' && lang !== 'en') {
@@ -20,7 +21,7 @@ export default async function AdminPage({
   // Fetch posts from Supabase
   const { data: posts, error } = await supabase
     .from('posts')
-    .select('*')
+    .select('*, categories(name)')
     .eq('lang', lang)
     .order('created_at', { ascending: false });
 

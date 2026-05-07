@@ -8,9 +8,9 @@ export const revalidate = 3600;
 
 export async function generateStaticParams() {
   const supabase = createClient();
-  const { data: posts } = await supabase.from('posts').select('slug, language').limit(50);
+  const { data: posts } = await supabase.from('posts').select('slug, lang').limit(50);
   return posts?.map((post) => ({ 
-    lang: post.language,
+    lang: post.lang,
     slug: post.slug 
   })) || [];
 }
@@ -30,7 +30,7 @@ export default async function NewsDetailPage({ params: { lang, slug } }: { param
   const { data: relatedPosts } = await supabase
     .from('posts')
     .select('*, categories(*)')
-    .eq('language', lang)
+    .eq('lang', lang)
     .eq('category_id', post.category_id)
     .neq('id', post.id)
     .order('created_at', { ascending: false })
@@ -45,7 +45,7 @@ export default async function NewsDetailPage({ params: { lang, slug } }: { param
           <header className="mb-12">
             <div className="flex items-center gap-3 mb-6">
               <span className="bg-[#ef4444] text-white px-4 py-1 font-black text-xs uppercase tracking-widest border-2 border-black skew-x-[-10deg]">
-                {post.categories?.title || 'INTELLIGENCE'}
+                {post.categories?.name || 'INTELLIGENCE'}
               </span>
               <span className="font-black text-xs uppercase tracking-tighter text-slate-500">
                 {new Date(post.created_at).toLocaleDateString(lang === 'vi' ? 'vi-VN' : 'en-US', { day: 'numeric', month: 'long', year: 'numeric' })}
@@ -57,12 +57,12 @@ export default async function NewsDetailPage({ params: { lang, slug } }: { param
             </h1>
             
             <p className="text-xl md:text-2xl font-bold leading-tight text-slate-700 border-l-8 border-black pl-8 py-2 mb-12">
-              {post.description}
+              {post.excerpt}
             </p>
           </header>
 
           <div className="aspect-video w-full border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] bg-white overflow-hidden mb-16">
-            <img src={post.image_url} alt={post.title} className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700" />
+            <img src={post.featured_image} alt={post.title} className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700" />
           </div>
 
           <div 
@@ -110,7 +110,7 @@ export default async function NewsDetailPage({ params: { lang, slug } }: { param
               {relatedPosts.map((rPost) => (
                 <Link key={rPost.id} href={`/${lang}/news/${rPost.slug}`} className="group">
                   <div className="aspect-square border-4 border-black mb-4 overflow-hidden shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] bg-white">
-                    <img src={rPost.image_url} alt={rPost.title} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all" />
+                    <img src={rPost.featured_image} alt={rPost.title} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all" />
                   </div>
                   <h3 className="text-xl font-black leading-none group-hover:text-[#ef4444] transition-colors">{rPost.title}</h3>
                 </Link>

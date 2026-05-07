@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import SectionHeader from '@/components/SectionHeader';
+import NewsSection from '@/components/NewsSection';
 import { createClient } from '@/utils/supabase/server';
 
 export const revalidate = 3600;
@@ -16,15 +17,15 @@ export default async function HomePage({ params: { lang } }: { params: { lang: s
     { data: guidePosts }
   ] = await Promise.all([
     // Hero
-    supabase.from('posts').select('*, categories(*)').eq('language', lang).order('created_at', { ascending: false }).limit(1),
+    supabase.from('posts').select('*, categories(*)').eq('lang', lang).eq('is_published', true).order('created_at', { ascending: false }).limit(1),
     // Trending (Top 5)
-    supabase.from('posts').select('*, categories(*)').eq('language', lang).order('created_at', { ascending: false }).limit(5),
+    supabase.from('posts').select('*, categories(*)').eq('lang', lang).eq('is_published', true).order('created_at', { ascending: false }).limit(5),
     // Latest News (excluding hero)
-    supabase.from('posts').select('*, categories(*)').eq('language', lang).order('created_at', { ascending: false }).range(1, 4),
+    supabase.from('posts').select('*, categories(*)').eq('lang', lang).eq('is_published', true).order('created_at', { ascending: false }).range(1, 4),
     // Compare Sections
-    supabase.from('posts').select('*, categories(*)').eq('language', lang).ilike('title', '%Compare%').limit(3),
+    supabase.from('posts').select('*, categories(*)').eq('lang', lang).eq('is_published', true).ilike('title', '%Compare%').limit(3),
     // AI Guide
-    supabase.from('posts').select('*, categories(*)').eq('language', lang).ilike('title', '%Guide%').limit(3)
+    supabase.from('posts').select('*, categories(*)').eq('lang', lang).eq('is_published', true).ilike('title', '%Guide%').limit(3)
   ]);
 
   const hero = heroPosts?.[0];
@@ -73,7 +74,7 @@ export default async function HomePage({ params: { lang } }: { params: { lang: s
               <div className="grid grid-cols-1 lg:grid-cols-2">
                 <div className="aspect-[4/3] lg:aspect-auto relative overflow-hidden border-b-4 lg:border-b-0 lg:border-r-4 border-black">
                   <img 
-                    src={hero.image_url} 
+                    src={hero.featured_image} 
                     alt={hero.title} 
                     className="absolute inset-0 w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-500" 
                   />
@@ -85,13 +86,13 @@ export default async function HomePage({ params: { lang } }: { params: { lang: s
                 </div>
                 <div className="p-8 lg:p-12 flex flex-col justify-center">
                   <span className="font-black text-[#ef4444] text-sm uppercase mb-4 tracking-tighter italic">
-                    {hero.categories?.title || 'Uncategorized'}
+                    {hero.categories?.name || 'Uncategorized'}
                   </span>
                   <h1 className="text-5xl lg:text-7xl font-display font-black leading-[0.9] tracking-tighter mb-8 group-hover:text-[#ef4444] transition-colors">
                     <Link href={`/${lang}/news/${hero.slug}`}>{hero.title}</Link>
                   </h1>
                   <p className="text-xl font-bold leading-tight mb-8 text-slate-700 line-clamp-3">
-                    {hero.description}
+                    {hero.excerpt}
                   </p>
                   <Link 
                     href={`/${lang}/news/${hero.slug}`}
@@ -113,16 +114,16 @@ export default async function HomePage({ params: { lang } }: { params: { lang: s
               <article key={post.id} className="group flex flex-col">
                 <div className="aspect-square border-4 border-black mb-4 overflow-hidden relative shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] bg-white">
                   <img 
-                    src={post.image_url} 
+                    src={post.featured_image} 
                     alt={post.title} 
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 grayscale group-hover:grayscale-0" 
                   />
                 </div>
-                <span className="font-black text-xs text-[#ef4444] uppercase mb-2 italic">{post.categories?.title}</span>
+                <span className="font-black text-xs text-[#ef4444] uppercase mb-2 italic">{post.categories?.name}</span>
                 <h3 className="text-xl font-black leading-none tracking-tight mb-4 group-hover:underline">
                   <Link href={`/${lang}/news/${post.slug}`}>{post.title}</Link>
                 </h3>
-                <p className="text-sm font-bold text-slate-600 line-clamp-3 mb-4">{post.description}</p>
+                <p className="text-sm font-bold text-slate-600 line-clamp-3 mb-4">{post.excerpt}</p>
                 <div className="mt-auto pt-4 border-t-2 border-black/10 flex justify-between items-center text-[10px] font-black uppercase">
                    <span>{new Date(post.created_at).toLocaleDateString()}</span>
                    <span className="bg-black text-white px-2 py-0.5">NEWS</span>
@@ -141,13 +142,13 @@ export default async function HomePage({ params: { lang } }: { params: { lang: s
               {(comparePosts || []).length > 0 ? comparePosts?.map((post) => (
                 <div key={post.id} className="flex gap-6 items-start group">
                   <div className="w-24 h-24 flex-shrink-0 border-2 border-black overflow-hidden shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-white">
-                    <img src={post.image_url} className="w-full h-full object-cover" alt="" />
+                    <img src={post.featured_image} className="w-full h-full object-cover" alt="" />
                   </div>
                   <div>
                     <h4 className="text-lg font-black leading-tight group-hover:text-[#ef4444]">
                       <Link href={`/${lang}/news/${post.slug}`}>{post.title}</Link>
                     </h4>
-                    <p className="text-xs font-bold text-slate-500 mt-2 line-clamp-2">{post.description}</p>
+                    <p className="text-xs font-bold text-slate-500 mt-2 line-clamp-2">{post.excerpt}</p>
                   </div>
                 </div>
               )) : (
@@ -165,13 +166,13 @@ export default async function HomePage({ params: { lang } }: { params: { lang: s
                {(guidePosts || []).length > 0 ? guidePosts?.map((post) => (
                 <div key={post.id} className="flex gap-6 items-start group">
                   <div className="w-24 h-24 flex-shrink-0 border-2 border-black overflow-hidden shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-white">
-                    <img src={post.image_url} className="w-full h-full object-cover" alt="" />
+                    <img src={post.featured_image} className="w-full h-full object-cover" alt="" />
                   </div>
                   <div>
                     <h4 className="text-lg font-black leading-tight group-hover:text-[#ef4444]">
                       <Link href={`/${lang}/news/${post.slug}`}>{post.title}</Link>
                     </h4>
-                    <p className="text-xs font-bold text-slate-500 mt-2 line-clamp-2">{post.description}</p>
+                    <p className="text-xs font-bold text-slate-500 mt-2 line-clamp-2">{post.excerpt}</p>
                   </div>
                 </div>
               )) : (
@@ -182,6 +183,21 @@ export default async function HomePage({ params: { lang } }: { params: { lang: s
             </div>
           </section>
         </div>
+
+        {/* Dynamic Category Sections */}
+        <NewsSection 
+          lang={lang} 
+          categorySlug="ai-tools" 
+          title={lang === 'vi' ? "Công Cụ AI Mới" : "Featured AI Tools"} 
+          limit={4} 
+        />
+        
+        <NewsSection 
+          lang={lang} 
+          categorySlug="tutorials" 
+          title={lang === 'vi' ? "Hướng Dẫn Chi Tiết" : "Step-by-Step Tutorials"} 
+          limit={4} 
+        />
       </main>
     </div>
   );

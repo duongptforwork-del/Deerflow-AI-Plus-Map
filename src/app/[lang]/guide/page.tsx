@@ -26,7 +26,7 @@ export default async function GuidePage({
   const { data: posts, count } = await supabase
     .from('posts')
     .select('*, categories(*)')
-    .eq('language', lang)
+    .eq('lang', lang)
     .eq('category_id', category?.id)
     .order('created_at', { ascending: false })
     .range(from, to);
@@ -51,7 +51,7 @@ export default async function GuidePage({
                   {index + 1 + (currentPage - 1) * pageSize}
                 </div>
                 <div className="aspect-video border-4 border-black overflow-hidden grayscale group-hover:grayscale-0 transition-all shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] group-hover:shadow-none group-hover:translate-x-1 group-hover:translate-y-1">
-                  <img src={post.image_url} alt={post.title} className="w-full h-full object-cover" />
+                  <img src={post.featured_image} alt={post.title} className="w-full h-full object-cover" />
                 </div>
               </div>
               <div className="md:w-1/2 pt-4">
@@ -60,7 +60,7 @@ export default async function GuidePage({
                   <Link href={`/${lang}/news/${post.slug}`}>{post.title}</Link>
                 </h2>
                 <p className="text-xl font-bold text-slate-600 leading-tight mb-8">
-                  {post.description}
+                  {post.excerpt}
                 </p>
                 <div className="flex gap-6">
                   <Link 

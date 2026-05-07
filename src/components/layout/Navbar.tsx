@@ -12,23 +12,19 @@ export default function Navbar({ lang }: { lang: string }) {
 
   useEffect(() => {
     async function fetchCategories() {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('categories')
         .select('name, slug')
-        .eq('lang', lang)
         .eq('type', 'post')
+        .eq('lang', lang)
         .order('name');
       
-      if (data && data.length > 0) {
+      if (data) {
         setCategories(data);
-      } else {
-        // Fallback or seed logic if needed, but usually we just show what's in DB
-        setCategories([
-          { name: 'AI Market Trends', slug: 'ai-market-trends' },
-          { name: 'AI Startups & Funding', slug: 'ai-startups-funding' },
-          { name: 'Generative AI', slug: 'generative-ai' },
-          { name: 'AI Enterprise', slug: 'ai-enterprise' }
-        ]);
+      }
+      
+      if (error) {
+        console.error('Error fetching categories:', error);
       }
     }
     fetchCategories();

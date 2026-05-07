@@ -49,13 +49,13 @@ export default function GlobalSearch({ lang }: { lang: string }) {
         supabase
           .from('posts')
           .select('title, slug, excerpt')
-          .eq('language', lang)
+          .eq('lang', lang)
           .or(`title.ilike.%${query}%,excerpt.ilike.%${query}%`)
           .limit(5),
         supabase
           .from('guides')
           .select('title, slug, excerpt')
-          .eq('language', lang)
+          .eq('lang', lang)
           .or(`title.ilike.%${query}%,excerpt.ilike.%${query}%`)
           .limit(5)
       ]);

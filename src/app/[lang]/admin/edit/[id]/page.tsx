@@ -57,10 +57,11 @@ async function verifyPassword(password: string): Promise<boolean> {
   }
 }
 
-export default function NewPostPage({ params }: { params: { lang: string } }) {
+export default function EditPostPage({ params }: { params: { lang: string, id: string } }) {
   const router = useRouter();
   const supabase = createClient();
   const lang = params.lang || 'en';
+  const postId = params.id;
   const contentRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -76,22 +77,32 @@ export default function NewPostPage({ params }: { params: { lang: string } }) {
   const [content, setContent] = useState('');
   const [categoryId, setCategoryId] = useState('');
   const [featuredImage, setFeaturedImage] = useState('');
+  const [authorName, setAuthorName] = useState('');
   
   const [categories, setCategories] = useState<any[]>([]);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [isAddingCategory, setIsAddingCategory] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isFetching, setIsFetching] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
     const auth = localStorage.getItem('admin_auth_session');
     if (auth === 'true') {
       setIsAuthorized(true);
-      fetchCategories();
+      fetchInitialData();
     } else {
       setIsAuthorized(false);
+      setIsFetching(false);
     }
   }, []);
+
+  const fetchInitialData = async () => {
+    setIsFetching(true);
+    await fetchCategories();
+    await fetchPostData();
+    setIsFetching(false);
+  };
 
   const fetchCategories = async () => {
     const targetLang = lang === 'vn' ? 'vi' : lang;
@@ -105,12 +116,39 @@ export default function NewPostPage({ params }: { params: { lang: string } }) {
     if (error) console.error('Fetch categories error:', error);
   };
 
+  const fetchPostData = async () => {
+    if (!postId) return;
+
+    const { data, error } = await supabase
+      .from('posts')
+      .select('*')
+      .eq('id', postId)
+      .single();
+
+    if (error) {
+      console.error('Fetch post error:', error);
+      alert('Không tìm thấy bài viết này Sếp ơi!');
+      router.push(`/${lang}/admin`);
+      return;
+    }
+
+    if (data) {
+      setTitle(data.title || '');
+      setSlug(data.slug || '');
+      setExcerpt(data.excerpt || '');
+      setContent(data.content || '');
+      setCategoryId(data.category_id || '');
+      setFeaturedImage(data.featured_image || '');
+      setAuthorName(data.author_name || '');
+    }
+  };
+
   const handleAddCategory = async () => {
     if (!newCategoryName.trim()) return;
     
     setIsAddingCategory(true);
     const targetLang = lang === 'vn' ? 'vi' : lang;
-    const slug = newCategoryName
+    const catSlug = newCategoryName
       .toLowerCase()
       .trim()
       .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
@@ -122,7 +160,7 @@ export default function NewPostPage({ params }: { params: { lang: string } }) {
       .from('categories')
       .insert([{ 
         name: newCategoryName, 
-        slug, 
+        slug: catSlug, 
         lang: targetLang, 
         type: 'post' 
       }])
@@ -145,26 +183,26 @@ export default function NewPostPage({ params }: { params: { lang: string } }) {
     if (isValid) {
       localStorage.setItem('admin_auth_session', 'true');
       setIsAuthorized(true);
-      fetchCategories();
+      fetchInitialData();
     } else {
       alert('Sai mật khẩu rồi Sếp ơi!');
     }
     setIsChecking(false);
   };
 
-  // Auto-generate slug from title
-  useEffect(() => {
+  // Optional: Auto-generate slug from title (only if slug is empty)
+  const syncSlug = () => {
     if (title) {
       const generatedSlug = title
         .toLowerCase()
         .trim()
-        .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // Remove Vietnamese tones
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
         .replace(/[^\w\s-]/g, '')
         .replace(/[\s_-]+/g, '-')
         .replace(/^-+|-+$/g, '');
       setSlug(generatedSlug);
     }
-  }, [title]);
+  };
 
   const insertText = (before: string, after: string = '') => {
     if (!contentRef.current) return;
@@ -175,7 +213,6 @@ export default function NewPostPage({ params }: { params: { lang: string } }) {
     const newText = text.substring(0, start) + before + selected + after + text.substring(end);
     setContent(newText);
     
-    // Reset focus and selection
     setTimeout(() => {
       contentRef.current?.focus();
       contentRef.current?.setSelectionRange(start + before.length, end + before.length);
@@ -186,7 +223,6 @@ export default function NewPostPage({ params }: { params: { lang: string } }) {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Check format (prefer webp, but allow others)
     const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
     if (!allowedTypes.includes(file.type)) {
       alert('Sếp ơi, chỉ nhận ảnh JPEG, PNG, hoặc WebP thôi!');
@@ -211,22 +247,20 @@ export default function NewPostPage({ params }: { params: { lang: string } }) {
 
       setFeaturedImage(publicUrl);
     } catch (error: any) {
-      alert('Lỗi tải ảnh: ' + error.message + '\nSếp nhớ tạo bucket "article-images" trong Supabase nhé!');
+      alert('Lỗi tải ảnh: ' + error.message);
     } finally {
       setIsUploading(false);
     }
   };
 
-  const handleSave = async (published = false) => {
+  const handleUpdate = async (published = false) => {
     if (!title || !slug || !content) {
       alert('Sếp điền thiếu Title, Slug hoặc Content kìa!');
       return;
     }
 
     setIsLoading(true);
-    const targetLang = lang === 'vn' ? 'vi' : lang;
     
-    // Payload preparation - check your Supabase schema columns!
     const postData = {
       title,
       slug,
@@ -234,26 +268,33 @@ export default function NewPostPage({ params }: { params: { lang: string } }) {
       content,
       category_id: categoryId || null,
       featured_image: featuredImage || null,
+      author_name: authorName || 'Sếp',
       is_published: published,
-      lang: targetLang,
-      author_name: 'Sếp'
+      updated_at: new Date().toISOString(),
     };
 
     const { error } = await supabase
       .from('posts')
-      .insert([postData]);
+      .update(postData)
+      .eq('id', postId);
 
     if (error) {
-      console.error('Save error:', error);
-      alert('Lỗi rồi Sếp: ' + error.message + '\n\nTips: Sếp check xem bảng "posts" có đủ cột (lang, author_name) chưa?');
+      console.error('Update error:', error);
+      alert('Lỗi rồi Sếp: ' + error.message);
     } else {
-      alert(published ? 'Đã xuất bản thành công!' : 'Đã lưu nháp!');
+      alert('Đã cập nhật bài viết!');
       router.push(`/${lang}/admin`);
     }
     setIsLoading(false);
   };
 
-  if (isAuthorized === null) return null;
+  if (isAuthorized === null || isFetching) {
+    return (
+      <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center">
+        <Loader2 className="animate-spin text-blue-600" size={48} />
+      </div>
+    );
+  }
 
   if (!isAuthorized) {
     return (
@@ -297,7 +338,7 @@ export default function NewPostPage({ params }: { params: { lang: string } }) {
           </button>
           <div className="h-6 w-[1px] bg-slate-200 mx-2"></div>
           <div>
-            <h1 className="text-sm font-black uppercase tracking-widest text-slate-400">Create New Post</h1>
+            <h1 className="text-sm font-black uppercase tracking-widest text-slate-400">Edit Post</h1>
             <p className="text-xs font-bold text-slate-900 truncate max-w-[200px]">{title || 'Untitled Article'}</p>
           </div>
         </div>
@@ -307,13 +348,13 @@ export default function NewPostPage({ params }: { params: { lang: string } }) {
             <Globe size={14} />
             <span className="uppercase">{lang}</span>
           </div>
-          <button onClick={() => handleSave(false)} disabled={isLoading} className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-50 rounded-lg transition-all">
+          <button onClick={() => handleUpdate(false)} disabled={isLoading} className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-50 rounded-lg transition-all">
             {isLoading ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
-            <span>Save Draft</span>
+            <span>Update Draft</span>
           </button>
-          <button onClick={() => handleSave(true)} disabled={isLoading} className="flex items-center gap-2 px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl shadow-lg shadow-blue-600/20 transition-all transform hover:-translate-y-0.5">
+          <button onClick={() => handleUpdate(true)} disabled={isLoading} className="flex items-center gap-2 px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl shadow-lg shadow-blue-600/20 transition-all transform hover:-translate-y-0.5">
             <Send size={18} />
-            <span>Publish Post</span>
+            <span>Update & Publish</span>
           </button>
         </div>
       </header>
@@ -334,9 +375,15 @@ export default function NewPostPage({ params }: { params: { lang: string } }) {
                 <Layout size={14} />
                 <span>Permalink:</span>
               </div>
-              <code className="text-sm text-blue-600 font-mono">
-                aiplusmap.com/{lang}/article/<span className="bg-blue-100 px-1 rounded">{slug || '...'}</span>
-              </code>
+              <input 
+                type="text"
+                className="text-sm text-blue-600 font-mono bg-blue-50 px-2 py-1 rounded border-none outline-none flex-1"
+                value={slug}
+                onChange={(e) => setSlug(e.target.value)}
+              />
+              <button onClick={syncSlug} className="text-[10px] font-black uppercase text-slate-400 hover:text-blue-600 transition-colors">
+                Sync Title
+              </button>
             </div>
 
             <textarea 
@@ -347,23 +394,22 @@ export default function NewPostPage({ params }: { params: { lang: string } }) {
             />
 
             <div className="min-h-[400px]">
-              {/* Markdown Toolbar */}
               <div className="flex items-center gap-2 mb-4 p-2 bg-slate-50 rounded-xl border border-slate-200 overflow-x-auto">
-                <button onClick={() => insertText('# ', '')} className="p-2 hover:bg-white hover:shadow-sm rounded-lg transition-all text-slate-600" title="Heading 1"><Heading1 size={20} /></button>
-                <button onClick={() => insertText('## ', '')} className="p-2 hover:bg-white hover:shadow-sm rounded-lg transition-all text-slate-600" title="Heading 2"><Heading2 size={20} /></button>
-                <button onClick={() => insertText('### ', '')} className="p-2 hover:bg-white hover:shadow-sm rounded-lg transition-all text-slate-600" title="Heading 3"><Heading3 size={20} /></button>
+                <button onClick={() => insertText('# ', '')} className="p-2 hover:bg-white hover:shadow-sm rounded-lg transition-all text-slate-600"><Heading1 size={20} /></button>
+                <button onClick={() => insertText('## ', '')} className="p-2 hover:bg-white hover:shadow-sm rounded-lg transition-all text-slate-600"><Heading2 size={20} /></button>
+                <button onClick={() => insertText('### ', '')} className="p-2 hover:bg-white hover:shadow-sm rounded-lg transition-all text-slate-600"><Heading3 size={20} /></button>
                 <div className="w-[1px] h-6 bg-slate-200 mx-1"></div>
-                <button onClick={() => insertText('**', '**')} className="p-2 hover:bg-white hover:shadow-sm rounded-lg transition-all text-slate-600" title="Bold"><Bold size={20} /></button>
-                <button onClick={() => insertText('- ', '')} className="p-2 hover:bg-white hover:shadow-sm rounded-lg transition-all text-slate-600" title="List"><List size={20} /></button>
+                <button onClick={() => insertText('**', '**')} className="p-2 hover:bg-white hover:shadow-sm rounded-lg transition-all text-slate-600"><Bold size={20} /></button>
+                <button onClick={() => insertText('- ', '')} className="p-2 hover:bg-white hover:shadow-sm rounded-lg transition-all text-slate-600"><List size={20} /></button>
               </div>
 
               <div className="flex items-center gap-2 mb-4 text-slate-400 border-b border-slate-100 pb-2">
                 <Type size={18} />
-                <span className="text-sm font-bold uppercase tracking-widest">Content Body (Markdown Supported)</span>
+                <span className="text-sm font-bold uppercase tracking-widest">Content Body</span>
               </div>
               <textarea 
                 ref={contentRef}
-                placeholder="Start writing your story here... Use # for H1, ## for H2, ** for Bold."
+                placeholder="Start writing..."
                 className="w-full h-[600px] text-slate-800 placeholder:text-slate-200 outline-none resize-none leading-relaxed text-lg font-medium"
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
@@ -381,6 +427,17 @@ export default function NewPostPage({ params }: { params: { lang: string } }) {
             
             <div className="p-6 space-y-6">
               <div>
+                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Author Name</label>
+                <input 
+                  type="text" 
+                  placeholder="Who's writing?"
+                  className="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl outline-none font-bold text-slate-700 focus:ring-2 focus:ring-blue-500/20"
+                  value={authorName}
+                  onChange={(e) => setAuthorName(e.target.value)}
+                />
+              </div>
+
+              <div>
                 <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Category</label>
                 <div className="space-y-3">
                   <div className="relative">
@@ -395,24 +452,6 @@ export default function NewPostPage({ params }: { params: { lang: string } }) {
                       ))}
                     </select>
                     <ChevronDown size={18} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-                  </div>
-                  
-                  <div className="flex gap-2">
-                    <input 
-                      type="text" 
-                      placeholder="New category..."
-                      className="flex-1 bg-white border border-slate-200 p-2 rounded-lg text-xs font-bold outline-none focus:border-blue-400 transition-colors"
-                      value={newCategoryName}
-                      onChange={(e) => setNewCategoryName(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && handleAddCategory()}
-                    />
-                    <button 
-                      onClick={handleAddCategory}
-                      disabled={isAddingCategory || !newCategoryName.trim()}
-                      className="bg-slate-900 text-white px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-black disabled:opacity-50 transition-all"
-                    >
-                      {isAddingCategory ? '...' : 'Add'}
-                    </button>
                   </div>
                 </div>
               </div>
@@ -434,7 +473,6 @@ export default function NewPostPage({ params }: { params: { lang: string } }) {
                   {isUploading ? (
                     <div className="flex flex-col items-center gap-2">
                       <Loader2 className="animate-spin text-blue-500" size={32} />
-                      <span className="text-xs font-bold text-slate-400">Đang tải lên...</span>
                     </div>
                   ) : featuredImage ? (
                     <>
@@ -450,28 +488,8 @@ export default function NewPostPage({ params }: { params: { lang: string } }) {
                     </div>
                   )}
                 </div>
-                
-                <div className="mt-4">
-                  <label className="block text-[10px] font-black text-slate-300 uppercase tracking-widest mb-1">Or Paste URL</label>
-                  <input 
-                    type="text" 
-                    placeholder="https://..."
-                    className="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs outline-none"
-                    value={featuredImage}
-                    onChange={(e) => setFeaturedImage(e.target.value)}
-                  />
-                </div>
               </div>
             </div>
-          </div>
-
-          <div className="bg-slate-900 rounded-3xl p-6 text-white border-4 border-slate-800 shadow-xl">
-            <h4 className="font-black uppercase tracking-tighter text-xl mb-4">Pro Tips</h4>
-            <ul className="space-y-3 text-sm text-slate-400 font-medium">
-              <li className="flex gap-2"><span className="text-blue-400">●</span> Ưu tiên định dạng **WebP** để SEO tốt nhất.</li>
-              <li className="flex gap-2"><span className="text-blue-400">●</span> Sử dụng Heading (H1, H2) để Google hiểu cấu trúc bài.</li>
-              <li className="flex gap-2"><span className="text-blue-400">●</span> Kích thước ảnh chuẩn: 1200x630px.</li>
-            </ul>
           </div>
         </div>
       </div>

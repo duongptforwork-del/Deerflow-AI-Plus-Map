@@ -17,6 +17,7 @@ import {
   Lock
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabase';
 
 // Security configuration (PBKDF2)
 const AUTH_SALT = '128431c8252060cd971adbdaf3ae4b6a';
@@ -57,6 +58,37 @@ const AdminDashboard = ({ posts = [], lang = 'en' }: { posts?: any[], lang?: str
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
   const [password, setPassword] = useState('');
   const [isChecking, setIsChecking] = useState(false);
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+
+  const handleDelete = async (id: string) => {
+    if (confirm('Sếp chắc chắn muốn xóa bài này chứ?')) {
+      const { error } = await supabase.from('posts').delete().eq('id', id);
+      if (error) {
+        alert('Lỗi khi xóa bài: ' + error.message);
+      } else {
+        router.refresh();
+      }
+    }
+  };
+
+  const handleTogglePublish = async (id: string, currentStatus: boolean) => {
+    const { error } = await supabase
+      .from('posts')
+      .update({ is_published: !currentStatus })
+      .eq('id', id);
+    
+    if (error) {
+      alert('Lỗi khi cập nhật trạng thái: ' + error.message);
+    } else {
+      router.refresh();
+    }
+  };
+
+  useEffect(() => {
+    const handleClickOutside = () => setOpenMenuId(null);
+    window.addEventListener('click', handleClickOutside);
+    return () => window.removeEventListener('click', handleClickOutside);
+  }, []);
 
   useEffect(() => {
     const auth = localStorage.getItem('admin_auth_session');
@@ -259,10 +291,10 @@ const AdminDashboard = ({ posts = [], lang = 'en' }: { posts?: any[], lang?: str
                     <tr key={post.id} className="hover:bg-slate-50/50 transition-colors group">
                       <td className="px-6 py-4">
                         <p className="font-bold text-slate-900 group-hover:text-blue-600 transition-colors">{post.title}</p>
-                        <p className="text-xs text-slate-400 mt-0.5">By {post.author || 'Sếp'}</p>
+                        <p className="text-xs text-slate-400 mt-0.5">By {post.author_name || 'Sếp'}</p>
                       </td>
                       <td className="px-6 py-4 text-sm text-slate-600">
-                        <span className="px-2.5 py-1 bg-slate-100 rounded-md font-medium">{post.category || 'Uncategorized'}</span>
+                        <span className="px-2.5 py-1 bg-slate-100 rounded-md font-medium">{post.categories?.name || 'Uncategorized'}</span>
                       </td>
                       <td className="px-6 py-4">
                         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${
@@ -275,10 +307,39 @@ const AdminDashboard = ({ posts = [], lang = 'en' }: { posts?: any[], lang?: str
                       <td className="px-6 py-4 text-sm text-slate-500">
                         {post.created_at ? new Date(post.created_at).toLocaleDateString() : 'N/A'}
                       </td>
-                      <td className="px-6 py-4 text-right">
-                        <button className="p-2 text-slate-400 hover:text-slate-900 transition-colors">
+                      <td className="px-6 py-4 text-right relative">
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setOpenMenuId(openMenuId === post.id ? null : post.id);
+                          }}
+                          className="p-2 text-slate-400 hover:text-slate-900 transition-colors"
+                        >
                           <MoreVertical size={18} />
                         </button>
+                        
+                        {openMenuId === post.id && (
+                          <div className="absolute right-6 top-12 w-48 bg-white border border-slate-200 rounded-xl shadow-xl z-50 flex flex-col items-start overflow-hidden animate-in fade-in zoom-in duration-200">
+                            <button 
+                              onClick={() => router.push(`/${lang}/admin/edit/${post.id}`)}
+                              className="w-full text-left px-4 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-50 flex items-center gap-2 transition-colors border-b border-slate-100"
+                            >
+                              Edit Article
+                            </button>
+                            <button 
+                              onClick={() => handleTogglePublish(post.id, post.is_published)}
+                              className="w-full text-left px-4 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-50 flex items-center gap-2 transition-colors border-b border-slate-100"
+                            >
+                              {post.is_published ? 'Unpublish' : 'Publish Now'}
+                            </button>
+                            <button 
+                              onClick={() => handleDelete(post.id)}
+                              className="w-full text-left px-4 py-2.5 text-sm font-bold text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors"
+                            >
+                              Delete Article
+                            </button>
+                          </div>
+                        )}
                       </td>
                     </tr>
                   ))}

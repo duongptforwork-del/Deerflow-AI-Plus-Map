@@ -35,7 +35,6 @@ export default async function NewsPage({
     .from('categories')
     .select('id, name, slug')
     .eq('lang', lang)
-    .eq('type', 'post')
     .limit(4);
 
   const postsByCategories = await Promise.all(
@@ -82,7 +81,7 @@ export default async function NewsPage({
                     {heroPost.excerpt}
                   </p>
                   <div className="flex items-center gap-4 text-xs font-black uppercase">
-                    <span>BY {heroPost.author || 'Sếp'}</span>
+                    <span>BY {heroPost.author_name || heroPost.author || 'Sếp'}</span>
                     <span className="w-2 h-2 bg-black rounded-full"></span>
                     <span>{new Date(heroPost.created_at).toLocaleDateString()}</span>
                   </div>

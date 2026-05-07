@@ -11,7 +11,7 @@ export default async function EventsPage({ params: { lang } }: { params: { lang:
   const { data: events } = await supabase
     .from('events')
     .select('*')
-    .eq('language', lang)
+    .eq('lang', lang)
     .gte('event_date', today.toISOString())
     .order('event_date', { ascending: true });
 
