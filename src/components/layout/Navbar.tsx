@@ -46,8 +46,7 @@ export default function Navbar({ lang }: { lang: string }) {
             </div>
             <div>
               <div className="flex items-baseline gap-1">
-                <span className="text-3xl font-display font-black tracking-tighter block leading-none">AI PLUS</span>
-                <span className="text-xl font-display font-black tracking-tighter block leading-none bg-black text-white px-1">MAP</span>
+                <span className="text-3xl font-display font-black tracking-tighter block leading-none">AI PLUS MAP</span>
               </div>
               <span className="text-[10px] font-bold uppercase tracking-widest text-black/40">The Intelligence Cartography</span>
             </div>

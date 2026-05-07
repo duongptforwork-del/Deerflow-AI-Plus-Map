@@ -7,11 +7,8 @@ import {
   ArrowLeft, 
   Save, 
   Send, 
-  Eye, 
-  Settings, 
   ChevronDown, 
   Image as ImageIcon, 
-  Type, 
   Layout, 
   Globe,
   Lock,
@@ -21,7 +18,8 @@ import {
   Bold,
   List,
   Upload,
-  Loader2
+  Loader2,
+  Trash2
 } from 'lucide-react';
 
 // Security configuration (PBKDF2)
@@ -76,6 +74,7 @@ export default function EditPostPage({ params }: { params: { lang: string, id: s
   const [excerpt, setExcerpt] = useState('');
   const [content, setContent] = useState('');
   const [categoryId, setCategoryId] = useState('');
+  const [section, setSection] = useState('news');
   const [featuredImage, setFeaturedImage] = useState('');
   const [authorName, setAuthorName] = useState('');
   
@@ -137,6 +136,7 @@ export default function EditPostPage({ params }: { params: { lang: string, id: s
       setSlug(data.slug || '');
       setExcerpt(data.excerpt || '');
       setContent(data.content || '');
+      setSection(data.section || 'news');
       setCategoryId(data.category_id || '');
       setFeaturedImage(data.featured_image || '');
       setAuthorName(data.author_name || '');
@@ -158,18 +158,23 @@ export default function EditPostPage({ params }: { params: { lang: string, id: s
 
     const { data, error } = await supabase
       .from('categories')
-      .insert([{ 
+      .upsert({ 
         name: newCategoryName, 
         slug: catSlug, 
         lang: targetLang, 
         type: 'post' 
-      }])
+      }, { onConflict: 'slug,lang' })
       .select();
 
     if (error) {
-      alert('Lỗi tạo category: ' + error.message);
-    } else if (data) {
-      setCategories([...categories, data[0]]);
+      console.error('Upsert category error:', error);
+      alert('Lỗi category: ' + error.message);
+    } else if (data && data[0]) {
+      setCategories(prev => {
+        const exists = prev.find(c => c.id === data[0].id);
+        if (exists) return prev;
+        return [...prev, data[0]].sort((a, b) => a.name.localeCompare(b.name));
+      });
       setCategoryId(data[0].id);
       setNewCategoryName('');
     }
@@ -190,7 +195,6 @@ export default function EditPostPage({ params }: { params: { lang: string, id: s
     setIsChecking(false);
   };
 
-  // Optional: Auto-generate slug from title (only if slug is empty)
   const syncSlug = () => {
     if (title) {
       const generatedSlug = title
@@ -266,11 +270,13 @@ export default function EditPostPage({ params }: { params: { lang: string, id: s
       slug,
       excerpt,
       content,
-      category_id: categoryId || null,
+      section,
+      category_id: section === 'news' ? (categoryId || null) : null,
       featured_image: featuredImage || null,
       author_name: authorName || 'Sếp',
       is_published: published,
       updated_at: new Date().toISOString(),
+      lang: lang // Ensure lang is preserved/sent
     };
 
     const { error } = await supabase
@@ -290,28 +296,28 @@ export default function EditPostPage({ params }: { params: { lang: string, id: s
 
   if (isAuthorized === null || isFetching) {
     return (
-      <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center">
-        <Loader2 className="animate-spin text-blue-600" size={48} />
+      <div className="min-h-screen bg-[#F3F4F6] flex items-center justify-center">
+        <Loader2 className="animate-spin text-black" size={48} />
       </div>
     );
   }
 
   if (!isAuthorized) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center p-6 font-sans">
-        <div className="bg-white p-8 rounded-3xl border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] max-w-md w-full">
-          <div className="flex justify-center mb-6">
-            <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center text-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-              <Lock size={32} />
+      <div className="min-h-screen bg-black flex items-center justify-center p-6 font-display">
+        <div className="bg-white p-10 border-4 border-black shadow-[12px_12px_0px_0px_rgba(239,68,68,1)] max-w-md w-full">
+          <div className="flex justify-center mb-8">
+            <div className="w-20 h-20 bg-[#ef4444] border-4 border-black flex items-center justify-center text-white shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
+              <Lock size={40} strokeWidth={3} />
             </div>
           </div>
-          <h1 className="font-black text-2xl mb-2 uppercase tracking-tight text-center">Admin Access</h1>
-          <p className="text-slate-500 text-center text-sm mb-6 font-medium">Vui lòng nhập mật khẩu để tiếp tục, Sếp.</p>
-          <form onSubmit={handleLogin} className="space-y-4">
+          <h1 className="font-black text-3xl mb-2 uppercase tracking-tighter text-center">Admin Access</h1>
+          <p className="text-black/60 text-center text-sm mb-8 font-bold uppercase tracking-widest">Identify Yourself, Sếp.</p>
+          <form onSubmit={handleLogin} className="space-y-6">
             <input 
               type="password" 
-              placeholder="Password..."
-              className="w-full border-2 border-black p-4 rounded-xl outline-none font-bold text-center tracking-widest"
+              placeholder="SECRET PASSWORD..."
+              className="w-full border-4 border-black p-4 outline-none font-black text-center tracking-[0.2em] focus:bg-yellow-50 transition-colors"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               autoFocus
@@ -319,7 +325,7 @@ export default function EditPostPage({ params }: { params: { lang: string, id: s
             />
             <button 
               disabled={isChecking}
-              className="w-full bg-blue-600 text-white p-4 rounded-xl font-black uppercase tracking-widest border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all disabled:opacity-50"
+              className="w-full bg-black text-white p-5 font-black uppercase tracking-[0.2em] border-4 border-black shadow-[8px_8px_0px_0px_rgba(239,68,68,1)] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all disabled:opacity-50"
             >
               {isChecking ? 'Verifying...' : 'Unlock Editor'}
             </button>
@@ -330,87 +336,101 @@ export default function EditPostPage({ params }: { params: { lang: string, id: s
   }
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] font-sans pb-20">
-      <header className="h-16 bg-white border-b border-slate-200 sticky top-0 z-10 px-6 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <button onClick={() => router.push(`/${lang}/admin`)} className="p-2 hover:bg-slate-100 rounded-lg transition-colors text-slate-500">
-            <ArrowLeft size={20} />
+    <div className="min-h-screen bg-[#F3F4F6] font-display pb-20">
+      <header className="h-20 bg-white border-b-4 border-black sticky top-0 z-10 px-8 flex items-center justify-between">
+        <div className="flex items-center gap-6">
+          <button 
+            onClick={() => router.push(`/${lang}/admin`)} 
+            className="p-3 border-4 border-black hover:bg-black hover:text-white transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-1 active:translate-y-1"
+          >
+            <ArrowLeft size={24} strokeWidth={3} />
           </button>
-          <div className="h-6 w-[1px] bg-slate-200 mx-2"></div>
           <div>
-            <h1 className="text-sm font-black uppercase tracking-widest text-slate-400">Edit Post</h1>
-            <p className="text-xs font-bold text-slate-900 truncate max-w-[200px]">{title || 'Untitled Article'}</p>
+            <h1 className="text-[10px] font-black uppercase tracking-[0.3em] text-black/40 leading-none mb-1">Editor / Edit Post</h1>
+            <p className="text-lg font-black tracking-tighter truncate max-w-[300px] uppercase">{title || 'Untitled Article'}</p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1.5 rounded-full mr-4">
-            <Globe size={14} />
-            <span className="uppercase">{lang}</span>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 text-xs font-black bg-black text-white px-4 py-2 border-2 border-black shadow-[4px_4px_0px_0px_rgba(239,68,68,1)]">
+            <Globe size={14} strokeWidth={3} />
+            <span className="uppercase tracking-widest">{lang}</span>
           </div>
-          <button onClick={() => handleUpdate(false)} disabled={isLoading} className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-50 rounded-lg transition-all">
-            {isLoading ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
-            <span>Update Draft</span>
+          <button 
+            onClick={() => handleUpdate(false)} 
+            disabled={isLoading} 
+            className="flex items-center gap-2 px-6 py-3 text-sm font-black uppercase tracking-widest border-4 border-black hover:bg-black hover:text-white transition-all"
+          >
+            {isLoading ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} strokeWidth={3} />}
+            <span>Draft</span>
           </button>
-          <button onClick={() => handleUpdate(true)} disabled={isLoading} className="flex items-center gap-2 px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl shadow-lg shadow-blue-600/20 transition-all transform hover:-translate-y-0.5">
-            <Send size={18} />
-            <span>Update & Publish</span>
+          <button 
+            onClick={() => handleUpdate(true)} 
+            disabled={isLoading} 
+            className="flex items-center gap-2 px-8 py-3 bg-[#ef4444] text-white text-sm font-black uppercase tracking-widest border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all"
+          >
+            <Send size={18} strokeWidth={3} />
+            <span>Publish</span>
           </button>
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto p-8 grid grid-cols-12 gap-8">
-        <div className="col-span-8 space-y-6">
-          <div className="bg-white rounded-3xl border border-slate-200 p-8 shadow-sm">
+      <div className="max-w-7xl mx-auto p-10 grid grid-cols-12 gap-10">
+        <div className="col-span-8 space-y-10">
+          <div className="bg-white border-4 border-black p-10 shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]">
             <input 
               type="text" 
-              placeholder="Enter catchphrase or title..."
-              className="w-full text-4xl font-black placeholder:text-slate-200 outline-none mb-6 tracking-tight"
+              placeholder="ENTER TITLE..."
+              className="w-full text-5xl font-black placeholder:text-black/10 outline-none mb-8 tracking-tighter uppercase focus:bg-yellow-50 p-2 border-b-4 border-transparent focus:border-black transition-all"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
             />
             
-            <div className="flex items-center gap-4 mb-8 p-3 bg-slate-50 rounded-2xl border border-slate-100">
-              <div className="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-wider">
-                <Layout size={14} />
-                <span>Permalink:</span>
+            <div className="flex items-center gap-4 mb-10 p-4 bg-black text-white border-2 border-black">
+              <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em]">
+                <Layout size={14} strokeWidth={3} />
+                <span>Slug:</span>
               </div>
               <input 
                 type="text"
-                className="text-sm text-blue-600 font-mono bg-blue-50 px-2 py-1 rounded border-none outline-none flex-1"
+                className="text-sm font-black bg-transparent border-none outline-none flex-1 tracking-widest uppercase text-yellow-400"
                 value={slug}
                 onChange={(e) => setSlug(e.target.value)}
               />
-              <button onClick={syncSlug} className="text-[10px] font-black uppercase text-slate-400 hover:text-blue-600 transition-colors">
-                Sync Title
+              <button onClick={syncSlug} className="text-[10px] font-black uppercase tracking-widest bg-white text-black px-2 py-1 border-2 border-black hover:bg-[#ef4444] hover:text-white transition-colors">
+                Sync
               </button>
             </div>
 
-            <textarea 
-              placeholder="Write an engaging excerpt..."
-              className="w-full text-lg text-slate-600 placeholder:text-slate-300 outline-none mb-8 resize-none h-24 border-b border-slate-100 focus:border-blue-500 transition-colors"
-              value={excerpt}
-              onChange={(e) => setExcerpt(e.target.value)}
-            />
+            <div className="mb-10">
+              <div className="flex items-center gap-2 mb-4 text-black/40">
+                <span className="text-[10px] font-black uppercase tracking-[0.3em]">Excerpt / Summary</span>
+              </div>
+              <textarea 
+                placeholder="Write a punchy summary here..."
+                className="w-full text-xl font-bold text-black placeholder:text-black/10 outline-none resize-none h-32 p-4 bg-[#F3F4F6] border-4 border-black focus:bg-white transition-all leading-relaxed"
+                value={excerpt}
+                onChange={(e) => setExcerpt(e.target.value)}
+              />
+            </div>
 
             <div className="min-h-[400px]">
-              <div className="flex items-center gap-2 mb-4 p-2 bg-slate-50 rounded-xl border border-slate-200 overflow-x-auto">
-                <button onClick={() => insertText('# ', '')} className="p-2 hover:bg-white hover:shadow-sm rounded-lg transition-all text-slate-600"><Heading1 size={20} /></button>
-                <button onClick={() => insertText('## ', '')} className="p-2 hover:bg-white hover:shadow-sm rounded-lg transition-all text-slate-600"><Heading2 size={20} /></button>
-                <button onClick={() => insertText('### ', '')} className="p-2 hover:bg-white hover:shadow-sm rounded-lg transition-all text-slate-600"><Heading3 size={20} /></button>
-                <div className="w-[1px] h-6 bg-slate-200 mx-1"></div>
-                <button onClick={() => insertText('**', '**')} className="p-2 hover:bg-white hover:shadow-sm rounded-lg transition-all text-slate-600"><Bold size={20} /></button>
-                <button onClick={() => insertText('- ', '')} className="p-2 hover:bg-white hover:shadow-sm rounded-lg transition-all text-slate-600"><List size={20} /></button>
+              <div className="flex items-center gap-2 mb-6 p-3 bg-black border-4 border-black overflow-x-auto">
+                <button onClick={() => insertText('# ', '')} className="p-2 bg-white border-2 border-black hover:bg-[#ef4444] hover:text-white transition-all"><Heading1 size={20} strokeWidth={3} /></button>
+                <button onClick={() => insertText('## ', '')} className="p-2 bg-white border-2 border-black hover:bg-[#ef4444] hover:text-white transition-all"><Heading2 size={20} strokeWidth={3} /></button>
+                <button onClick={() => insertText('### ', '')} className="p-2 bg-white border-2 border-black hover:bg-[#ef4444] hover:text-white transition-all"><Heading3 size={20} strokeWidth={3} /></button>
+                <div className="w-[2px] h-8 bg-white/20 mx-2"></div>
+                <button onClick={() => insertText('**', '**')} className="p-2 bg-white border-2 border-black hover:bg-[#ef4444] hover:text-white transition-all"><Bold size={20} strokeWidth={3} /></button>
+                <button onClick={() => insertText('- ', '')} className="p-2 bg-white border-2 border-black hover:bg-[#ef4444] hover:text-white transition-all"><List size={20} strokeWidth={3} /></button>
               </div>
 
-              <div className="flex items-center gap-2 mb-4 text-slate-400 border-b border-slate-100 pb-2">
-                <Type size={18} />
-                <span className="text-sm font-bold uppercase tracking-widest">Content Body</span>
+              <div className="flex items-center gap-2 mb-4 text-black border-b-4 border-black pb-2">
+                <span className="text-xs font-black uppercase tracking-[0.3em]">Content Body (Markdown)</span>
               </div>
               <textarea 
                 ref={contentRef}
-                placeholder="Start writing..."
-                className="w-full h-[600px] text-slate-800 placeholder:text-slate-200 outline-none resize-none leading-relaxed text-lg font-medium"
+                placeholder="UNLEASH THE KNOWLEDGE..."
+                className="w-full h-[800px] text-black placeholder:text-black/5 outline-none resize-none leading-relaxed text-xl font-bold p-4 focus:bg-yellow-50 transition-colors"
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
               />
@@ -418,46 +438,90 @@ export default function EditPostPage({ params }: { params: { lang: string, id: s
           </div>
         </div>
 
-        <div className="col-span-4 space-y-6">
-          <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
-            <div className="p-5 border-b border-slate-100 bg-slate-50/50 flex items-center gap-2">
-              <Settings size={18} className="text-slate-400" />
-              <h3 className="font-bold text-sm uppercase tracking-widest">Post Settings</h3>
+        <div className="col-span-4 space-y-10">
+          <div className="bg-white border-4 border-black shadow-[12px_12px_0px_0px_rgba(239,68,68,1)] overflow-hidden">
+            <div className="p-6 border-b-4 border-black bg-[#ef4444] flex items-center gap-3">
+              <div className="bg-black p-1.5 border-2 border-black text-white">
+                <Layout size={18} strokeWidth={3} />
+              </div>
+              <h3 className="font-black text-sm uppercase tracking-[0.2em] text-white">Post Configuration</h3>
             </div>
             
-            <div className="p-6 space-y-6">
+            <div className="p-8 space-y-8">
               <div>
-                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Author Name</label>
+                <label className="block text-[10px] font-black text-black/40 uppercase tracking-[0.3em] mb-4">Section Type</label>
+                <div className="space-y-3">
+                  {[
+                    { id: 'news', label: 'News Feed' },
+                    { id: 'compare', label: 'Comparison' },
+                    { id: 'guide', label: 'AI Guide' }
+                  ].map((type) => (
+                    <button
+                      key={type.id}
+                      onClick={() => setSection(type.id)}
+                      className={`w-full p-4 border-4 transition-all text-left font-black uppercase tracking-widest ${
+                        section === type.id 
+                          ? 'border-black bg-black text-white shadow-[4px_4px_0px_0px_rgba(239,68,68,1)]' 
+                          : 'border-black bg-white hover:bg-[#F3F4F6]'
+                      }`}
+                    >
+                      {type.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-black text-black/40 uppercase tracking-[0.3em] mb-4">Author Profile</label>
                 <input 
                   type="text" 
-                  placeholder="Who's writing?"
-                  className="w-full bg-slate-50 border border-slate-200 p-3 rounded-xl outline-none font-bold text-slate-700 focus:ring-2 focus:ring-blue-500/20"
+                  className="w-full bg-[#F3F4F6] border-4 border-black p-4 outline-none font-black uppercase tracking-widest focus:bg-white transition-all"
                   value={authorName}
                   onChange={(e) => setAuthorName(e.target.value)}
                 />
               </div>
 
-              <div>
-                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Category</label>
-                <div className="space-y-3">
-                  <div className="relative">
-                    <select 
-                      className="w-full appearance-none bg-slate-50 border border-slate-200 p-3 rounded-xl outline-none font-bold text-slate-700 focus:ring-2 focus:ring-blue-500/20"
-                      value={categoryId}
-                      onChange={(e) => setCategoryId(e.target.value)}
-                    >
-                      <option value="">Select a category</option>
-                      {categories.map(cat => (
-                        <option key={cat.id} value={cat.id}>{cat.name}</option>
-                      ))}
-                    </select>
-                    <ChevronDown size={18} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+              {section === 'news' && (
+                <div>
+                  <label className="block text-[10px] font-black text-black/40 uppercase tracking-[0.3em] mb-4">Category Selection</label>
+                  <div className="space-y-4">
+                    <div className="relative">
+                      <select 
+                        className="w-full appearance-none bg-white border-4 border-black p-4 outline-none font-black uppercase tracking-widest cursor-pointer"
+                        value={categoryId}
+                        onChange={(e) => setCategoryId(e.target.value)}
+                      >
+                        <option value="">UNCATEGORIZED</option>
+                        {categories.map(cat => (
+                          <option key={cat.id} value={cat.id}>{cat.name}</option>
+                        ))}
+                      </select>
+                      <ChevronDown size={24} strokeWidth={3} className="absolute right-4 top-1/2 -translate-y-1/2 text-black pointer-events-none" />
+                    </div>
+
+                    <div className="flex flex-col gap-3">
+                      <input 
+                        type="text" 
+                        placeholder="NEW CATEGORY..."
+                        className="w-full bg-[#F3F4F6] border-4 border-black p-3 outline-none font-black uppercase tracking-widest focus:bg-white text-xs"
+                        value={newCategoryName}
+                        onChange={(e) => setNewCategoryName(e.target.value)}
+                      />
+                      <button 
+                        type="button"
+                        onClick={handleAddCategory}
+                        disabled={isAddingCategory || !newCategoryName.trim()}
+                        className="bg-black text-white p-3 font-black uppercase tracking-widest border-4 border-black hover:bg-[#ef4444] transition-all disabled:opacity-20"
+                      >
+                        {isAddingCategory ? 'ADDING...' : 'CREATE CATEGORY'}
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
 
               <div>
-                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Featured Image</label>
+                <label className="block text-[10px] font-black text-black/40 uppercase tracking-[0.3em] mb-4">Featured Media</label>
                 <input 
                   type="file" 
                   ref={fileInputRef} 
@@ -468,23 +532,32 @@ export default function EditPostPage({ params }: { params: { lang: string, id: s
                 
                 <div 
                   onClick={() => fileInputRef.current?.click()}
-                  className="relative group border-2 border-dashed border-slate-200 rounded-2xl aspect-video flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50 hover:border-blue-400 transition-all overflow-hidden"
+                  className="relative group border-4 border-dashed border-black bg-[#F3F4F6] aspect-video flex flex-col items-center justify-center cursor-pointer hover:bg-yellow-50 hover:border-solid transition-all overflow-hidden"
                 >
                   {isUploading ? (
                     <div className="flex flex-col items-center gap-2">
-                      <Loader2 className="animate-spin text-blue-500" size={32} />
+                      <Loader2 className="animate-spin text-black" size={32} />
                     </div>
                   ) : featuredImage ? (
                     <>
                       <img src={featuredImage} alt="Preview" className="w-full h-full object-cover" />
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <Upload className="text-white" size={24} />
+                      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
+                        <Upload className="text-white" size={32} strokeWidth={3} />
+                        <span className="text-white font-black uppercase tracking-widest text-[10px]">Change Image</span>
                       </div>
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); setFeaturedImage(''); }}
+                        className="absolute top-2 right-2 p-2 bg-[#ef4444] text-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-y-0.5 hover:shadow-none"
+                      >
+                        <Trash2 size={16} strokeWidth={3} />
+                      </button>
                     </>
                   ) : (
-                    <div className="flex flex-col items-center gap-2">
-                      <ImageIcon className="text-slate-300" size={32} />
-                      <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Click to upload</span>
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="bg-black p-3 border-2 border-black text-white">
+                        <ImageIcon size={24} strokeWidth={3} />
+                      </div>
+                      <span className="text-[10px] font-black text-black uppercase tracking-[0.2em]">Upload Cover</span>
                     </div>
                   )}
                 </div>

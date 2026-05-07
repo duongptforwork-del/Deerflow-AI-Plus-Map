@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/utils/supabase/server';
 import { FileText, ArrowRight } from 'lucide-react';
 
 interface NewsSectionProps {
@@ -17,6 +17,8 @@ export default async function NewsSection({
   title = "Latest News" 
 }: NewsSectionProps) {
   
+  const supabase = createClient();
+
   let query = supabase
     .from('posts')
     .select('*, categories!inner(*)')
@@ -26,7 +28,7 @@ export default async function NewsSection({
     .limit(limit);
 
   if (categorySlug) {
-    query = query.eq('categories.slug', categorySlug);
+    query = query.eq('categories.slug', categorySlug).eq('categories.lang', lang);
   }
 
   const { data: posts, error } = await query;
@@ -42,9 +44,8 @@ export default async function NewsSection({
 
   return (
     <section className="mb-24">
-      <div className="flex items-center justify-between mb-8 border-b-4 border-black pb-4">
-        <h2 className="text-4xl font-black uppercase tracking-tighter flex items-center gap-3">
-          <FileText className="text-[#ef4444]" />
+      <div className="flex items-center justify-between mb-10 border-b-4 border-black pb-4">
+        <h2 className="text-2xl md:text-3xl font-display font-black tracking-tight flex items-center gap-3">
           {title}
         </h2>
         <Link 
@@ -62,7 +63,7 @@ export default async function NewsSection({
               <img 
                 src={post.featured_image || 'https://images.unsplash.com/photo-1677442136019-21780ecad995'} 
                 alt={post.title} 
-                className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" 
+                className="w-full h-full object-cover   transition-all duration-500" 
               />
               <div className="absolute top-4 left-4">
                 <span className="bg-black text-white px-2 py-0.5 text-[10px] font-black uppercase">
@@ -71,18 +72,18 @@ export default async function NewsSection({
               </div>
             </div>
             <div className="p-5 flex flex-col flex-1">
-              <h3 className="text-xl font-black leading-[1.1] tracking-tight mb-3 group-hover:text-[#ef4444] transition-colors line-clamp-2">
-                <Link href={`/${lang}/news/${post.slug}`}>{post.title}</Link>
+              <h3 className="text-xl font-black leading-tight tracking-tight mb-3 group-hover:text-[#ef4444] transition-colors line-clamp-2">
+                <Link href={`/${lang}/${post.section || 'news'}/${post.slug}`}>{post.title}</Link>
               </h3>
-              <p className="text-sm font-bold text-slate-600 line-clamp-2 mb-4 leading-snug">
+              <p className="text-sm font-bold text-slate-600 line-clamp-2 mb-4 leading-relaxed">
                 {post.excerpt || post.content?.substring(0, 100)}...
               </p>
-              <div className="mt-auto pt-4 border-t-2 border-black/5 flex justify-between items-center">
+              <div className="mt-auto pt-4 border-t-2 border-black/10 flex justify-between items-center">
                 <span className="text-[10px] font-black uppercase text-slate-400">
                   {new Date(post.created_at).toLocaleDateString()}
                 </span>
                 <Link 
-                  href={`/${lang}/news/${post.slug}`}
+                  href={`/${lang}/${post.section || 'news'}/${post.slug}`}
                   className="text-xs font-black uppercase underline hover:text-[#ef4444]"
                 >
                   Read More

@@ -16,6 +16,7 @@ export default async function NewsPage({
     .from('posts')
     .select('*, categories(*)')
     .eq('lang', lang)
+    .eq('section', 'news')
     .eq('is_published', true)
     .order('created_at', { ascending: false })
     .limit(1)
@@ -26,6 +27,7 @@ export default async function NewsPage({
     .from('posts')
     .select('*, categories(*)')
     .eq('lang', lang)
+    .eq('section', 'news')
     .eq('is_published', true)
     .order('created_at', { ascending: false })
     .range(1, 4);
@@ -43,6 +45,7 @@ export default async function NewsPage({
         .from('posts')
         .select('*')
         .eq('lang', lang)
+        .eq('section', 'news')
         .eq('category_id', cat.id)
         .eq('is_published', true)
         .order('created_at', { ascending: false })
@@ -67,17 +70,17 @@ export default async function NewsPage({
           <div className="lg:col-span-2 group relative bg-white border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all">
             {heroPost && (
               <>
-                <div className="aspect-[16/9] border-b-4 border-black overflow-hidden grayscale group-hover:grayscale-0 transition-all">
+                <div className="aspect-[16/9] border-b-4 border-black overflow-hidden   transition-all">
                   <img src={heroPost.featured_image || '/placeholder.png'} alt={heroPost.title} className="w-full h-full object-cover" />
                 </div>
                 <div className="p-8">
                   <span className="inline-block bg-[#ef4444] text-white px-4 py-1 text-xs font-black uppercase tracking-widest border-2 border-black mb-6">
                     {heroPost.categories?.name || 'Uncategorized'}
                   </span>
-                  <h1 className="text-5xl font-black leading-[0.9] mb-6 tracking-tighter group-hover:text-[#ef4444] transition-colors">
-                    <Link href={`/${lang}/news/${heroPost.slug}`}>{heroPost.title}</Link>
+                  <h1 className="text-3xl md:text-4xl font-black leading-tight mb-6 tracking-tight group-hover:text-[#ef4444] transition-colors">
+                    <Link href={`/${lang}/${heroPost.section || 'news'}/${heroPost.slug}`}>{heroPost.title}</Link>
                   </h1>
-                  <p className="text-xl font-bold text-slate-800 leading-tight mb-8 line-clamp-3">
+                  <p className="text-lg font-bold text-slate-800 leading-relaxed mb-8 line-clamp-3">
                     {heroPost.excerpt}
                   </p>
                   <div className="flex items-center gap-4 text-xs font-black uppercase">
@@ -92,18 +95,18 @@ export default async function NewsPage({
 
           {/* Top Stories List */}
           <div className="space-y-6">
-            <h3 className="text-2xl font-black uppercase italic border-b-4 border-black pb-2 mb-6">Top Stories</h3>
+            <h3 className="text-2xl font-black border-b-4 border-black pb-2 mb-6">Top Stories</h3>
             {(topStories || []).map((post) => (
               <div key={post.id} className="group flex gap-4 items-start border-b-2 border-black pb-6 last:border-0">
-                <div className="w-24 h-24 flex-shrink-0 border-2 border-black grayscale group-hover:grayscale-0 transition-all">
+                <div className="w-24 h-24 flex-shrink-0 border-2 border-black   transition-all">
                   <img src={post.featured_image || '/placeholder.png'} alt={post.title} className="w-full h-full object-cover" />
                 </div>
                 <div>
                   <span className="text-[10px] font-black uppercase text-[#ef4444] mb-1 block">
                     {post.categories?.name}
                   </span>
-                  <h4 className="font-black leading-none group-hover:underline decoration-2">
-                    <Link href={`/${lang}/news/${post.slug}`}>{post.title}</Link>
+                  <h4 className="font-black leading-snug group-hover:underline decoration-2">
+                    <Link href={`/${lang}/${post.section || 'news'}/${post.slug}`}>{post.title}</Link>
                   </h4>
                 </div>
               </div>
@@ -115,7 +118,7 @@ export default async function NewsPage({
         {postsByCategories.map((catSection) => (
           <section key={catSection.id} className="mb-20">
             <div className="flex justify-between items-end border-b-8 border-black mb-10 pb-4">
-              <h2 className="text-6xl font-black uppercase tracking-tighter italic leading-none">{catSection.name}</h2>
+              <h2 className="text-4xl md:text-5xl font-black tracking-tight leading-none">{catSection.name}</h2>
               <Link href={`/${lang}/category/${catSection.slug}`} className="font-black uppercase text-sm bg-black text-white px-6 py-2 hover:bg-[#ef4444] transition-colors">
                 View All
               </Link>
@@ -124,11 +127,11 @@ export default async function NewsPage({
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
               {catSection.posts.map((post) => (
                 <article key={post.id} className="group flex flex-col">
-                  <div className="aspect-square border-4 border-black mb-6 grayscale group-hover:grayscale-0 transition-all shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] group-hover:shadow-none group-hover:translate-x-1 group-hover:translate-y-1">
+                  <div className="aspect-square border-4 border-black mb-6   transition-all shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] group-hover:shadow-none group-hover:translate-x-1 group-hover:translate-y-1">
                     <img src={post.featured_image || '/placeholder.png'} alt={post.title} className="w-full h-full object-cover" />
                   </div>
-                  <h3 className="text-xl font-black leading-[1.1] tracking-tight group-hover:text-[#ef4444]">
-                    <Link href={`/${lang}/news/${post.slug}`}>{post.title}</Link>
+                  <h3 className="text-lg md:text-xl font-black leading-tight tracking-tight group-hover:text-[#ef4444]">
+                    <Link href={`/${lang}/${post.section || 'news'}/${post.slug}`}>{post.title}</Link>
                   </h3>
                 </article>
               ))}
@@ -138,7 +141,7 @@ export default async function NewsPage({
 
         {/* 4. Newsletter Box */}
         <div className="bg-[#ef4444] border-4 border-black p-12 text-center shadow-[16px_16px_0px_0px_rgba(0,0,0,1)] mb-20">
-          <h2 className="text-5xl font-black text-white uppercase italic tracking-tighter mb-4">Subscribe to the Map</h2>
+          <h2 className="text-4xl md:text-5xl font-black text-white tracking-tight mb-4">Subscribe to the Map</h2>
           <p className="text-black font-bold text-xl mb-8 max-w-2xl mx-auto">Get the most critical AI intelligence delivered to your inbox every morning. No noise, just maps.</p>
           <div className="flex flex-col sm:flex-row gap-4 max-w-xl mx-auto">
             <input 

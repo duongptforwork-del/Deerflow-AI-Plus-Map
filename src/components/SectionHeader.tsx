@@ -9,8 +9,8 @@ interface SectionHeaderProps {
 
 export default function SectionHeader({ title, lang, href, className = "" }: SectionHeaderProps) {
   return (
-    <div className={`flex justify-between items-end border-b-4 border-black pb-2 mb-8 ${className}`}>
-      <h2 className="text-4xl font-display font-black uppercase italic tracking-tighter leading-none">
+    <div className={`flex justify-between items-end border-b-4 border-black pb-4 mb-10 ${className}`}>
+      <h2 className="text-2xl md:text-3xl font-display font-black tracking-tight leading-none">
         {title}
       </h2>
       {href && (

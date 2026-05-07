@@ -3,6 +3,9 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import remarkBreaks from 'remark-breaks';
 
 export const revalidate = 3600;
 
@@ -11,7 +14,7 @@ export async function generateStaticParams() {
   const { data: posts } = await supabase
     .from('posts')
     .select('slug, lang')
-    .eq('section', 'news')
+    .eq('section', 'compare')
     .limit(50);
     
   return posts?.map((post) => ({ 
@@ -20,10 +23,6 @@ export async function generateStaticParams() {
   })) || [];
 }
 
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import remarkBreaks from 'remark-breaks';
-
 export async function generateMetadata({ params: { lang, slug } }: { params: { lang: string; slug: string } }) {
   const supabase = createClient();
   const { data: post } = await supabase
@@ -31,13 +30,13 @@ export async function generateMetadata({ params: { lang, slug } }: { params: { l
     .select('*')
     .eq('slug', slug)
     .eq('lang', lang)
-    .eq('section', 'news')
+    .eq('section', 'compare')
     .single();
 
   if (!post) return {};
 
   return {
-    title: `${post.title} | AI Plus Map`,
+    title: `${post.title} | AI Plus Map Comparison`,
     description: post.excerpt,
     openGraph: {
       title: post.title,
@@ -48,7 +47,7 @@ export async function generateMetadata({ params: { lang, slug } }: { params: { l
   };
 }
 
-export default async function NewsDetailPage({ params: { lang, slug } }: { params: { lang: string; slug: string } }) {
+export default async function CompareDetailPage({ params: { lang, slug } }: { params: { lang: string; slug: string } }) {
   const supabase = createClient();
 
   const { data: post } = await supabase
@@ -56,27 +55,20 @@ export default async function NewsDetailPage({ params: { lang, slug } }: { param
     .select('*, categories(*)')
     .eq('slug', slug)
     .eq('lang', lang)
-    .eq('section', 'news')
+    .eq('section', 'compare')
     .single();
 
   if (!post) return notFound();
 
-  // Fetch related posts from the same category or same section if category is null
-  let relatedQuery = supabase
+  // Fetch related comparisons
+  const { data: relatedPosts } = await supabase
     .from('posts')
     .select('*, categories(*)')
     .eq('lang', lang)
+    .eq('section', 'compare')
     .neq('id', post.id)
     .order('created_at', { ascending: false })
     .limit(3);
-
-  if (post.category_id) {
-    relatedQuery = relatedQuery.eq('category_id', post.category_id);
-  } else {
-    relatedQuery = relatedQuery.eq('section', post.section);
-  }
-
-  const { data: relatedPosts } = await relatedQuery;
 
   return (
     <div className="min-h-screen bg-[#F3F4F6] text-black selection:bg-[#ef4444] selection:text-white">
@@ -87,14 +79,14 @@ export default async function NewsDetailPage({ params: { lang, slug } }: { param
           <header className="mb-12">
             <div className="flex items-center gap-3 mb-6">
               <span className="bg-[#ef4444] text-white px-4 py-1 font-black text-xs uppercase tracking-widest border-2 border-black skew-x-[-10deg]">
-                {post.categories?.name || 'INTELLIGENCE'}
+                {lang === 'vi' ? 'SO SÁNH' : 'COMPARE'}
               </span>
               <span className="font-black text-xs uppercase tracking-tighter text-slate-500">
                 {new Date(post.created_at).toLocaleDateString(lang === 'vi' ? 'vi-VN' : 'en-US', { day: 'numeric', month: 'long', year: 'numeric' })}
               </span>
             </div>
             
-            <h1 className="text-3xl md:text-4xl font-display font-black leading-tight mb-8 tracking-tight">
+            <h1 className="text-3xl md:text-4xl font-display font-black leading-tight mb-8 tracking-tight text-balance">
               {post.title}
             </h1>
             
@@ -104,7 +96,7 @@ export default async function NewsDetailPage({ params: { lang, slug } }: { param
           </header>
 
           <div className="aspect-video w-full border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] bg-white overflow-hidden mb-16">
-            <img src={post.featured_image} alt={post.title} className="w-full h-full object-cover transition-all duration-700" />
+            <img src={post.featured_image} alt={post.title} className="w-full h-full object-cover" />
           </div>
 
           <div className="prose prose-slate prose-lg max-w-none 
@@ -129,17 +121,8 @@ export default async function NewsDetailPage({ params: { lang, slug } }: { param
                 </div>
                 <div>
                   <p className="font-black text-lg uppercase leading-none">AI Plus Map Team</p>
-                  <p className="font-bold text-xs text-slate-500 uppercase mt-1">Research & Analysis Division</p>
+                  <p className="font-bold text-xs text-slate-500 uppercase mt-1">Comparison & Benchmark Division</p>
                 </div>
-              </div>
-              
-              <div className="flex gap-4">
-                <button className="border-4 border-black px-6 py-2 bg-white font-black uppercase text-sm hover:bg-black hover:text-white transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-1 active:translate-y-1">
-                  Share
-                </button>
-                <button className="border-4 border-black px-6 py-2 bg-black text-white font-black uppercase text-sm hover:bg-[#ef4444] transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-1 active:translate-y-1">
-                  Subscribe
-                </button>
               </div>
             </div>
           </div>
@@ -149,13 +132,13 @@ export default async function NewsDetailPage({ params: { lang, slug } }: { param
         {relatedPosts && relatedPosts.length > 0 && (
           <section className="mt-32">
             <h2 className="text-4xl font-display font-black uppercase italic tracking-tighter mb-12 border-b-4 border-black pb-4">
-              Keep Reading
+              {lang === 'vi' ? 'Xem so sánh khác' : 'More Comparisons'}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {relatedPosts.map((rPost) => (
-                <Link key={rPost.id} href={`/${lang}/${rPost.section || 'news'}/${rPost.slug}`} className="group">
+                <Link key={rPost.id} href={`/${lang}/${rPost.section}/${rPost.slug}`} className="group">
                   <div className="aspect-square border-4 border-black mb-4 overflow-hidden shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] bg-white">
-                    <img src={rPost.featured_image} alt={rPost.title} className="w-full h-full object-cover   transition-all" />
+                    <img src={rPost.featured_image} alt={rPost.title} className="w-full h-full object-cover transition-all" />
                   </div>
                   <h3 className="text-xl font-black leading-none group-hover:text-[#ef4444] transition-colors">{rPost.title}</h3>
                 </Link>

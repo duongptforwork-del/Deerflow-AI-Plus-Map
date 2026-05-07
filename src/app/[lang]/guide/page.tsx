@@ -16,18 +16,12 @@ export default async function GuidePage({
 
   const supabase = createClient();
   
-  // Fetch 'guide' category
-  const { data: category } = await supabase
-    .from('categories')
-    .select('id')
-    .eq('slug', 'guide')
-    .single();
-
+  // Fetch posts in 'guide' section
   const { data: posts, count } = await supabase
     .from('posts')
-    .select('*, categories(*)')
+    .select('*, categories(*)', { count: 'exact' })
     .eq('lang', lang)
-    .eq('category_id', category?.id)
+    .eq('section', 'guide')
     .order('created_at', { ascending: false })
     .range(from, to);
 
@@ -38,8 +32,8 @@ export default async function GuidePage({
       <main className="max-w-7xl mx-auto px-4 py-16">
         <header className="mb-20 border-b-8 border-black pb-12">
           <SectionHeader title="Expert Blueprints" lang={lang} />
-          <p className="text-3xl font-black italic text-[#ef4444] leading-none mt-6 uppercase tracking-tighter max-w-4xl">
-            MASTER THE TOOLS. BUILD THE FUTURE. STEP BY STEP.
+          <p className="text-2xl md:text-3xl font-black text-[#ef4444] leading-tight mt-6 tracking-tight max-w-4xl">
+            Master the tools. Build the future. Step by step.
           </p>
         </header>
 
@@ -50,21 +44,21 @@ export default async function GuidePage({
                 <div className="absolute -top-6 -left-6 w-20 h-20 bg-black text-white flex items-center justify-center font-black text-4xl border-4 border-white shadow-[8px_8px_0px_0px_rgba(239,68,68,1)] z-10">
                   {index + 1 + (currentPage - 1) * pageSize}
                 </div>
-                <div className="aspect-video border-4 border-black overflow-hidden grayscale group-hover:grayscale-0 transition-all shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] group-hover:shadow-none group-hover:translate-x-1 group-hover:translate-y-1">
+                <div className="aspect-video border-4 border-black overflow-hidden   transition-all shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] group-hover:shadow-none group-hover:translate-x-1 group-hover:translate-y-1">
                   <img src={post.featured_image} alt={post.title} className="w-full h-full object-cover" />
                 </div>
               </div>
               <div className="md:w-1/2 pt-4">
                 <span className="text-[10px] font-black uppercase text-slate-400 tracking-[0.3em] mb-4 block">LEVEL: ADVANCED</span>
-                <h2 className="text-4xl font-black leading-none mb-6 tracking-tighter group-hover:text-[#ef4444] uppercase">
-                  <Link href={`/${lang}/news/${post.slug}`}>{post.title}</Link>
+                <h2 className="text-3xl md:text-4xl font-black leading-tight mb-6 tracking-tight group-hover:text-[#ef4444]">
+                  <Link href={`/${lang}/${post.section}/${post.slug}`}>{post.title}</Link>
                 </h2>
-                <p className="text-xl font-bold text-slate-600 leading-tight mb-8">
+                <p className="text-lg md:text-xl font-bold text-slate-600 leading-relaxed mb-8">
                   {post.excerpt}
                 </p>
                 <div className="flex gap-6">
                   <Link 
-                    href={`/${lang}/news/${post.slug}`}
+                    href={`/${lang}/${post.section}/${post.slug}`}
                     className="inline-block bg-black text-white px-10 py-4 border-4 border-black font-black uppercase text-xs hover:bg-[#ef4444] transition-all"
                   >
                     Start Tutorial

@@ -18,8 +18,7 @@ export default function Footer({ lang }: { lang: string }) {
                 />
               </div>
               <div className="flex flex-col">
-                <span className="text-5xl font-display font-black tracking-tighter leading-none">AI PLUS</span>
-                <span className="text-3xl font-display font-black tracking-tighter leading-none text-black bg-[#ef4444] px-2 mt-1 w-fit border-2 border-white">MAP</span>
+                <span className="text-5xl font-display font-black tracking-tighter leading-none">AI PLUS MAP</span>
               </div>
             </div>
             <p className="text-slate-400 max-w-md font-bold leading-relaxed">

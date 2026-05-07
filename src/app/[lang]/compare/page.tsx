@@ -16,11 +16,12 @@ export default async function ComparePage({
 
   const supabase = createClient();
   
-  // Fetch posts tagged as comparison
+  // Fetch posts in 'compare' section
   const { data: posts, count } = await supabase
     .from('posts')
     .select('*, categories(*)', { count: 'exact' })
     .eq('lang', lang)
+    .eq('section', 'compare')
     .order('created_at', { ascending: false })
     .range(from, to);
 
@@ -44,22 +45,22 @@ export default async function ComparePage({
         </div>
 
         {/* Hero Section */}
-        {heroPost && (
+        {heroPost ? (
           <article className="group relative bg-white border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all mb-16 overflow-hidden">
             <div className="flex flex-col lg:flex-row">
-              <div className="lg:w-2/3 aspect-video border-r-0 lg:border-r-4 border-black grayscale group-hover:grayscale-0 transition-all">
+              <div className="lg:w-2/3 aspect-video border-r-0 lg:border-r-4 border-black   transition-all">
                 <img src={heroPost.featured_image} alt={heroPost.title} className="w-full h-full object-cover" />
               </div>
               <div className="lg:w-1/3 p-10 flex flex-col justify-center">
                 <span className="text-[#ef4444] font-black uppercase tracking-[0.2em] text-[10px] mb-4 block">✦ FEATURED COMPARISON</span>
-                <h2 className="text-4xl font-black leading-[0.95] mb-6 tracking-tighter group-hover:text-[#ef4444]">
-                  <Link href={`/${lang}/news/${heroPost.slug}`}>{heroPost.title}</Link>
+                <h2 className="text-3xl md:text-4xl font-black leading-tight mb-6 tracking-tight group-hover:text-[#ef4444]">
+                  <Link href={`/${lang}/${heroPost.section}/${heroPost.slug}`}>{heroPost.title}</Link>
                 </h2>
-                <p className="text-slate-600 font-bold leading-tight mb-8">
+                <p className="text-lg font-bold text-slate-600 leading-relaxed mb-8">
                   {heroPost.excerpt}
                 </p>
                 <Link 
-                  href={`/${lang}/news/${heroPost.slug}`}
+                  href={`/${lang}/${heroPost.section}/${heroPost.slug}`}
                   className="inline-block bg-black text-white px-8 py-3 border-4 border-black font-black uppercase text-xs hover:bg-white hover:text-black transition-all text-center"
                 >
                   Read Analysis
@@ -67,25 +68,31 @@ export default async function ComparePage({
               </div>
             </div>
           </article>
+        ) : (
+          <div className="border-8 border-black bg-white p-20 text-center mb-16">
+            <p className="text-3xl font-black tracking-tight">No comparisons found for {lang.toUpperCase()}</p>
+          </div>
         )}
 
         {/* List of Comparisons */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-20">
-          {otherPosts.map((post) => (
-            <article key={post.id} className="group flex gap-8 items-center bg-white border-4 border-black p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all">
-              <div className="w-40 h-40 flex-shrink-0 border-4 border-black overflow-hidden grayscale group-hover:grayscale-0 transition-all">
-                <img src={post.featured_image} alt={post.title} className="w-full h-full object-cover" />
-              </div>
-              <div>
-                <span className="text-[10px] font-black uppercase text-slate-500 mb-2 block">{new Date(post.created_at).toLocaleDateString()}</span>
-                <h3 className="text-2xl font-black leading-none mb-4 group-hover:text-[#ef4444]">
-                  <Link href={`/${lang}/news/${post.slug}`}>{post.title}</Link>
-                </h3>
-                <Link href={`/${lang}/news/${post.slug}`} className="text-xs font-black uppercase border-b-2 border-black hover:text-[#ef4444] hover:border-[#ef4444]">View Breakdown →</Link>
-              </div>
-            </article>
-          ))}
-        </div>
+        {otherPosts.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-20">
+            {otherPosts.map((post) => (
+              <article key={post.id} className="group flex gap-8 items-center bg-white border-4 border-black p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all">
+                <div className="w-40 h-40 flex-shrink-0 border-4 border-black overflow-hidden   transition-all">
+                  <img src={post.featured_image} alt={post.title} className="w-full h-full object-cover" />
+                </div>
+                <div>
+                  <span className="text-[10px] font-black uppercase text-slate-500 mb-2 block">{new Date(post.created_at).toLocaleDateString()}</span>
+                  <h3 className="text-xl md:text-2xl font-black leading-tight mb-4 group-hover:text-[#ef4444]">
+                    <Link href={`/${lang}/${post.section}/${post.slug}`}>{post.title}</Link>
+                  </h3>
+                  <Link href={`/${lang}/${post.section}/${post.slug}`} className="text-xs font-black uppercase border-b-2 border-black hover:text-[#ef4444] hover:border-[#ef4444]">View Breakdown →</Link>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
 
         {/* Pagination */}
         {totalPages > 1 && (
