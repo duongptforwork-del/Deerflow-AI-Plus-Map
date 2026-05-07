@@ -4,7 +4,7 @@ import SectionHeader from '@/components/SectionHeader';
 import { createClient } from '@/utils/supabase/server';
 import { notFound } from 'next/navigation';
 
-export const revalidate = 3600;
+export const revalidate = 0;
 
 export default async function CategoryPage({ params }: { params: { lang: string, slug: string } }) {
   const { lang, slug } = params;

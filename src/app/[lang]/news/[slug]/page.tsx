@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 
-export const revalidate = 3600;
+export const revalidate = 0;
 
 export async function generateStaticParams() {
   const supabase = createClient();

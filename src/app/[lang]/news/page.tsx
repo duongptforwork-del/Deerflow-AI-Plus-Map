@@ -2,6 +2,8 @@ import Link from 'next/link';
 import SectionHeader from '@/components/SectionHeader';
 import { createClient } from '@/utils/supabase/server';
 
+export const revalidate = 0;
+
 export default async function NewsPage({ 
   params: { lang }, 
   searchParams 

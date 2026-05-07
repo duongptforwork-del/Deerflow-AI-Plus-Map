@@ -3,7 +3,7 @@ import SectionHeader from '@/components/SectionHeader';
 import NewsSection from '@/components/NewsSection';
 import { createClient } from '@/utils/supabase/server';
 
-export const revalidate = 3600;
+export const revalidate = 0;
 
 export default async function HomePage({ params: { lang } }: { params: { lang: string } }) {
   const supabase = createClient();
@@ -56,7 +56,7 @@ export default async function HomePage({ params: { lang } }: { params: { lang: s
       <main className="max-w-7xl mx-auto px-4 py-12">
         {/* Magazine Header - SEO Optimized H1 */}
         <div className="mb-12 border-b-8 border-black pb-8">
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-display font-black tracking-tight leading-tight uppercase">
+          <h1 className="text-3xl md:text-5xl lg:text-6xl font-display font-black tracking-tight leading-tight uppercase">
             AI News <span className="text-[#ef4444]">Today</span>
           </h1>
           <div className="flex justify-between items-center mt-4 font-black uppercase text-sm">
@@ -73,7 +73,7 @@ export default async function HomePage({ params: { lang } }: { params: { lang: s
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
               {/* Column 1: Main Feature */}
               <div className="lg:col-span-5">
-                <div className="relative border-4 border-black group bg-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] h-full flex flex-col">
+                <div className="relative border-4 border-black group bg-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all h-full flex flex-col">
                   <div className="aspect-[16/10] relative overflow-hidden border-b-4 border-black">
                     <img 
                       src={hero.featured_image} 
@@ -109,7 +109,7 @@ export default async function HomePage({ params: { lang } }: { params: { lang: s
               {/* Column 2: 3 Sub-features Vertical Stack (3 Rows) */}
               <div className="lg:col-span-7 flex flex-col gap-6">
                 {subHeroes.map((post) => (
-                  <article key={post.id} className="group flex flex-col sm:flex-row border-4 border-black bg-white shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] h-full overflow-hidden">
+                  <article key={post.id} className="group flex flex-col sm:flex-row border-4 border-black bg-white shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all h-full overflow-hidden">
                     <div className="w-full sm:w-1/3 aspect-[16/9] sm:aspect-square relative overflow-hidden border-b-4 sm:border-b-0 sm:border-r-4 border-black shrink-0">
                       <img 
                         src={post.featured_image} 
