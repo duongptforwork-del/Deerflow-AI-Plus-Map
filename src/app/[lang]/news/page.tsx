@@ -15,7 +15,8 @@ export default async function NewsPage({
   const { data: heroPost } = await supabase
     .from('posts')
     .select('*, categories(*)')
-    .eq('language', lang)
+    .eq('lang', lang)
+    .eq('is_published', true)
     .order('created_at', { ascending: false })
     .limit(1)
     .single();
@@ -24,23 +25,27 @@ export default async function NewsPage({
   const { data: topStories } = await supabase
     .from('posts')
     .select('*, categories(*)')
-    .eq('language', lang)
+    .eq('lang', lang)
+    .eq('is_published', true)
     .order('created_at', { ascending: false })
     .range(1, 4);
 
   // 3. Fetch Categories and their latest posts (Simulated for this design)
   const { data: categories } = await supabase
     .from('categories')
-    .select('id, title, slug')
-    .limit(3);
+    .select('id, name, slug')
+    .eq('lang', lang)
+    .eq('type', 'post')
+    .limit(4);
 
   const postsByCategories = await Promise.all(
     (categories || []).map(async (cat) => {
       const { data: posts } = await supabase
         .from('posts')
         .select('*')
-        .eq('language', lang)
+        .eq('lang', lang)
         .eq('category_id', cat.id)
+        .eq('is_published', true)
         .order('created_at', { ascending: false })
         .limit(4);
       return { ...cat, posts: posts || [] };
@@ -64,20 +69,20 @@ export default async function NewsPage({
             {heroPost && (
               <>
                 <div className="aspect-[16/9] border-b-4 border-black overflow-hidden grayscale group-hover:grayscale-0 transition-all">
-                  <img src={heroPost.image_url} alt={heroPost.title} className="w-full h-full object-cover" />
+                  <img src={heroPost.featured_image || '/placeholder.png'} alt={heroPost.title} className="w-full h-full object-cover" />
                 </div>
                 <div className="p-8">
                   <span className="inline-block bg-[#ef4444] text-white px-4 py-1 text-xs font-black uppercase tracking-widest border-2 border-black mb-6">
-                    {heroPost.categories?.title}
+                    {heroPost.categories?.name || 'Uncategorized'}
                   </span>
                   <h1 className="text-5xl font-black leading-[0.9] mb-6 tracking-tighter group-hover:text-[#ef4444] transition-colors">
                     <Link href={`/${lang}/news/${heroPost.slug}`}>{heroPost.title}</Link>
                   </h1>
                   <p className="text-xl font-bold text-slate-800 leading-tight mb-8 line-clamp-3">
-                    {heroPost.description}
+                    {heroPost.excerpt}
                   </p>
                   <div className="flex items-center gap-4 text-xs font-black uppercase">
-                    <span>BY EDITOR</span>
+                    <span>BY {heroPost.author || 'Sếp'}</span>
                     <span className="w-2 h-2 bg-black rounded-full"></span>
                     <span>{new Date(heroPost.created_at).toLocaleDateString()}</span>
                   </div>
@@ -92,11 +97,11 @@ export default async function NewsPage({
             {(topStories || []).map((post) => (
               <div key={post.id} className="group flex gap-4 items-start border-b-2 border-black pb-6 last:border-0">
                 <div className="w-24 h-24 flex-shrink-0 border-2 border-black grayscale group-hover:grayscale-0 transition-all">
-                  <img src={post.image_url} alt={post.title} className="w-full h-full object-cover" />
+                  <img src={post.featured_image || '/placeholder.png'} alt={post.title} className="w-full h-full object-cover" />
                 </div>
                 <div>
                   <span className="text-[10px] font-black uppercase text-[#ef4444] mb-1 block">
-                    {post.categories?.title}
+                    {post.categories?.name}
                   </span>
                   <h4 className="font-black leading-none group-hover:underline decoration-2">
                     <Link href={`/${lang}/news/${post.slug}`}>{post.title}</Link>
@@ -111,7 +116,7 @@ export default async function NewsPage({
         {postsByCategories.map((catSection) => (
           <section key={catSection.id} className="mb-20">
             <div className="flex justify-between items-end border-b-8 border-black mb-10 pb-4">
-              <h2 className="text-6xl font-black uppercase tracking-tighter italic leading-none">{catSection.title}</h2>
+              <h2 className="text-6xl font-black uppercase tracking-tighter italic leading-none">{catSection.name}</h2>
               <Link href={`/${lang}/category/${catSection.slug}`} className="font-black uppercase text-sm bg-black text-white px-6 py-2 hover:bg-[#ef4444] transition-colors">
                 View All
               </Link>
@@ -121,7 +126,7 @@ export default async function NewsPage({
               {catSection.posts.map((post) => (
                 <article key={post.id} className="group flex flex-col">
                   <div className="aspect-square border-4 border-black mb-6 grayscale group-hover:grayscale-0 transition-all shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] group-hover:shadow-none group-hover:translate-x-1 group-hover:translate-y-1">
-                    <img src={post.image_url} alt={post.title} className="w-full h-full object-cover" />
+                    <img src={post.featured_image || '/placeholder.png'} alt={post.title} className="w-full h-full object-cover" />
                   </div>
                   <h3 className="text-xl font-black leading-[1.1] tracking-tight group-hover:text-[#ef4444]">
                     <Link href={`/${lang}/news/${post.slug}`}>{post.title}</Link>

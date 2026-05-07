@@ -1,16 +1,39 @@
+'use client';
+
 import Link from 'next/link';
 import Image from 'next/image';
 import { ChevronDown } from 'lucide-react';
 import GlobalSearch from '@/components/search/GlobalSearch';
-
-const CATEGORIES = [
-  { name: 'AI Market Trends', slug: 'ai-market-trends' },
-  { name: 'AI Startups & Funding', slug: 'ai-startups-funding' },
-  { name: 'Generative AI', slug: 'generative-ai' },
-  { name: 'AI Enterprise', slug: 'ai-enterprise' }
-];
+import { useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
 
 export default function Navbar({ lang }: { lang: string }) {
+  const [categories, setCategories] = useState<any[]>([]);
+
+  useEffect(() => {
+    async function fetchCategories() {
+      const { data } = await supabase
+        .from('categories')
+        .select('name, slug')
+        .eq('lang', lang)
+        .eq('type', 'post')
+        .order('name');
+      
+      if (data && data.length > 0) {
+        setCategories(data);
+      } else {
+        // Fallback or seed logic if needed, but usually we just show what's in DB
+        setCategories([
+          { name: 'AI Market Trends', slug: 'ai-market-trends' },
+          { name: 'AI Startups & Funding', slug: 'ai-startups-funding' },
+          { name: 'Generative AI', slug: 'generative-ai' },
+          { name: 'AI Enterprise', slug: 'ai-enterprise' }
+        ]);
+      }
+    }
+    fetchCategories();
+  }, [lang]);
+
   return (
     <header className="bg-white border-b-2 border-black py-4 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4">
@@ -40,12 +63,12 @@ export default function Navbar({ lang }: { lang: string }) {
                     News <ChevronDown size={14} />
                   </Link>
                   {/* Dropdown Menu */}
-                  <div className="absolute top-full left-0 w-64 bg-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hidden group-hover:block z-50">
-                    {CATEGORIES.map((cat) => (
+                  <div className="absolute top-full left-0 w-64 bg-white border-2 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] hidden group-hover:block z-50">
+                    {categories.map((cat) => (
                       <Link 
                         key={cat.slug} 
                         href={`/${lang}/category/${cat.slug}`}
-                        className="block px-4 py-3 border-b border-black last:border-0 hover:bg-[#ef4444] hover:text-white transition-colors text-[12px]"
+                        className="block px-4 py-3 border-b border-black last:border-0 hover:bg-[#ef4444] hover:text-white transition-colors text-[12px] uppercase"
                       >
                         {cat.name}
                       </Link>
