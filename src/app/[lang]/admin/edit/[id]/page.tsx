@@ -85,6 +85,18 @@ export default function EditPostPage({ params }: { params: { lang: string, id: s
   const [isFetching, setIsFetching] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
 
+  const filteredCategories = categories.filter(c => {
+    if (section === 'compare') return c.slug.includes('compare');
+    if (section === 'guide') return c.slug.includes('guide');
+    return !c.slug.includes('compare') && !c.slug.includes('guide');
+  });
+
+  useEffect(() => {
+    if (filteredCategories.length > 0 && !filteredCategories.find(c => c.id === categoryId)) {
+      setCategoryId(filteredCategories[0].id);
+    }
+  }, [section, categories]);
+
   useEffect(() => {
     const auth = localStorage.getItem('admin_auth_session');
     if (auth === 'true') {
@@ -270,8 +282,7 @@ export default function EditPostPage({ params }: { params: { lang: string, id: s
       slug,
       excerpt,
       content,
-      section,
-      category_id: section === 'news' ? (categoryId || null) : null,
+            category_id: categoryId || null,
       featured_image: featuredImage || null,
       author_name: authorName || 'Sếp',
       is_published: published,
@@ -481,7 +492,7 @@ export default function EditPostPage({ params }: { params: { lang: string, id: s
                 />
               </div>
 
-              {section === 'news' && (
+              
                 <div>
                   <label className="block text-[10px] font-black text-black/40 uppercase tracking-[0.3em] mb-4">Category Selection</label>
                   <div className="space-y-4">
@@ -492,7 +503,7 @@ export default function EditPostPage({ params }: { params: { lang: string, id: s
                         onChange={(e) => setCategoryId(e.target.value)}
                       >
                         <option value="">UNCATEGORIZED</option>
-                        {categories.map(cat => (
+                        {filteredCategories.map(cat => (
                           <option key={cat.id} value={cat.id}>{cat.name}</option>
                         ))}
                       </select>
@@ -518,7 +529,7 @@ export default function EditPostPage({ params }: { params: { lang: string, id: s
                     </div>
                   </div>
                 </div>
-              )}
+
 
               <div>
                 <label className="block text-[10px] font-black text-black/40 uppercase tracking-[0.3em] mb-4">Featured Media</label>
@@ -569,3 +580,4 @@ export default function EditPostPage({ params }: { params: { lang: string, id: s
     </div>
   );
 }
+

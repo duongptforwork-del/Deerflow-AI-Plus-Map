@@ -73,10 +73,24 @@ export default function NewPostPage({ params }: { params: { lang: string } }) {
   const [excerpt, setExcerpt] = useState('');
   const [content, setContent] = useState('');
   const [categoryId, setCategoryId] = useState('');
+
+
   const [section, setSection] = useState('news');
   const [featuredImage, setFeaturedImage] = useState('');
   
   const [categories, setCategories] = useState<any[]>([]);
+
+  const filteredCategories = categories.filter(c => {
+    if (section === 'compare') return c.slug.includes('compare');
+    if (section === 'guide') return c.slug.includes('guide');
+    return !c.slug.includes('compare') && !c.slug.includes('guide');
+  });
+
+  useEffect(() => {
+    if (filteredCategories.length > 0 && !filteredCategories.find(c => c.id === categoryId)) {
+      setCategoryId(filteredCategories[0].id);
+    }
+  }, [section, categories]);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [isAddingCategory, setIsAddingCategory] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -231,8 +245,7 @@ export default function NewPostPage({ params }: { params: { lang: string } }) {
       slug,
       excerpt,
       content,
-      section,
-      category_id: section === 'news' ? (categoryId || null) : null,
+      category_id: categoryId || null,
       featured_image: featuredImage || null,
       is_published: published,
       lang: lang,
@@ -418,7 +431,7 @@ export default function NewPostPage({ params }: { params: { lang: string } }) {
                 </div>
               </div>
 
-              {section === 'news' && (
+              
                 <div>
                   <label className="block text-[10px] font-black text-black/40 uppercase tracking-[0.3em] mb-4">Category Selection</label>
                   <div className="space-y-4">
@@ -429,7 +442,7 @@ export default function NewPostPage({ params }: { params: { lang: string } }) {
                         onChange={(e) => setCategoryId(e.target.value)}
                       >
                         <option value="">UNCATEGORIZED</option>
-                        {categories.map(cat => (
+                        {filteredCategories.map(cat => (
                           <option key={cat.id} value={cat.id}>{cat.name}</option>
                         ))}
                       </select>
@@ -455,7 +468,6 @@ export default function NewPostPage({ params }: { params: { lang: string } }) {
                     </div>
                   </div>
                 </div>
-              )}
 
               <div>
                 <label className="block text-[10px] font-black text-black/40 uppercase tracking-[0.3em] mb-4">Featured Media</label>

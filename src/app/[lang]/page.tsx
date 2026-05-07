@@ -17,15 +17,15 @@ export default async function HomePage({ params: { lang } }: { params: { lang: s
     { data: guidePosts }
   ] = await Promise.all([
     // Hero (4 posts total)
-    supabase.from('posts').select('*, categories(*)').eq('lang', lang).eq('section', 'news').eq('is_published', true).order('created_at', { ascending: false }).limit(4),
+    supabase.from('posts').select('*, categories!inner(*)').eq('lang', lang).eq('categories.slug', 'news').eq('is_published', true).order('created_at', { ascending: false }).limit(4),
     // Trending (Top 5)
-    supabase.from('posts').select('*, categories(*)').eq('lang', lang).eq('section', 'news').eq('is_published', true).order('created_at', { ascending: false }).limit(5),
+    supabase.from('posts').select('*, categories!inner(*)').eq('lang', lang).eq('categories.slug', 'news').eq('is_published', true).order('created_at', { ascending: false }).limit(5),
     // Latest News (starting from 5th post)
-    supabase.from('posts').select('*, categories(*)').eq('lang', lang).eq('section', 'news').eq('is_published', true).order('created_at', { ascending: false }).range(4, 7),
+    supabase.from('posts').select('*, categories!inner(*)').eq('lang', lang).eq('categories.slug', 'news').eq('is_published', true).order('created_at', { ascending: false }).range(4, 7),
     // Compare Sections
-    supabase.from('posts').select('*, categories(*)').eq('lang', lang).eq('is_published', true).eq('section', 'compare').order('created_at', { ascending: false }).limit(3),
+    supabase.from('posts').select('*, categories!inner(*)').eq('lang', lang).eq('is_published', true).eq('categories.slug', 'compare').order('created_at', { ascending: false }).limit(3),
     // AI Guide
-    supabase.from('posts').select('*, categories(*)').eq('lang', lang).eq('is_published', true).eq('section', 'guide').order('created_at', { ascending: false }).limit(3)
+    supabase.from('posts').select('*, categories!inner(*)').eq('lang', lang).eq('is_published', true).eq('categories.slug', 'guide').order('created_at', { ascending: false }).limit(3)
   ]);
 
   const hero = heroPosts?.[0];
