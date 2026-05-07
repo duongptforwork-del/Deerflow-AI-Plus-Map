@@ -78,6 +78,8 @@ export default function NewPostPage({ params }: { params: { lang: string } }) {
   const [featuredImage, setFeaturedImage] = useState('');
   
   const [categories, setCategories] = useState<any[]>([]);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [isAddingCategory, setIsAddingCategory] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
 
@@ -95,9 +97,42 @@ export default function NewPostPage({ params }: { params: { lang: string } }) {
     const { data, error } = await supabase
       .from('categories')
       .select('id, name')
+      .eq('lang', lang)
       .order('name');
     
     if (data) setCategories(data);
+  };
+
+  const handleAddCategory = async () => {
+    if (!newCategoryName.trim()) return;
+    
+    setIsAddingCategory(true);
+    const slug = newCategoryName
+      .toLowerCase()
+      .trim()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^\w\s-]/g, '')
+      .replace(/[\s_-]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+
+    const { data, error } = await supabase
+      .from('categories')
+      .insert([{ 
+        name: newCategoryName, 
+        slug, 
+        lang, 
+        type: 'post' 
+      }])
+      .select();
+
+    if (error) {
+      alert('Lỗi tạo category: ' + error.message);
+    } else if (data) {
+      setCategories([...categories, data[0]]);
+      setCategoryId(data[0].id);
+      setNewCategoryName('');
+    }
+    setIsAddingCategory(false);
   };
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -343,18 +378,38 @@ export default function NewPostPage({ params }: { params: { lang: string } }) {
             <div className="p-6 space-y-6">
               <div>
                 <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Category</label>
-                <div className="relative">
-                  <select 
-                    className="w-full appearance-none bg-slate-50 border border-slate-200 p-3 rounded-xl outline-none font-bold text-slate-700 focus:ring-2 focus:ring-blue-500/20"
-                    value={categoryId}
-                    onChange={(e) => setCategoryId(e.target.value)}
-                  >
-                    <option value="">Select a category</option>
-                    {categories.map(cat => (
-                      <option key={cat.id} value={cat.id}>{cat.name}</option>
-                    ))}
-                  </select>
-                  <ChevronDown size={18} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                <div className="space-y-3">
+                  <div className="relative">
+                    <select 
+                      className="w-full appearance-none bg-slate-50 border border-slate-200 p-3 rounded-xl outline-none font-bold text-slate-700 focus:ring-2 focus:ring-blue-500/20"
+                      value={categoryId}
+                      onChange={(e) => setCategoryId(e.target.value)}
+                    >
+                      <option value="">Select a category</option>
+                      {categories.map(cat => (
+                        <option key={cat.id} value={cat.id}>{cat.name}</option>
+                      ))}
+                    </select>
+                    <ChevronDown size={18} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                  </div>
+                  
+                  <div className="flex gap-2">
+                    <input 
+                      type="text" 
+                      placeholder="New category..."
+                      className="flex-1 bg-white border border-slate-200 p-2 rounded-lg text-xs font-bold outline-none focus:border-blue-400 transition-colors"
+                      value={newCategoryName}
+                      onChange={(e) => setNewCategoryName(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && handleAddCategory()}
+                    />
+                    <button 
+                      onClick={handleAddCategory}
+                      disabled={isAddingCategory || !newCategoryName.trim()}
+                      className="bg-slate-900 text-white px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-black disabled:opacity-50 transition-all"
+                    >
+                      {isAddingCategory ? '...' : 'Add'}
+                    </button>
+                  </div>
                 </div>
               </div>
 
