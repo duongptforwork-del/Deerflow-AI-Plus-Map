@@ -55,10 +55,11 @@ async function verifyPassword(password: string): Promise<boolean> {
   }
 }
 
-export default function NewPostPage({ params }: { params: { lang: string } }) {
+export default function EditPostPage({ params }: { params: { lang: string, id: string } }) {
   const router = useRouter();
   const supabase = createClient();
   const lang = params.lang || 'en';
+  const postId = params.id;
   const contentRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -73,12 +74,16 @@ export default function NewPostPage({ params }: { params: { lang: string } }) {
   const [excerpt, setExcerpt] = useState('');
   const [content, setContent] = useState('');
   const [categoryId, setCategoryId] = useState('');
-
-
   const [section, setSection] = useState('news');
   const [featuredImage, setFeaturedImage] = useState('');
+  const [authorName, setAuthorName] = useState('');
   
   const [categories, setCategories] = useState<any[]>([]);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [isAddingCategory, setIsAddingCategory] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isFetching, setIsFetching] = useState(true);
+  const [isUploading, setIsUploading] = useState(false);
 
   const filteredCategories = categories.filter(c => {
     if (section === 'compare') return c.slug.includes('compare');
@@ -91,31 +96,63 @@ export default function NewPostPage({ params }: { params: { lang: string } }) {
       setCategoryId(filteredCategories[0].id);
     }
   }, [section, categories]);
-  const [newCategoryName, setNewCategoryName] = useState('');
-  const [isAddingCategory, setIsAddingCategory] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
     const auth = localStorage.getItem('admin_auth_session');
     if (auth === 'true') {
       setIsAuthorized(true);
-      fetchCategories();
+      fetchInitialData();
     } else {
       setIsAuthorized(false);
+      setIsFetching(false);
     }
   }, []);
+
+  const fetchInitialData = async () => {
+    setIsFetching(true);
+    await fetchCategories();
+    await fetchPostData();
+    setIsFetching(false);
+  };
 
   const fetchCategories = async () => {
     const targetLang = lang;
     const { data, error } = await supabase
       .from('categories')
-      .select('id, name')
+      .select('id, name, slug')
       .eq('lang', targetLang)
       .order('name');
     
     if (data) setCategories(data);
     if (error) console.error('Fetch categories error:', error);
+  };
+
+  const fetchPostData = async () => {
+    if (!postId) return;
+
+    const { data, error } = await supabase
+      .from('posts')
+      .select('*, categories(slug)')
+      .eq('id', postId)
+      .single();
+
+    if (error) {
+      console.error('Fetch post error:', error);
+      alert('Không tìm thấy bài viết này Sếp ơi!');
+      router.push(`/${lang}/admin`);
+      return;
+    }
+
+    if (data) {
+      setTitle(data.title || '');
+      setSlug(data.slug || '');
+      setExcerpt(data.excerpt || '');
+      setContent(data.content || '');
+      const catSlug = data.categories?.slug || ''; if (catSlug.includes('compare')) setSection('compare'); else if (catSlug.includes('guide')) setSection('guide'); else setSection('news');
+      setCategoryId(data.category_id || '');
+      setFeaturedImage(data.featured_image || '');
+      setAuthorName(data.author_name || '');
+    }
   };
 
   const handleAddCategory = async () => {
@@ -163,14 +200,14 @@ export default function NewPostPage({ params }: { params: { lang: string } }) {
     if (isValid) {
       localStorage.setItem('admin_auth_session', 'true');
       setIsAuthorized(true);
-      fetchCategories();
+      fetchInitialData();
     } else {
       alert('Sai mật khẩu rồi Sếp ơi!');
     }
     setIsChecking(false);
   };
 
-  useEffect(() => {
+  const syncSlug = () => {
     if (title) {
       const generatedSlug = title
         .toLowerCase()
@@ -181,7 +218,7 @@ export default function NewPostPage({ params }: { params: { lang: string } }) {
         .replace(/^-+|-+$/g, '');
       setSlug(generatedSlug);
     }
-  }, [title]);
+  };
 
   const insertText = (before: string, after: string = '') => {
     if (!contentRef.current) return;
@@ -232,7 +269,7 @@ export default function NewPostPage({ params }: { params: { lang: string } }) {
     }
   };
 
-  const handleSave = async (published = false) => {
+  const handleUpdate = async (published = false) => {
     if (!title || !slug || !content) {
       alert('Sếp điền thiếu Title, Slug hoặc Content kìa!');
       return;
@@ -245,28 +282,36 @@ export default function NewPostPage({ params }: { params: { lang: string } }) {
       slug,
       excerpt,
       content,
-      category_id: categoryId || null,
+            category_id: categoryId || null,
       featured_image: featuredImage || null,
+      author_name: authorName || 'Sếp',
       is_published: published,
-      lang: lang,
-      author_name: 'Sếp'
+      updated_at: new Date().toISOString(),
+      lang: lang // Ensure lang is preserved/sent
     };
 
     const { error } = await supabase
       .from('posts')
-      .insert([postData]);
+      .update(postData)
+      .eq('id', postId);
 
     if (error) {
-      console.error('Save error:', error);
+      console.error('Update error:', error);
       alert('Lỗi rồi Sếp: ' + error.message);
     } else {
-      alert(published ? 'Đã xuất bản thành công!' : 'Đã lưu nháp!');
+      alert('Đã cập nhật bài viết!');
       router.push(`/${lang}/admin`);
     }
     setIsLoading(false);
   };
 
-  if (isAuthorized === null) return null;
+  if (isAuthorized === null || isFetching) {
+    return (
+      <div className="min-h-screen bg-[#F3F4F6] flex items-center justify-center">
+        <Loader2 className="animate-spin text-black" size={48} />
+      </div>
+    );
+  }
 
   if (!isAuthorized) {
     return (
@@ -312,7 +357,7 @@ export default function NewPostPage({ params }: { params: { lang: string } }) {
             <ArrowLeft size={24} strokeWidth={3} />
           </button>
           <div>
-            <h1 className="text-[10px] font-black uppercase tracking-[0.3em] text-black/40 leading-none mb-1">Editor / New Post</h1>
+            <h1 className="text-[10px] font-black uppercase tracking-[0.3em] text-black/40 leading-none mb-1">Editor / Edit Post</h1>
             <p className="text-lg font-black tracking-tighter truncate max-w-[300px] uppercase">{title || 'Untitled Article'}</p>
           </div>
         </div>
@@ -323,7 +368,7 @@ export default function NewPostPage({ params }: { params: { lang: string } }) {
             <span className="uppercase tracking-widest">{lang}</span>
           </div>
           <button 
-            onClick={() => handleSave(false)} 
+            onClick={() => handleUpdate(false)} 
             disabled={isLoading} 
             className="flex items-center gap-2 px-6 py-3 text-sm font-black uppercase tracking-widest border-4 border-black hover:bg-black hover:text-white transition-all"
           >
@@ -331,7 +376,7 @@ export default function NewPostPage({ params }: { params: { lang: string } }) {
             <span>Draft</span>
           </button>
           <button 
-            onClick={() => handleSave(true)} 
+            onClick={() => handleUpdate(true)} 
             disabled={isLoading} 
             className="flex items-center gap-2 px-8 py-3 bg-[#ef4444] text-white text-sm font-black uppercase tracking-widest border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all"
           >
@@ -357,9 +402,15 @@ export default function NewPostPage({ params }: { params: { lang: string } }) {
                 <Layout size={14} strokeWidth={3} />
                 <span>Slug:</span>
               </div>
-              <code className="text-sm font-black bg-transparent border-none outline-none flex-1 tracking-widest uppercase text-yellow-400">
-                aiplusmap.com/{lang}/article/<span className="underline decoration-wavy">{slug || '...'}</span>
-              </code>
+              <input 
+                type="text"
+                className="text-sm font-black bg-transparent border-none outline-none flex-1 tracking-widest uppercase text-yellow-400"
+                value={slug}
+                onChange={(e) => setSlug(e.target.value)}
+              />
+              <button onClick={syncSlug} className="text-[10px] font-black uppercase tracking-widest bg-white text-black px-2 py-1 border-2 border-black hover:bg-[#ef4444] hover:text-white transition-colors">
+                Sync
+              </button>
             </div>
 
             <div className="mb-10">
@@ -431,6 +482,16 @@ export default function NewPostPage({ params }: { params: { lang: string } }) {
                 </div>
               </div>
 
+              <div>
+                <label className="block text-[10px] font-black text-black/40 uppercase tracking-[0.3em] mb-4">Author Profile</label>
+                <input 
+                  type="text" 
+                  className="w-full bg-[#F3F4F6] border-4 border-black p-4 outline-none font-black uppercase tracking-widest focus:bg-white transition-all"
+                  value={authorName}
+                  onChange={(e) => setAuthorName(e.target.value)}
+                />
+              </div>
+
               
                 <div>
                   <label className="block text-[10px] font-black text-black/40 uppercase tracking-[0.3em] mb-4">Category Selection</label>
@@ -469,6 +530,7 @@ export default function NewPostPage({ params }: { params: { lang: string } }) {
                   </div>
                 </div>
 
+
               <div>
                 <label className="block text-[10px] font-black text-black/40 uppercase tracking-[0.3em] mb-4">Featured Media</label>
                 <input 
@@ -490,7 +552,7 @@ export default function NewPostPage({ params }: { params: { lang: string } }) {
                   ) : featuredImage ? (
                     <>
                       <img src={featuredImage} alt="Preview" className="w-full h-full object-cover" />
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
+                      <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
                         <Upload className="text-white" size={32} strokeWidth={3} />
                         <span className="text-white font-black uppercase tracking-widest text-[10px]">Change Image</span>
                       </div>
@@ -510,17 +572,6 @@ export default function NewPostPage({ params }: { params: { lang: string } }) {
                     </div>
                   )}
                 </div>
-                
-                <div className="mt-6 p-4 border-4 border-black bg-yellow-50">
-                   <h5 className="text-[10px] font-black uppercase tracking-widest mb-2">Manual URL</h5>
-                   <input 
-                      type="text" 
-                      placeholder="https://..."
-                      className="w-full p-2 bg-white border-2 border-black text-[10px] outline-none"
-                      value={featuredImage}
-                      onChange={(e) => setFeaturedImage(e.target.value)}
-                    />
-                </div>
               </div>
             </div>
           </div>
@@ -529,3 +580,4 @@ export default function NewPostPage({ params }: { params: { lang: string } }) {
     </div>
   );
 }
+

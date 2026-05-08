@@ -10,12 +10,12 @@ export async function generateStaticParams() {
   const supabase = createClient();
   const { data: posts } = await supabase
     .from('posts')
-    .select('slug, lang, categories!inner(slug)')
-    .eq('categories.slug', 'news')
-    .limit(50);
+    .select('slug, lang, categories(slug)')
+    .not('categories', 'is', 'null');
     
-  return posts?.map((post) => ({ 
+  return posts?.map((post: any) => ({ 
     lang: post.lang,
+    category: post.categories?.slug,
     slug: post.slug 
   })) || [];
 }
@@ -24,14 +24,14 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkBreaks from 'remark-breaks';
 
-export async function generateMetadata({ params: { lang, slug } }: { params: { lang: string; slug: string } }) {
+export async function generateMetadata({ params: { lang, category, slug } }: { params: { lang: string; category: string; slug: string } }) {
   const supabase = createClient();
   const { data: post } = await supabase
     .from('posts')
     .select('*, categories!inner(*)')
     .eq('slug', slug)
     .eq('lang', lang)
-    .eq('categories.slug', 'news')
+    .eq('categories.slug', category)
     .single();
 
   if (!post) return {};
@@ -48,7 +48,7 @@ export async function generateMetadata({ params: { lang, slug } }: { params: { l
   };
 }
 
-export default async function NewsDetailPage({ params: { lang, slug } }: { params: { lang: string; slug: string } }) {
+export default async function PostDetailPage({ params: { lang, category, slug } }: { params: { lang: string; category: string; slug: string } }) {
   const supabase = createClient();
 
   const { data: post } = await supabase
@@ -56,7 +56,7 @@ export default async function NewsDetailPage({ params: { lang, slug } }: { param
     .select('*, categories!inner(*)')
     .eq('slug', slug)
     .eq('lang', lang)
-    .eq('categories.slug', 'news')
+    .eq('categories.slug', category)
     .single();
 
   if (!post) return notFound();
@@ -70,10 +70,10 @@ export default async function NewsDetailPage({ params: { lang, slug } }: { param
     .order('created_at', { ascending: false })
     .limit(3);
 
-  if (post.categories?.slug) {
-    relatedQuery = relatedQuery.eq('categories.slug', post.categories.slug);
+  if (post.category_id) {
+    relatedQuery = relatedQuery.eq('category_id', post.category_id);
   } else {
-    relatedQuery = relatedQuery.eq('categories.slug', 'news');
+    relatedQuery = relatedQuery.eq('categories.slug', category);
   }
 
   const { data: relatedPosts } = await relatedQuery;

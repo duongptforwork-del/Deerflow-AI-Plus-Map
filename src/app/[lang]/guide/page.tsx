@@ -21,9 +21,9 @@ export default async function GuidePage({
   // Fetch posts in 'guide' section
   const { data: posts, count } = await supabase
     .from('posts')
-    .select('*, categories(*)', { count: 'exact' })
+    .select('*, categories!inner(*)', { count: 'exact' })
     .eq('lang', lang)
-    .eq('section', 'guide')
+    .eq('categories.slug', 'guide').eq('categories.lang', lang)
     .order('created_at', { ascending: false })
     .range(from, to);
 
@@ -53,14 +53,14 @@ export default async function GuidePage({
               <div className="md:w-1/2 pt-4">
                 <span className="text-[10px] font-black uppercase text-slate-400 tracking-[0.3em] mb-4 block">LEVEL: ADVANCED</span>
                 <h2 className="text-3xl md:text-4xl font-black leading-tight mb-6 tracking-tight group-hover:text-[#ef4444]">
-                  <Link href={`/${lang}/${post.section}/${post.slug}`}>{post.title}</Link>
+                  <Link href={`/${lang}/${post.categories?.slug || 'guide'}/${post.slug}`}>{post.title}</Link>
                 </h2>
                 <p className="text-lg md:text-xl font-bold text-slate-600 leading-relaxed mb-8">
                   {post.excerpt}
                 </p>
                 <div className="flex gap-6">
                   <Link 
-                    href={`/${lang}/${post.section}/${post.slug}`}
+                    href={`/${lang}/${post.categories?.slug || 'guide'}/${post.slug}`}
                     className="inline-block bg-black text-white px-10 py-4 border-4 border-black font-black uppercase text-xs hover:bg-[#ef4444] transition-all"
                   >
                     Start Tutorial

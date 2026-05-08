@@ -40,13 +40,13 @@ export default async function HomePage({ params: { lang } }: { params: { lang: s
         </div>
         <div className="flex whitespace-nowrap py-4 pl-40 animate-[scroll_50s_linear_infinite] hover:[animation-play-state:paused]">
           {(trendingPosts || []).map((post) => (
-            <Link key={post.id} href={`/${lang}/${post.section || 'news'}/${post.slug}`} className="mx-8 font-black text-sm uppercase hover:text-[#ef4444] transition-colors">
+            <Link key={post.id} href={`/${lang}/${post.categories?.slug || 'news'}/${post.slug}`} className="mx-8 font-black text-sm uppercase hover:text-[#ef4444] transition-colors">
               • {post.title}
             </Link>
           ))}
           {/* Duplicate for infinite effect */}
           {(trendingPosts || []).map((post) => (
-            <Link key={`${post.id}-dup`} href={`/${lang}/${post.section || 'news'}/${post.slug}`} className="mx-8 font-black text-sm uppercase hover:text-[#ef4444] transition-colors">
+            <Link key={`${post.id}-dup`} href={`/${lang}/${post.categories?.slug || 'news'}/${post.slug}`} className="mx-8 font-black text-sm uppercase hover:text-[#ef4444] transition-colors">
               • {post.title}
             </Link>
           ))}
@@ -91,13 +91,13 @@ export default async function HomePage({ params: { lang } }: { params: { lang: s
                       {hero.categories?.name || 'Uncategorized'}
                     </span>
                     <h2 className="text-3xl lg:text-4xl font-display font-black leading-tight tracking-tight mb-4 group-hover:text-[#ef4444] transition-colors">
-                      <Link href={`/${lang}/${hero.section || 'news'}/${hero.slug}`}>{hero.title}</Link>
+                      <Link href={`/${lang}/${hero.categories?.slug || 'news'}/${hero.slug}`}>{hero.title}</Link>
                     </h2>
                     <p className="text-lg font-bold leading-relaxed mb-6 text-slate-700 line-clamp-3">
                       {hero.excerpt}
                     </p>
                     <Link 
-                      href={`/${lang}/${hero.section || 'news'}/${hero.slug}`}
+                      href={`/${lang}/${hero.categories?.slug || 'news'}/${hero.slug}`}
                       className="mt-auto inline-block border-2 border-black px-4 py-2 bg-black text-white font-black uppercase text-xs text-center hover:bg-white hover:text-black transition-all"
                     >
                       READ REPORT
@@ -120,7 +120,7 @@ export default async function HomePage({ params: { lang } }: { params: { lang: s
                     <div className="p-4 flex flex-col flex-grow justify-center">
                       <span className="font-black text-[10px] text-[#ef4444] uppercase mb-1">{post.categories?.name}</span>
                       <h3 className="text-xl font-black leading-tight tracking-tight mb-2 group-hover:underline">
-                        <Link href={`/${lang}/${post.section || 'news'}/${post.slug}`}>{post.title}</Link>
+                        <Link href={`/${lang}/${post.categories?.slug || 'news'}/${post.slug}`}>{post.title}</Link>
                       </h3>
                       <p className="text-sm font-bold text-slate-600 line-clamp-2 mb-4 leading-relaxed">{post.excerpt}</p>
                       <div className="mt-auto pt-2 border-t-2 border-black/10 flex justify-between items-center text-[9px] font-black uppercase">
@@ -150,7 +150,7 @@ export default async function HomePage({ params: { lang } }: { params: { lang: s
                 </div>
                 <span className="font-black text-xs text-[#ef4444] uppercase mb-2">{post.categories?.name}</span>
                 <h3 className="text-xl font-black leading-tight tracking-tight mb-4 group-hover:underline">
-                  <Link href={`/${lang}/${post.section || 'news'}/${post.slug}`}>{post.title}</Link>
+                  <Link href={`/${lang}/${post.categories?.slug || 'news'}/${post.slug}`}>{post.title}</Link>
                 </h3>
                 <p className="text-sm font-bold text-slate-600 line-clamp-3 mb-4 leading-relaxed">{post.excerpt}</p>
                 <div className="mt-auto pt-4 border-t-2 border-black/10 flex justify-between items-center text-[10px] font-black uppercase">
@@ -175,7 +175,7 @@ export default async function HomePage({ params: { lang } }: { params: { lang: s
                   </div>
                   <div>
                     <h4 className="text-lg font-black leading-tight group-hover:text-[#ef4444]">
-                      <Link href={`/${lang}/${post.section || 'news'}/${post.slug}`}>{post.title}</Link>
+                      <Link href={`/${lang}/${post.categories?.slug || 'news'}/${post.slug}`}>{post.title}</Link>
                     </h4>
                     <p className="text-xs font-bold text-slate-500 mt-2 line-clamp-2">{post.excerpt}</p>
                   </div>
@@ -199,7 +199,7 @@ export default async function HomePage({ params: { lang } }: { params: { lang: s
                   </div>
                   <div>
                     <h4 className="text-lg font-black leading-tight group-hover:text-[#ef4444]">
-                      <Link href={`/${lang}/${post.section || 'news'}/${post.slug}`}>{post.title}</Link>
+                      <Link href={`/${lang}/${post.categories?.slug || 'news'}/${post.slug}`}>{post.title}</Link>
                     </h4>
                     <p className="text-xs font-bold text-slate-500 mt-2 line-clamp-2">{post.excerpt}</p>
                   </div>

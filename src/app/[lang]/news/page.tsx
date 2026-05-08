@@ -16,9 +16,9 @@ export default async function NewsPage({
   // 1. Fetch Featured Hero (Latest 1)
   const { data: heroPost } = await supabase
     .from('posts')
-    .select('*, categories(*)')
+    .select('*, categories!inner(*)')
     .eq('lang', lang)
-    .eq('section', 'news')
+    .eq('categories.slug', 'news').eq('categories.lang', lang)
     .eq('is_published', true)
     .order('created_at', { ascending: false })
     .limit(1)
@@ -27,9 +27,9 @@ export default async function NewsPage({
   // 2. Fetch Top Stories (Next 4)
   const { data: topStories } = await supabase
     .from('posts')
-    .select('*, categories(*)')
+    .select('*, categories!inner(*)')
     .eq('lang', lang)
-    .eq('section', 'news')
+    .eq('categories.slug', 'news').eq('categories.lang', lang)
     .eq('is_published', true)
     .order('created_at', { ascending: false })
     .range(1, 4);
@@ -45,9 +45,8 @@ export default async function NewsPage({
     (categories || []).map(async (cat) => {
       const { data: posts } = await supabase
         .from('posts')
-        .select('*')
+        .select('*, categories!inner(*)')
         .eq('lang', lang)
-        .eq('section', 'news')
         .eq('category_id', cat.id)
         .eq('is_published', true)
         .order('created_at', { ascending: false })
@@ -80,7 +79,7 @@ export default async function NewsPage({
                     {heroPost.categories?.name || 'Uncategorized'}
                   </span>
                   <h1 className="text-3xl md:text-4xl font-black leading-tight mb-6 tracking-tight group-hover:text-[#ef4444] transition-colors">
-                    <Link href={`/${lang}/${heroPost.section || 'news'}/${heroPost.slug}`}>{heroPost.title}</Link>
+                    <Link href={`/${lang}/${heroPost.categories?.slug || 'news'}/${heroPost.slug}`}>{heroPost.title}</Link>
                   </h1>
                   <p className="text-lg font-bold text-slate-800 leading-relaxed mb-8 line-clamp-3">
                     {heroPost.excerpt}
@@ -108,7 +107,7 @@ export default async function NewsPage({
                     {post.categories?.name}
                   </span>
                   <h4 className="font-black leading-snug group-hover:underline decoration-2">
-                    <Link href={`/${lang}/${post.section || 'news'}/${post.slug}`}>{post.title}</Link>
+                    <Link href={`/${lang}/${post.categories?.slug || 'news'}/${post.slug}`}>{post.title}</Link>
                   </h4>
                 </div>
               </div>
@@ -133,7 +132,7 @@ export default async function NewsPage({
                     <img src={post.featured_image || '/placeholder.png'} alt={post.title} className="w-full h-full object-cover" />
                   </div>
                   <h3 className="text-lg md:text-xl font-black leading-tight tracking-tight group-hover:text-[#ef4444]">
-                    <Link href={`/${lang}/${post.section || 'news'}/${post.slug}`}>{post.title}</Link>
+                    <Link href={`/${lang}/${post.categories?.slug || 'news'}/${post.slug}`}>{post.title}</Link>
                   </h3>
                 </article>
               ))}

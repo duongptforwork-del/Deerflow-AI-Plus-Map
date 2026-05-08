@@ -73,7 +73,7 @@ export default async function NewsSection({
             </div>
             <div className="p-5 flex flex-col flex-1">
               <h3 className="text-xl font-black leading-tight tracking-tight mb-3 group-hover:text-[#ef4444] transition-colors line-clamp-2">
-                <Link href={`/${lang}/${post.section || 'news'}/${post.slug}`}>{post.title}</Link>
+                <Link href={`/${lang}/${post.categories?.slug || 'news'}/${post.slug}`}>{post.title}</Link>
               </h3>
               <p className="text-sm font-bold text-slate-600 line-clamp-2 mb-4 leading-relaxed">
                 {post.excerpt || post.content?.substring(0, 100)}...
@@ -83,7 +83,7 @@ export default async function NewsSection({
                   {new Date(post.created_at).toLocaleDateString()}
                 </span>
                 <Link 
-                  href={`/${lang}/${post.section || 'news'}/${post.slug}`}
+                  href={`/${lang}/${post.categories?.slug || 'news'}/${post.slug}`}
                   className="text-xs font-black uppercase underline hover:text-[#ef4444]"
                 >
                   Read More

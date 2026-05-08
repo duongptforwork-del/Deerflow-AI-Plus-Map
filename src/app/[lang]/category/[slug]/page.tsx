@@ -24,10 +24,9 @@ export default async function CategoryPage({ params }: { params: { lang: string,
 
   const { data: posts } = await supabase
     .from('posts')
-    .select('*')
+    .select('*, categories(*)')
     .eq('category_id', category.id)
     .eq('lang', lang)
-    .eq('section', 'news')
     .eq('is_published', true)
     .order('created_at', { ascending: false });
 
@@ -59,13 +58,13 @@ export default async function CategoryPage({ params }: { params: { lang: string,
                     {new Date(post.created_at).toLocaleDateString(lang === 'vi' ? 'vi-VN' : 'en-US')}
                   </div>
                   <h2 className="text-2xl font-black leading-tight mb-6 group-hover:text-[#ef4444] tracking-tight">
-                    <Link href={`/${lang}/${post.section || 'news'}/${post.slug}`}>{post.title}</Link>
+                    <Link href={`/${lang}/${post.categories?.slug || 'news'}/${post.slug}`}>{post.title}</Link>
                   </h2>
                   <p className="text-base font-bold text-slate-700 line-clamp-3 mb-8 leading-relaxed">
                     {post.excerpt}
                   </p>
                   <Link 
-                    href={`/${lang}/${post.section || 'news'}/${post.slug}`}
+                    href={`/${lang}/${post.categories?.slug || 'news'}/${post.slug}`}
                     className="inline-block border-4 border-black px-6 py-3 bg-black text-white font-black text-xs uppercase hover:bg-white hover:text-black transition-all text-center w-full"
                   >
                     {lang === 'vi' ? 'Xem chi tiết' : 'View Full Report'}

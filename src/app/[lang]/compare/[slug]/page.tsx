@@ -13,8 +13,8 @@ export async function generateStaticParams() {
   const supabase = createClient();
   const { data: posts } = await supabase
     .from('posts')
-    .select('slug, lang')
-    .eq('section', 'compare')
+    .select('slug, lang, categories!inner(slug)')
+    .eq('categories.slug', 'compare')
     .limit(50);
     
   return posts?.map((post) => ({ 
@@ -27,10 +27,10 @@ export async function generateMetadata({ params: { lang, slug } }: { params: { l
   const supabase = createClient();
   const { data: post } = await supabase
     .from('posts')
-    .select('*')
+    .select('*, categories!inner(*)')
     .eq('slug', slug)
     .eq('lang', lang)
-    .eq('section', 'compare')
+    .eq('categories.slug', 'compare')
     .single();
 
   if (!post) return {};
@@ -52,10 +52,10 @@ export default async function CompareDetailPage({ params: { lang, slug } }: { pa
 
   const { data: post } = await supabase
     .from('posts')
-    .select('*, categories(*)')
+    .select('*, categories!inner(*)')
     .eq('slug', slug)
     .eq('lang', lang)
-    .eq('section', 'compare')
+    .eq('categories.slug', 'compare')
     .single();
 
   if (!post) return notFound();
@@ -63,9 +63,9 @@ export default async function CompareDetailPage({ params: { lang, slug } }: { pa
   // Fetch related comparisons
   const { data: relatedPosts } = await supabase
     .from('posts')
-    .select('*, categories(*)')
+    .select('*, categories!inner(*)')
     .eq('lang', lang)
-    .eq('section', 'compare')
+    .eq('categories.slug', 'compare')
     .neq('id', post.id)
     .order('created_at', { ascending: false })
     .limit(3);
@@ -136,7 +136,7 @@ export default async function CompareDetailPage({ params: { lang, slug } }: { pa
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {relatedPosts.map((rPost) => (
-                <Link key={rPost.id} href={`/${lang}/${rPost.section}/${rPost.slug}`} className="group">
+                <Link key={rPost.id} href={`/${lang}/${rPost.categories?.slug || 'compare'}/${rPost.slug}`} className="group">
                   <div className="aspect-square border-4 border-black mb-4 overflow-hidden shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] bg-white">
                     <img src={rPost.featured_image} alt={rPost.title} className="w-full h-full object-cover transition-all" />
                   </div>

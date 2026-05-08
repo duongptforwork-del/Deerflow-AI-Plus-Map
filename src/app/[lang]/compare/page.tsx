@@ -21,9 +21,9 @@ export default async function ComparePage({
   // Fetch posts in 'compare' section
   const { data: posts, count } = await supabase
     .from('posts')
-    .select('*, categories(*)', { count: 'exact' })
+    .select('*, categories!inner(*)', { count: 'exact' })
     .eq('lang', lang)
-    .eq('section', 'compare')
+    .eq('categories.slug', 'compare').eq('categories.lang', lang)
     .order('created_at', { ascending: false })
     .range(from, to);
 
@@ -56,13 +56,13 @@ export default async function ComparePage({
               <div className="lg:w-1/3 p-10 flex flex-col justify-center">
                 <span className="text-[#ef4444] font-black uppercase tracking-[0.2em] text-[10px] mb-4 block">✦ FEATURED COMPARISON</span>
                 <h2 className="text-3xl md:text-4xl font-black leading-tight mb-6 tracking-tight group-hover:text-[#ef4444]">
-                  <Link href={`/${lang}/${heroPost.section}/${heroPost.slug}`}>{heroPost.title}</Link>
+                  <Link href={`/${lang}/${heroPost.categories?.slug || 'compare'}/${heroPost.slug}`}>{heroPost.title}</Link>
                 </h2>
                 <p className="text-lg font-bold text-slate-600 leading-relaxed mb-8">
                   {heroPost.excerpt}
                 </p>
                 <Link 
-                  href={`/${lang}/${heroPost.section}/${heroPost.slug}`}
+                  href={`/${lang}/${heroPost.categories?.slug || 'compare'}/${heroPost.slug}`}
                   className="inline-block bg-black text-white px-8 py-3 border-4 border-black font-black uppercase text-xs hover:bg-white hover:text-black transition-all text-center"
                 >
                   Read Analysis
@@ -87,9 +87,9 @@ export default async function ComparePage({
                 <div>
                   <span className="text-[10px] font-black uppercase text-slate-500 mb-2 block">{new Date(post.created_at).toLocaleDateString()}</span>
                   <h3 className="text-xl md:text-2xl font-black leading-tight mb-4 group-hover:text-[#ef4444]">
-                    <Link href={`/${lang}/${post.section}/${post.slug}`}>{post.title}</Link>
+                    <Link href={`/${lang}/${post.categories?.slug || 'compare'}/${post.slug}`}>{post.title}</Link>
                   </h3>
-                  <Link href={`/${lang}/${post.section}/${post.slug}`} className="text-xs font-black uppercase border-b-2 border-black hover:text-[#ef4444] hover:border-[#ef4444]">View Breakdown →</Link>
+                  <Link href={`/${lang}/${post.categories?.slug || 'compare'}/${post.slug}`} className="text-xs font-black uppercase border-b-2 border-black hover:text-[#ef4444] hover:border-[#ef4444]">View Breakdown →</Link>
                 </div>
               </article>
             ))}

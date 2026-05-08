@@ -20,7 +20,7 @@ export default async function AdminPage({
   // Fetch posts from Supabase
   const { data: posts, error: postsError } = await supabase
     .from('posts')
-    .select('*, categories(name)')
+    .select('*, categories!inner(*)')
     .eq('lang', lang)
     .order('created_at', { ascending: false });
 
