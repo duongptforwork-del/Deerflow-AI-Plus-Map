@@ -14,7 +14,8 @@ export default async function HomePage({ params: { lang } }: { params: { lang: s
     { data: trendingPosts },
     { data: latestNews },
     { data: comparePosts },
-    { data: guidePosts }
+    { data: guidePosts },
+    { data: eventPosts }
   ] = await Promise.all([
     // Hero (4 posts total)
     supabase.from('posts').select('*, categories!inner(*)').eq('lang', lang).eq('categories.slug', 'news').eq('is_published', true).order('created_at', { ascending: false }).limit(4),
@@ -25,7 +26,9 @@ export default async function HomePage({ params: { lang } }: { params: { lang: s
     // Compare Sections
     supabase.from('posts').select('*, categories!inner(*)').eq('lang', lang).eq('is_published', true).eq('categories.slug', 'compare').order('created_at', { ascending: false }).limit(3),
     // AI Guide
-    supabase.from('posts').select('*, categories!inner(*)').eq('lang', lang).eq('is_published', true).eq('categories.slug', 'guide').order('created_at', { ascending: false }).limit(3)
+    supabase.from('posts').select('*, categories!inner(*)').eq('lang', lang).eq('is_published', true).eq('categories.slug', 'guide').order('created_at', { ascending: false }).limit(3),
+    // AI Events
+    supabase.from('posts').select('*, categories!inner(*)').eq('lang', lang).eq('is_published', true).eq('categories.slug', 'events').order('created_at', { ascending: false }).limit(4)
   ]);
 
   const hero = heroPosts?.[0];
@@ -40,13 +43,13 @@ export default async function HomePage({ params: { lang } }: { params: { lang: s
         </div>
         <div className="flex whitespace-nowrap py-4 pl-40 animate-[scroll_50s_linear_infinite] hover:[animation-play-state:paused]">
           {(trendingPosts || []).map((post) => (
-            <Link key={post.id} href={`/${lang}/${post.categories?.slug || 'news'}/${post.slug}`} className="mx-8 font-black text-sm uppercase hover:text-[#ef4444] transition-colors">
+            <Link key={post.id} href={`/${lang}/${post.categories?.slug}/${post.slug}`} className="mx-8 font-black text-sm uppercase hover:text-[#ef4444] transition-colors">
               • {post.title}
             </Link>
           ))}
           {/* Duplicate for infinite effect */}
           {(trendingPosts || []).map((post) => (
-            <Link key={`${post.id}-dup`} href={`/${lang}/${post.categories?.slug || 'news'}/${post.slug}`} className="mx-8 font-black text-sm uppercase hover:text-[#ef4444] transition-colors">
+            <Link key={`${post.id}-dup`} href={`/${lang}/${post.categories?.slug}/${post.slug}`} className="mx-8 font-black text-sm uppercase hover:text-[#ef4444] transition-colors">
               • {post.title}
             </Link>
           ))}
@@ -91,13 +94,13 @@ export default async function HomePage({ params: { lang } }: { params: { lang: s
                       {hero.categories?.name || 'Uncategorized'}
                     </span>
                     <h2 className="text-3xl lg:text-4xl font-display font-black leading-tight tracking-tight mb-4 group-hover:text-[#ef4444] transition-colors">
-                      <Link href={`/${lang}/${hero.categories?.slug || 'news'}/${hero.slug}`}>{hero.title}</Link>
+                      <Link href={`/${lang}/${hero.categories?.slug}/${hero.slug}`}>{hero.title}</Link>
                     </h2>
                     <p className="text-lg font-bold leading-relaxed mb-6 text-slate-700 line-clamp-3">
                       {hero.excerpt}
                     </p>
                     <Link 
-                      href={`/${lang}/${hero.categories?.slug || 'news'}/${hero.slug}`}
+                      href={`/${lang}/${hero.categories?.slug}/${hero.slug}`}
                       className="mt-auto inline-block border-2 border-black px-4 py-2 bg-black text-white font-black uppercase text-xs text-center hover:bg-white hover:text-black transition-all"
                     >
                       READ REPORT
@@ -120,7 +123,7 @@ export default async function HomePage({ params: { lang } }: { params: { lang: s
                     <div className="p-4 flex flex-col flex-grow justify-center">
                       <span className="font-black text-[10px] text-[#ef4444] uppercase mb-1">{post.categories?.name}</span>
                       <h3 className="text-xl font-black leading-tight tracking-tight mb-2 group-hover:underline">
-                        <Link href={`/${lang}/${post.categories?.slug || 'news'}/${post.slug}`}>{post.title}</Link>
+                        <Link href={`/${lang}/${post.categories?.slug}/${post.slug}`}>{post.title}</Link>
                       </h3>
                       <p className="text-sm font-bold text-slate-600 line-clamp-2 mb-4 leading-relaxed">{post.excerpt}</p>
                       <div className="mt-auto pt-2 border-t-2 border-black/10 flex justify-between items-center text-[9px] font-black uppercase">
@@ -150,7 +153,7 @@ export default async function HomePage({ params: { lang } }: { params: { lang: s
                 </div>
                 <span className="font-black text-xs text-[#ef4444] uppercase mb-2">{post.categories?.name}</span>
                 <h3 className="text-xl font-black leading-tight tracking-tight mb-4 group-hover:underline">
-                  <Link href={`/${lang}/${post.categories?.slug || 'news'}/${post.slug}`}>{post.title}</Link>
+                  <Link href={`/${lang}/${post.categories?.slug}/${post.slug}`}>{post.title}</Link>
                 </h3>
                 <p className="text-sm font-bold text-slate-600 line-clamp-3 mb-4 leading-relaxed">{post.excerpt}</p>
                 <div className="mt-auto pt-4 border-t-2 border-black/10 flex justify-between items-center text-[10px] font-black uppercase">
@@ -175,7 +178,7 @@ export default async function HomePage({ params: { lang } }: { params: { lang: s
                   </div>
                   <div>
                     <h4 className="text-lg font-black leading-tight group-hover:text-[#ef4444]">
-                      <Link href={`/${lang}/${post.categories?.slug || 'news'}/${post.slug}`}>{post.title}</Link>
+                      <Link href={`/${lang}/${post.categories?.slug}/${post.slug}`}>{post.title}</Link>
                     </h4>
                     <p className="text-xs font-bold text-slate-500 mt-2 line-clamp-2">{post.excerpt}</p>
                   </div>
@@ -199,7 +202,7 @@ export default async function HomePage({ params: { lang } }: { params: { lang: s
                   </div>
                   <div>
                     <h4 className="text-lg font-black leading-tight group-hover:text-[#ef4444]">
-                      <Link href={`/${lang}/${post.categories?.slug || 'news'}/${post.slug}`}>{post.title}</Link>
+                      <Link href={`/${lang}/${post.categories?.slug}/${post.slug}`}>{post.title}</Link>
                     </h4>
                     <p className="text-xs font-bold text-slate-500 mt-2 line-clamp-2">{post.excerpt}</p>
                   </div>
@@ -212,6 +215,35 @@ export default async function HomePage({ params: { lang } }: { params: { lang: s
             </div>
           </section>
         </div>
+
+        {/* AI Events Section */}
+        <section className="mb-24">
+          <SectionHeader title="AI Events" lang={lang} href={`/${lang}/events`} />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {(eventPosts || []).length > 0 ? (eventPosts || []).map((post) => (
+              <article key={post.id} className="group flex flex-col">
+                <div className="aspect-video border-4 border-black mb-4 overflow-hidden relative shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] bg-white">
+                  <img 
+                    src={post.featured_image} 
+                    alt={post.title} 
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
+                  />
+                </div>
+                <h3 className="text-lg font-black leading-tight tracking-tight mb-2 group-hover:underline">
+                  <Link href={`/${lang}/${post.categories?.slug}/${post.slug}`}>{post.title}</Link>
+                </h3>
+                <div className="mt-auto flex justify-between items-center text-[10px] font-black uppercase">
+                   <span className="text-slate-500">{new Date(post.created_at).toLocaleDateString()}</span>
+                   <span className="bg-[#ef4444] text-white px-2 py-0.5">EVENT</span>
+                </div>
+              </article>
+            )) : (
+              <div className="col-span-full p-12 border-4 border-dashed border-black/10 text-center">
+                <p className="font-black text-slate-400 uppercase tracking-widest">No upcoming events scheduled</p>
+              </div>
+            )}
+          </div>
+        </section>
 
         {/* Dynamic Category Sections */}
         <NewsSection 
