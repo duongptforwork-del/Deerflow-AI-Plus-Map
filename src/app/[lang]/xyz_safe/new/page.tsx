@@ -7,7 +7,6 @@ import {
   ArrowLeft, 
   Save, 
   Send, 
-  ChevronDown, 
   Image as ImageIcon, 
   Layout, 
   Globe,
@@ -19,41 +18,12 @@ import {
   List,
   Upload,
   Loader2,
-  Trash2
+  Trash2,
+  MapPin,
+  Calendar as CalendarIcon,
+  Link as LinkIcon
 } from 'lucide-react';
-
-// Security configuration (PBKDF2)
-const AUTH_SALT = '128431c8252060cd971adbdaf3ae4b6a';
-const AUTH_HASH = '5cb6ea6355ff5a7bc32458db87ab92c9dffd3da456b4ed6d7c995c295fd39048';
-
-async function verifyPassword(password: string): Promise<boolean> {
-  try {
-    const encoder = new TextEncoder();
-    const saltBuffer = new Uint8Array(AUTH_SALT.match(/.{1,2}/g)!.map(byte => parseInt(byte, 16)));
-    const passwordKey = await crypto.subtle.importKey(
-      'raw', 
-      encoder.encode(password), 
-      { name: 'PBKDF2' }, 
-      false, 
-      ['deriveBits']
-    );
-    const hashBuffer = await crypto.subtle.deriveBits(
-      { 
-        name: 'PBKDF2', 
-        salt: saltBuffer, 
-        iterations: 100000, 
-        hash: 'SHA-256' 
-      },
-      passwordKey, 
-      256
-    );
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    return hashHex === AUTH_HASH;
-  } catch (e) {
-    return false;
-  }
-}
+import { verifyPassword, setAdminSession, getAdminSession } from '@/utils/auth';
 
 export default function NewPostPage({ params }: { params: { lang: string } }) {
   const router = useRouter();
@@ -72,98 +42,33 @@ export default function NewPostPage({ params }: { params: { lang: string } }) {
   const [slug, setSlug] = useState('');
   const [excerpt, setExcerpt] = useState('');
   const [content, setContent] = useState('');
-  const [categoryId, setCategoryId] = useState('');
-
-
   const [section, setSection] = useState('news');
   const [featuredImage, setFeaturedImage] = useState('');
+  const [authorName, setAuthorName] = useState('Sếp');
   
-  const [categories, setCategories] = useState<any[]>([]);
+  // Event specific fields
+  const [eventDate, setEventDate] = useState('');
+  const [location, setLocation] = useState('');
+  const [registrationLink, setRegistrationLink] = useState('');
 
-  const filteredCategories = categories.filter(c => {
-    if (section === 'compare') return c.slug.includes('compare');
-    if (section === 'guide') return c.slug.includes('guide');
-    return !c.slug.includes('compare') && !c.slug.includes('guide');
-  });
-
-  useEffect(() => {
-    if (filteredCategories.length > 0 && !filteredCategories.find(c => c.id === categoryId)) {
-      setCategoryId(filteredCategories[0].id);
-    }
-  }, [section, categories]);
-  const [newCategoryName, setNewCategoryName] = useState('');
-  const [isAddingCategory, setIsAddingCategory] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
-    const auth = localStorage.getItem('admin_auth_session');
-    if (auth === 'true') {
+    if (getAdminSession()) {
       setIsAuthorized(true);
-      fetchCategories();
     } else {
       setIsAuthorized(false);
     }
   }, []);
-
-  const fetchCategories = async () => {
-    const targetLang = lang;
-    const { data, error } = await supabase
-      .from('categories')
-      .select('id, name, slug')
-      .eq('lang', targetLang)
-      .order('name');
-    
-    if (data) setCategories(data);
-    if (error) console.error('Fetch categories error:', error);
-  };
-
-  const handleAddCategory = async () => {
-    if (!newCategoryName.trim()) return;
-    
-    setIsAddingCategory(true);
-    const targetLang = lang;
-    const catSlug = newCategoryName
-      .toLowerCase()
-      .trim()
-      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^\w\s-]/g, '')
-      .replace(/[\s_-]+/g, '-')
-      .replace(/^-+|-+$/g, '');
-
-    const { data, error } = await supabase
-      .from('categories')
-      .upsert({ 
-        name: newCategoryName, 
-        slug: catSlug, 
-        lang: targetLang, 
-        type: 'post' 
-      }, { onConflict: 'slug,lang' })
-      .select();
-
-    if (error) {
-      console.error('Upsert category error:', error);
-      alert('Lỗi category: ' + error.message);
-    } else if (data && data[0]) {
-      setCategories(prev => {
-        const exists = prev.find(c => c.id === data[0].id);
-        if (exists) return prev;
-        return [...prev, data[0]].sort((a, b) => a.name.localeCompare(b.name));
-      });
-      setCategoryId(data[0].id);
-      setNewCategoryName('');
-    }
-    setIsAddingCategory(false);
-  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsChecking(true);
     const isValid = await verifyPassword(password);
     if (isValid) {
-      localStorage.setItem('admin_auth_session', 'true');
+      setAdminSession();
       setIsAuthorized(true);
-      fetchCategories();
     } else {
       alert('Sai mật khẩu rồi Sếp ơi!');
     }
@@ -245,23 +150,35 @@ export default function NewPostPage({ params }: { params: { lang: string } }) {
       slug,
       excerpt,
       content,
-      category_id: categoryId || null,
       featured_image: featuredImage || null,
+      author_name: authorName || 'Sếp',
       is_published: published,
       lang: lang,
-      author_name: 'Sếp'
+      section: section,
+      event_date: section === 'events' ? (eventDate || null) : null,
+      location: section === 'events' ? (location || null) : null,
+      registration_link: section === 'events' ? (registrationLink || null) : null
     };
 
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('posts')
-      .insert([postData]);
+      .insert([postData])
+      .select()
+      .single();
 
     if (error) {
       console.error('Save error:', error);
       alert('Lỗi rồi Sếp: ' + error.message);
     } else {
+      if (lang === 'en') {
+        fetch('/api/auto-translate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ postId: data.id, targetLang: 'vi' })
+        }).catch(err => console.error("Auto-translate trigger failed:", err));
+      }
       alert(published ? 'Đã xuất bản thành công!' : 'Đã lưu nháp!');
-      router.push(`/${lang}/admin`);
+      router.push(`/${lang}/xyz_safe`);
     }
     setIsLoading(false);
   };
@@ -306,7 +223,7 @@ export default function NewPostPage({ params }: { params: { lang: string } }) {
       <header className="h-20 bg-white border-b-4 border-black sticky top-0 z-10 px-8 flex items-center justify-between">
         <div className="flex items-center gap-6">
           <button 
-            onClick={() => router.push(`/${lang}/admin`)} 
+            onClick={() => router.push(`/${lang}/xyz_safe`)} 
             className="p-3 border-4 border-black hover:bg-black hover:text-white transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-1 active:translate-y-1"
           >
             <ArrowLeft size={24} strokeWidth={3} />
@@ -358,7 +275,7 @@ export default function NewPostPage({ params }: { params: { lang: string } }) {
                 <span>Slug:</span>
               </div>
               <code className="text-sm font-black bg-transparent border-none outline-none flex-1 tracking-widest uppercase text-yellow-400">
-                aiplusmap.com/{lang}/article/<span className="underline decoration-wavy">{slug || '...'}</span>
+                aiplusmap.com/{lang}/[section]/<span className="underline decoration-wavy">{slug || '...'}</span>
               </code>
             </div>
 
@@ -410,16 +327,17 @@ export default function NewPostPage({ params }: { params: { lang: string } }) {
             <div className="p-8 space-y-8">
               <div>
                 <label className="block text-[10px] font-black text-black/40 uppercase tracking-[0.3em] mb-4">Section Type</label>
-                <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-3">
                   {[
-                    { id: 'news', label: 'News Feed' },
-                    { id: 'compare', label: 'Comparison' },
-                    { id: 'guide', label: 'AI Guide' }
+                    { id: 'news', label: 'News' },
+                    { id: 'compare', label: 'Compare' },
+                    { id: 'guide', label: 'Guide' },
+                    { id: 'events', label: 'Event' }
                   ].map((type) => (
                     <button
                       key={type.id}
                       onClick={() => setSection(type.id)}
-                      className={`w-full p-4 border-4 transition-all text-left font-black uppercase tracking-widest ${
+                      className={`p-4 border-4 transition-all text-center font-black uppercase text-[10px] tracking-widest ${
                         section === type.id 
                           ? 'border-black bg-black text-white shadow-[4px_4px_0px_0px_rgba(239,68,68,1)]' 
                           : 'border-black bg-white hover:bg-[#F3F4F6]'
@@ -431,43 +349,64 @@ export default function NewPostPage({ params }: { params: { lang: string } }) {
                 </div>
               </div>
 
-              
-                <div>
-                  <label className="block text-[10px] font-black text-black/40 uppercase tracking-[0.3em] mb-4">Category Selection</label>
+              {section === 'events' && (
+                <div className="space-y-6 p-6 border-4 border-black bg-black text-white">
+                  <h4 className="font-black text-[10px] uppercase tracking-[0.3em] text-[#ef4444]">Event Details</h4>
+                  
                   <div className="space-y-4">
-                    <div className="relative">
-                      <select 
-                        className="w-full appearance-none bg-white border-4 border-black p-4 outline-none font-black uppercase tracking-widest cursor-pointer"
-                        value={categoryId}
-                        onChange={(e) => setCategoryId(e.target.value)}
-                      >
-                        <option value="">UNCATEGORIZED</option>
-                        {filteredCategories.map(cat => (
-                          <option key={cat.id} value={cat.id}>{cat.name}</option>
-                        ))}
-                      </select>
-                      <ChevronDown size={24} strokeWidth={3} className="absolute right-4 top-1/2 -translate-y-1/2 text-black pointer-events-none" />
+                    <div>
+                      <div className="flex items-center gap-2 mb-2 text-white/40">
+                        <CalendarIcon size={14} />
+                        <label className="text-[10px] font-black uppercase tracking-widest">Event Date</label>
+                      </div>
+                      <input 
+                        type="date" 
+                        className="w-full bg-white text-black p-3 border-2 border-white outline-none font-bold"
+                        value={eventDate}
+                        onChange={(e) => setEventDate(e.target.value)}
+                      />
                     </div>
-
-                    <div className="flex flex-col gap-3">
+                    
+                    <div>
+                      <div className="flex items-center gap-2 mb-2 text-white/40">
+                        <MapPin size={14} />
+                        <label className="text-[10px] font-black uppercase tracking-widest">Location</label>
+                      </div>
                       <input 
                         type="text" 
-                        placeholder="NEW CATEGORY..."
-                        className="w-full bg-[#F3F4F6] border-4 border-black p-3 outline-none font-black uppercase tracking-widest focus:bg-white text-xs"
-                        value={newCategoryName}
-                        onChange={(e) => setNewCategoryName(e.target.value)}
+                        placeholder="Online / Venue..."
+                        className="w-full bg-white text-black p-3 border-2 border-white outline-none font-bold"
+                        value={location}
+                        onChange={(e) => setLocation(e.target.value)}
                       />
-                      <button 
-                        type="button"
-                        onClick={handleAddCategory}
-                        disabled={isAddingCategory || !newCategoryName.trim()}
-                        className="bg-black text-white p-3 font-black uppercase tracking-widest border-4 border-black hover:bg-[#ef4444] transition-all disabled:opacity-20"
-                      >
-                        {isAddingCategory ? 'ADDING...' : 'CREATE CATEGORY'}
-                      </button>
+                    </div>
+
+                    <div>
+                      <div className="flex items-center gap-2 mb-2 text-white/40">
+                        <LinkIcon size={14} />
+                        <label className="text-[10px] font-black uppercase tracking-widest">Register Link</label>
+                      </div>
+                      <input 
+                        type="text" 
+                        placeholder="https://..."
+                        className="w-full bg-white text-black p-3 border-2 border-white outline-none font-bold"
+                        value={registrationLink}
+                        onChange={(e) => setRegistrationLink(e.target.value)}
+                      />
                     </div>
                   </div>
                 </div>
+              )}
+
+              <div>
+                <label className="block text-[10px] font-black text-black/40 uppercase tracking-[0.3em] mb-4">Author Profile</label>
+                <input 
+                  type="text" 
+                  className="w-full bg-[#F3F4F6] border-4 border-black p-4 outline-none font-black uppercase tracking-widest focus:bg-white transition-all"
+                  value={authorName}
+                  onChange={(e) => setAuthorName(e.target.value)}
+                />
+              </div>
 
               <div>
                 <label className="block text-[10px] font-black text-black/40 uppercase tracking-[0.3em] mb-4">Featured Media</label>
@@ -509,17 +448,6 @@ export default function NewPostPage({ params }: { params: { lang: string } }) {
                       <span className="text-[10px] font-black text-black uppercase tracking-[0.2em]">Upload Cover</span>
                     </div>
                   )}
-                </div>
-                
-                <div className="mt-6 p-4 border-4 border-black bg-yellow-50">
-                   <h5 className="text-[10px] font-black uppercase tracking-widest mb-2">Manual URL</h5>
-                   <input 
-                      type="text" 
-                      placeholder="https://..."
-                      className="w-full p-2 bg-white border-2 border-black text-[10px] outline-none"
-                      value={featuredImage}
-                      onChange={(e) => setFeaturedImage(e.target.value)}
-                    />
                 </div>
               </div>
             </div>

@@ -13,8 +13,8 @@ export async function generateStaticParams() {
   const supabase = createClient();
   const { data: posts } = await supabase
     .from('posts')
-    .select('slug, lang, categories!inner(slug)')
-    .eq('categories.slug', 'guide')
+    .select('slug, lang')
+    .eq('section', 'guide')
     .limit(50);
     
   return posts?.map((post) => ({ 
@@ -27,10 +27,10 @@ export async function generateMetadata({ params: { lang, slug } }: { params: { l
   const supabase = createClient();
   const { data: post } = await supabase
     .from('posts')
-    .select('*, categories!inner(*)')
+    .select('*, categories(*)')
     .eq('slug', slug)
     .eq('lang', lang)
-    .eq('categories.slug', 'guide')
+    .eq('section', 'guide')
     .single();
 
   if (!post) return {};
@@ -52,20 +52,20 @@ export default async function GuideDetailPage({ params: { lang, slug } }: { para
 
   const { data: post } = await supabase
     .from('posts')
-    .select('*, categories!inner(*)')
+    .select('*, categories(*)')
     .eq('slug', slug)
     .eq('lang', lang)
-    .eq('categories.slug', 'guide')
+    .eq('section', 'guide')
     .single();
 
   if (!post) return notFound();
 
-  // Fetch related guides
+  // Fetch related guides using the new section filter
   const { data: relatedPosts } = await supabase
     .from('posts')
-    .select('*, categories!inner(*)')
+    .select('*, categories(*)')
     .eq('lang', lang)
-    .eq('categories.slug', 'guide')
+    .eq('section', 'guide')
     .neq('id', post.id)
     .order('created_at', { ascending: false })
     .limit(3);
@@ -86,7 +86,7 @@ export default async function GuideDetailPage({ params: { lang, slug } }: { para
               </span>
             </div>
             
-            <h1 className="text-3xl md:text-4xl font-display font-black leading-tight mb-8 tracking-tight text-balance">
+            <h1 className="text-3xl md:text-5xl font-black leading-tight mb-8 tracking-tight text-balance">
               {post.title}
             </h1>
             
@@ -100,7 +100,7 @@ export default async function GuideDetailPage({ params: { lang, slug } }: { para
           </div>
 
           <div className="prose prose-slate prose-lg max-w-none 
-            prose-headings:font-display prose-headings:font-black prose-headings:tracking-tight
+            prose-headings:font-black prose-headings:tracking-tight
             prose-p:font-bold prose-p:leading-relaxed prose-p:text-slate-800
             prose-strong:font-black prose-strong:text-black
             prose-em:italic prose-em:text-[#ef4444]
@@ -131,13 +131,13 @@ export default async function GuideDetailPage({ params: { lang, slug } }: { para
         {/* Related Posts */}
         {relatedPosts && relatedPosts.length > 0 && (
           <section className="mt-32">
-            <h2 className="text-4xl font-display font-black uppercase italic tracking-tighter mb-12 border-b-4 border-black pb-4">
+            <h2 className="text-4xl font-black uppercase italic tracking-tighter mb-12 border-b-4 border-black pb-4">
               {lang === 'vi' ? 'Hướng dẫn khác' : 'More Guides'}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {relatedPosts.map((rPost) => (
                 <Link key={rPost.id} href={`/${lang}/${rPost.categories?.slug || 'guide'}/${rPost.slug}`} className="group">
-                  <div className="aspect-square border-4 border-black mb-4 overflow-hidden shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] bg-white">
+                  <div className="aspect-square border-4 border-black mb-4 overflow-hidden shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] bg-white group-hover:shadow-none group-hover:translate-x-1 group-hover:translate-y-1 transition-all">
                     <img src={rPost.featured_image} alt={rPost.title} className="w-full h-full object-cover transition-all" />
                   </div>
                   <h3 className="text-xl font-black leading-none group-hover:text-[#ef4444] transition-colors">{rPost.title}</h3>

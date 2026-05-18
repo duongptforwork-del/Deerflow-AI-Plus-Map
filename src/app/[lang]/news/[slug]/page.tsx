@@ -10,8 +10,8 @@ export async function generateStaticParams() {
   const supabase = createClient();
   const { data: posts } = await supabase
     .from('posts')
-    .select('slug, lang, categories!inner(slug)')
-    .eq('categories.slug', 'news')
+    .select('slug, lang')
+    .eq('section', 'news')
     .limit(50);
     
   return posts?.map((post) => ({ 
@@ -28,10 +28,10 @@ export async function generateMetadata({ params: { lang, slug } }: { params: { l
   const supabase = createClient();
   const { data: post } = await supabase
     .from('posts')
-    .select('*, categories!inner(*)')
+    .select('*, categories(*)')
     .eq('slug', slug)
     .eq('lang', lang)
-    .eq('categories.slug', 'news')
+    .eq('section', 'news')
     .single();
 
   if (!post) return {};
@@ -53,30 +53,23 @@ export default async function NewsDetailPage({ params: { lang, slug } }: { param
 
   const { data: post } = await supabase
     .from('posts')
-    .select('*, categories!inner(*)')
+    .select('*, categories(*)')
     .eq('slug', slug)
     .eq('lang', lang)
-    .eq('categories.slug', 'news')
+    .eq('section', 'news')
     .single();
 
   if (!post) return notFound();
 
-  // Fetch related posts from the same category or same section if category is null
-  let relatedQuery = supabase
+  // Fetch related posts from the same section
+  const { data: relatedPosts } = await supabase
     .from('posts')
-    .select('*, categories!inner(*)')
+    .select('*, categories(*)')
     .eq('lang', lang)
+    .eq('section', 'news')
     .neq('id', post.id)
     .order('created_at', { ascending: false })
     .limit(3);
-
-  if (post.categories?.slug) {
-    relatedQuery = relatedQuery.eq('categories.slug', post.categories.slug);
-  } else {
-    relatedQuery = relatedQuery.eq('categories.slug', 'news');
-  }
-
-  const { data: relatedPosts } = await relatedQuery;
 
   return (
     <div className="min-h-screen bg-[#F3F4F6] text-black selection:bg-[#ef4444] selection:text-white">
@@ -94,7 +87,7 @@ export default async function NewsDetailPage({ params: { lang, slug } }: { param
               </span>
             </div>
             
-            <h1 className="text-3xl md:text-4xl font-display font-black leading-tight mb-8 tracking-tight">
+            <h1 className="text-3xl md:text-5xl font-black leading-tight mb-8 tracking-tight">
               {post.title}
             </h1>
             
@@ -104,11 +97,11 @@ export default async function NewsDetailPage({ params: { lang, slug } }: { param
           </header>
 
           <div className="aspect-video w-full border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] bg-white overflow-hidden mb-16">
-            <img src={post.featured_image} alt={post.title} className="w-full h-full object-cover transition-all duration-700" />
+            <img src={post.featured_image} alt={post.title} className="w-full h-full object-cover" />
           </div>
 
           <div className="prose prose-slate prose-lg max-w-none 
-            prose-headings:font-display prose-headings:font-black prose-headings:tracking-tight
+            prose-headings:font-black prose-headings:tracking-tight
             prose-p:font-bold prose-p:leading-relaxed prose-p:text-slate-800
             prose-strong:font-black prose-strong:text-black
             prose-em:italic prose-em:text-[#ef4444]
@@ -148,14 +141,14 @@ export default async function NewsDetailPage({ params: { lang, slug } }: { param
         {/* Related Posts */}
         {relatedPosts && relatedPosts.length > 0 && (
           <section className="mt-32">
-            <h2 className="text-4xl font-display font-black uppercase italic tracking-tighter mb-12 border-b-4 border-black pb-4">
+            <h2 className="text-4xl font-black uppercase italic tracking-tighter mb-12 border-b-4 border-black pb-4">
               Keep Reading
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {relatedPosts.map((rPost) => (
                 <Link key={rPost.id} href={`/${lang}/${rPost.categories?.slug || 'news'}/${rPost.slug}`} className="group">
-                  <div className="aspect-square border-4 border-black mb-4 overflow-hidden shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] bg-white">
-                    <img src={rPost.featured_image} alt={rPost.title} className="w-full h-full object-cover   transition-all" />
+                  <div className="aspect-square border-4 border-black mb-4 overflow-hidden shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] bg-white group-hover:shadow-none group-hover:translate-x-1 group-hover:translate-y-1 transition-all">
+                    <img src={rPost.featured_image} alt={rPost.title} className="w-full h-full object-cover" />
                   </div>
                   <h3 className="text-xl font-black leading-none group-hover:text-[#ef4444] transition-colors">{rPost.title}</h3>
                 </Link>

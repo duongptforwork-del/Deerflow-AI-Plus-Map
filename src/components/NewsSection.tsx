@@ -1,17 +1,17 @@
 import React from 'react';
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/server';
-import { FileText, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 
 interface NewsSectionProps {
-  categorySlug?: string;
+  section?: string;
   lang: string;
   limit?: number;
   title?: string;
 }
 
 export default async function NewsSection({ 
-  categorySlug, 
+  section = 'news', 
   lang, 
   limit = 4,
   title = "Latest News" 
@@ -19,22 +19,20 @@ export default async function NewsSection({
   
   const supabase = createClient();
 
+  // Refactored: Removed categories join, filtering by section directly
   let query = supabase
     .from('posts')
-    .select('*, categories!inner(*)')
+    .select('*')
     .eq('lang', lang)
+    .eq('section', section)
     .eq('is_published', true)
     .order('created_at', { ascending: false })
     .limit(limit);
 
-  if (categorySlug) {
-    query = query.eq('categories.slug', categorySlug).eq('categories.lang', lang);
-  }
-
   const { data: posts, error } = await query;
 
   if (error) {
-    console.error('Error fetching news:', error);
+    console.error('Error fetching section posts:', error);
     return null;
   }
 
@@ -49,7 +47,7 @@ export default async function NewsSection({
           {title}
         </h2>
         <Link 
-          href={`/${lang}/news${categorySlug ? `?category=${categorySlug}` : ''}`}
+          href={`/${lang}/${section}`}
           className="group flex items-center gap-2 font-black text-sm uppercase hover:text-[#ef4444] transition-colors"
         >
           View All <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
@@ -63,17 +61,17 @@ export default async function NewsSection({
               <img 
                 src={post.featured_image || 'https://images.unsplash.com/photo-1677442136019-21780ecad995'} 
                 alt={post.title} 
-                className="w-full h-full object-cover   transition-all duration-500" 
+                className="w-full h-full object-cover transition-all duration-500" 
               />
               <div className="absolute top-4 left-4">
                 <span className="bg-black text-white px-2 py-0.5 text-[10px] font-black uppercase">
-                  {post.categories?.name}
+                  {post.section?.toUpperCase() || 'NEWS'}
                 </span>
               </div>
             </div>
             <div className="p-5 flex flex-col flex-1">
               <h3 className="text-xl font-black leading-tight tracking-tight mb-3 group-hover:text-[#ef4444] transition-colors line-clamp-2">
-                <Link href={`/${lang}/${post.categories?.slug || 'news'}/${post.slug}`}>{post.title}</Link>
+                <Link href={`/${lang}/${post.section || 'news'}/${post.slug}`}>{post.title}</Link>
               </h3>
               <p className="text-sm font-bold text-slate-600 line-clamp-2 mb-4 leading-relaxed">
                 {post.excerpt || post.content?.substring(0, 100)}...
@@ -83,7 +81,7 @@ export default async function NewsSection({
                   {new Date(post.created_at).toLocaleDateString()}
                 </span>
                 <Link 
-                  href={`/${lang}/${post.categories?.slug || 'news'}/${post.slug}`}
+                  href={`/${lang}/${post.section || 'news'}/${post.slug}`}
                   className="text-xs font-black uppercase underline hover:text-[#ef4444]"
                 >
                   Read More

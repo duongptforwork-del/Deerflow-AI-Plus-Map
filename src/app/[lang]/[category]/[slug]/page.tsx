@@ -1,8 +1,11 @@
 import { createClient } from '@/utils/supabase/server';
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import Link from 'next/link';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import remarkBreaks from 'remark-breaks';
 
 export const revalidate = 0;
 
@@ -10,28 +13,23 @@ export async function generateStaticParams() {
   const supabase = createClient();
   const { data: posts } = await supabase
     .from('posts')
-    .select('slug, lang, categories(slug)')
-    .not('categories', 'is', 'null');
+    .select('slug, lang, section');
     
   return posts?.map((post: any) => ({ 
     lang: post.lang,
-    category: post.categories?.slug,
+    category: post.section || 'news',
     slug: post.slug 
   })) || [];
 }
 
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import remarkBreaks from 'remark-breaks';
-
 export async function generateMetadata({ params: { lang, category, slug } }: { params: { lang: string; category: string; slug: string } }) {
   const supabase = createClient();
+  
   const { data: post } = await supabase
     .from('posts')
-    .select('*, categories!inner(*)')
+    .select('*')
     .eq('slug', slug)
     .eq('lang', lang)
-    .eq('categories.slug', category)
     .single();
 
   if (!post) return {};
@@ -53,30 +51,29 @@ export default async function PostDetailPage({ params: { lang, category, slug } 
 
   const { data: post } = await supabase
     .from('posts')
-    .select('*, categories!inner(*)')
+    .select('*')
     .eq('slug', slug)
     .eq('lang', lang)
-    .eq('categories.slug', category)
     .single();
 
   if (!post) return notFound();
 
-  // Fetch related posts from the same category or same section if category is null
-  let relatedQuery = supabase
+  // Strict Redirect to Section-based URL
+  const actualCategory = post.section || 'news';
+  if (category !== actualCategory) {
+    permanentRedirect(`/${lang}/${actualCategory}/${slug}`);
+  }
+
+  // Fetch related posts from the same section
+  const { data: relatedPosts } = await supabase
     .from('posts')
-    .select('*, categories!inner(*)')
+    .select('*')
     .eq('lang', lang)
+    .eq('section', post.section)
+    .eq('is_published', true)
     .neq('id', post.id)
     .order('created_at', { ascending: false })
     .limit(3);
-
-  if (post.category_id) {
-    relatedQuery = relatedQuery.eq('category_id', post.category_id);
-  } else {
-    relatedQuery = relatedQuery.eq('categories.slug', category);
-  }
-
-  const { data: relatedPosts } = await relatedQuery;
 
   return (
     <div className="min-h-screen bg-[#F3F4F6] text-black selection:bg-[#ef4444] selection:text-white">
@@ -87,7 +84,7 @@ export default async function PostDetailPage({ params: { lang, category, slug } 
           <header className="mb-12">
             <div className="flex items-center gap-3 mb-6">
               <span className="bg-[#ef4444] text-white px-4 py-1 font-black text-xs uppercase tracking-widest border-2 border-black skew-x-[-10deg]">
-                {post.categories?.name || 'INTELLIGENCE'}
+                {post.section?.toUpperCase() || 'INTELLIGENCE'}
               </span>
               <span className="font-black text-xs uppercase tracking-tighter text-slate-500">
                 {new Date(post.created_at).toLocaleDateString(lang === 'vi' ? 'vi-VN' : 'en-US', { day: 'numeric', month: 'long', year: 'numeric' })}
@@ -153,9 +150,9 @@ export default async function PostDetailPage({ params: { lang, category, slug } 
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {relatedPosts.map((rPost) => (
-                <Link key={rPost.id} href={`/${lang}/${rPost.categories?.slug || 'news'}/${rPost.slug}`} className="group">
+                <Link key={rPost.id} href={`/${lang}/${rPost.section || 'news'}/${rPost.slug}`} className="group">
                   <div className="aspect-square border-4 border-black mb-4 overflow-hidden shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] bg-white">
-                    <img src={rPost.featured_image} alt={rPost.title} className="w-full h-full object-cover   transition-all" />
+                    <img src={rPost.featured_image} alt={rPost.title} className="w-full h-full object-cover transition-all" />
                   </div>
                   <h3 className="text-xl font-black leading-none group-hover:text-[#ef4444] transition-colors">{rPost.title}</h3>
                 </Link>

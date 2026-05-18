@@ -18,12 +18,13 @@ export default async function ComparePage({
 
   const supabase = createClient();
   
-  // Fetch posts in 'compare' section
+  // Fetch posts in 'compare' section using the new column
   const { data: posts, count } = await supabase
     .from('posts')
-    .select('*, categories!inner(*)', { count: 'exact' })
+    .select('*, categories(*)', { count: 'exact' })
     .eq('lang', lang)
-    .eq('categories.slug', 'compare').eq('categories.lang', lang)
+    .eq('section', 'compare')
+    .eq('is_published', true)
     .order('created_at', { ascending: false })
     .range(from, to);
 
@@ -50,7 +51,7 @@ export default async function ComparePage({
         {heroPost ? (
           <article className="group relative bg-white border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all mb-16 overflow-hidden">
             <div className="flex flex-col lg:flex-row">
-              <div className="lg:w-2/3 aspect-video border-r-0 lg:border-r-4 border-black   transition-all">
+              <div className="lg:w-2/3 aspect-video border-r-0 lg:border-r-4 border-black transition-all">
                 <img src={heroPost.featured_image} alt={heroPost.title} className="w-full h-full object-cover" />
               </div>
               <div className="lg:w-1/3 p-10 flex flex-col justify-center">
@@ -81,7 +82,7 @@ export default async function ComparePage({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-20">
             {otherPosts.map((post) => (
               <article key={post.id} className="group flex gap-8 items-center bg-white border-4 border-black p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all">
-                <div className="w-40 h-40 flex-shrink-0 border-4 border-black overflow-hidden   transition-all">
+                <div className="w-40 h-40 flex-shrink-0 border-4 border-black overflow-hidden transition-all">
                   <img src={post.featured_image} alt={post.title} className="w-full h-full object-cover" />
                 </div>
                 <div>

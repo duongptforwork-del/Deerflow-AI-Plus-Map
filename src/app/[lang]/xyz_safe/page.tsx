@@ -12,33 +12,24 @@ export default async function AdminPage({
 }) {
   const { lang } = params;
 
-  // Simple check for valid lang
   if (lang !== 'vi' && lang !== 'en') {
     notFound();
   }
 
-  // Fetch posts from Supabase
+  // Fetch all posts regardless of category
   const { data: posts, error: postsError } = await supabase
     .from('posts')
-    .select('*, categories!inner(*)')
+    .select('*')
     .eq('lang', lang)
     .order('created_at', { ascending: false });
 
-  // Fetch categories for the current language
-  const { data: categories, error: catsError } = await supabase
-    .from('categories')
-    .select('*')
-    .eq('lang', lang)
-    .order('name');
-
-  if (postsError || catsError) {
-    console.error('Supabase error:', postsError || catsError);
+  if (postsError) {
+    console.error('Supabase error:', postsError);
   }
 
   return (
     <AdminDashboard 
       posts={posts || []} 
-      categories={categories || []} 
       lang={lang} 
     />
   );

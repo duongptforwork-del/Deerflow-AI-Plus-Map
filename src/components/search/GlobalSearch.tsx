@@ -45,23 +45,27 @@ export default function GlobalSearch({ lang }: { lang: string }) {
 
       setIsSearching(true);
       
-      const [postsRes, guidesRes] = await Promise.all([
+      const [newsRes, guidesRes] = await Promise.all([
         supabase
           .from('posts')
-          .select('title, slug, excerpt')
+          .select('title, slug, excerpt, section')
           .eq('lang', lang)
+          .eq('section', 'news')
+          .eq('is_published', true)
           .or(`title.ilike.%${query}%,excerpt.ilike.%${query}%`)
           .limit(5),
         supabase
-          .from('guides')
-          .select('title, slug, excerpt')
+          .from('posts')
+          .select('title, slug, excerpt, section')
           .eq('lang', lang)
+          .eq('section', 'guide')
+          .eq('is_published', true)
           .or(`title.ilike.%${query}%,excerpt.ilike.%${query}%`)
           .limit(5)
       ]);
 
       setResults({
-        posts: postsRes.data || [],
+        posts: newsRes.data || [],
         guides: guidesRes.data || []
       });
       setIsSearching(false);
@@ -70,8 +74,8 @@ export default function GlobalSearch({ lang }: { lang: string }) {
     return () => clearTimeout(timer);
   }, [query, lang]);
 
-  const handleNavigate = (path: string) => {
-    router.push(`/${lang}/${path}`);
+  const handleNavigate = (section: string, slug: string) => {
+    router.push(`/${lang}/${section}/${slug}`);
     setIsOpen(false);
     setQuery('');
   };
@@ -138,7 +142,7 @@ export default function GlobalSearch({ lang }: { lang: string }) {
                         {results.posts.map((post) => (
                           <button
                             key={post.slug}
-                            onClick={() => handleNavigate(`news/${post.slug}`)}
+                            onClick={() => handleNavigate(post.section, post.slug)}
                             className="w-full text-left p-4 border-2 border-black hover:bg-black hover:text-white transition-all group"
                           >
                             <h4 className="font-black text-lg uppercase leading-none mb-1">{post.title}</h4>
@@ -158,7 +162,7 @@ export default function GlobalSearch({ lang }: { lang: string }) {
                         {results.guides.map((guide) => (
                           <button
                             key={guide.slug}
-                            onClick={() => handleNavigate(`guide/${guide.slug}`)}
+                            onClick={() => handleNavigate(guide.section, guide.slug)}
                             className="w-full text-left p-4 border-2 border-black hover:bg-[#ef4444] hover:text-white transition-all group"
                           >
                             <h4 className="font-black text-lg uppercase leading-none mb-1">{guide.title}</h4>

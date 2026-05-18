@@ -18,12 +18,13 @@ export default async function GuidePage({
 
   const supabase = createClient();
   
-  // Fetch posts in 'guide' section
+  // Fetch posts in 'guide' section using the new column
   const { data: posts, count } = await supabase
     .from('posts')
-    .select('*, categories!inner(*)', { count: 'exact' })
+    .select('*, categories(*)', { count: 'exact' })
     .eq('lang', lang)
-    .eq('categories.slug', 'guide').eq('categories.lang', lang)
+    .eq('section', 'guide')
+    .eq('is_published', true)
     .order('created_at', { ascending: false })
     .range(from, to);
 
@@ -46,7 +47,7 @@ export default async function GuidePage({
                 <div className="absolute -top-6 -left-6 w-20 h-20 bg-black text-white flex items-center justify-center font-black text-4xl border-4 border-white shadow-[8px_8px_0px_0px_rgba(239,68,68,1)] z-10">
                   {index + 1 + (currentPage - 1) * pageSize}
                 </div>
-                <div className="aspect-video border-4 border-black overflow-hidden   transition-all shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] group-hover:shadow-none group-hover:translate-x-1 group-hover:translate-y-1">
+                <div className="aspect-video border-4 border-black overflow-hidden transition-all shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] group-hover:shadow-none group-hover:translate-x-1 group-hover:translate-y-1">
                   <img src={post.featured_image} alt={post.title} className="w-full h-full object-cover" />
                 </div>
               </div>

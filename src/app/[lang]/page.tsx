@@ -20,11 +20,12 @@ export default async function HomePage({ params: { lang } }: { params: { lang: s
     new: lang === 'vi' ? 'MỚI' : 'NEW',
     see_all: lang === 'vi' ? 'XEM TẤT CẢ' : 'SEE ALL',
     no_events: lang === 'vi' ? 'Chưa có sự kiện nào sắp tới' : 'No upcoming events scheduled',
-    ai_tools_title: lang === 'vi' ? "Công Cụ AI Mới" : "Featured AI Tools",
-    tutorials_title: lang === 'vi' ? "Hướng Dẫn Chi Tiết" : "Step-by-Step Tutorials"
+    ai_tools_title: lang === 'vi' ? "So Sánh Chuyên Sâu" : "Deep Comparisons",
+    tutorials_title: lang === 'vi' ? "Cẩm Nang Hướng Dẫn" : "AI Learning Guides"
   };
 
   // Fetching content for different sections
+  // "xôi thịt" (dense content) aesthetic: pull latest posts across ALL sections for Hero & Trending
   const [
     { data: heroPosts },
     { data: trendingPosts },
@@ -33,19 +34,21 @@ export default async function HomePage({ params: { lang } }: { params: { lang: s
     { data: guidePosts },
     { data: eventPosts }
   ] = await Promise.all([
-    // Hero: Fetch 4 latest posts from ANY category to ensure "Bài mới" always shows up top
-    supabase.from('posts').select('*, categories!inner(*)').eq('lang', lang).eq('is_published', true).order('created_at', { ascending: false }).limit(4),
+    // Hero: Fetch 4 latest posts across ALL sections
+    supabase.from('posts').select('*').eq('lang', lang).eq('is_published', true).order('created_at', { ascending: false }).limit(4),
     
-    // Trending: 5 latest (could also be filtered by a 'trending' flag if you have one)
-    supabase.from('posts').select('*, categories!inner(*)').eq('lang', lang).eq('is_published', true).order('created_at', { ascending: false }).limit(5),
+    // Trending: 5 latest across ALL sections
+    supabase.from('posts').select('*').eq('lang', lang).eq('is_published', true).order('created_at', { ascending: false }).limit(5),
     
-    // Latest Posts Grid: Posts 5-8 (across all categories)
-    supabase.from('posts').select('*, categories!inner(*)').eq('lang', lang).eq('is_published', true).order('created_at', { ascending: false }).range(4, 7),
+    // Latest Posts Grid: Posts 5-8 across ALL sections
+    supabase.from('posts').select('*').eq('lang', lang).eq('is_published', true).order('created_at', { ascending: false }).range(4, 7),
     
-    // Category Specific Sections
-    supabase.from('posts').select('*, categories!inner(*)').eq('lang', lang).eq('is_published', true).eq('categories.slug', 'compare').order('created_at', { ascending: false }).limit(3),
-    supabase.from('posts').select('*, categories!inner(*)').eq('lang', lang).eq('is_published', true).eq('categories.slug', 'guide').order('created_at', { ascending: false }).limit(3),
-    supabase.from('posts').select('*, categories!inner(*)').eq('lang', lang).eq('is_published', true).eq('categories.slug', 'events').order('created_at', { ascending: false }).limit(4)
+    // Section Specific queries
+    supabase.from('posts').select('*').eq('lang', lang).eq('is_published', true).eq('section', 'compare').order('created_at', { ascending: false }).limit(3),
+    supabase.from('posts').select('*').eq('lang', lang).eq('is_published', true).eq('section', 'guide').order('created_at', { ascending: false }).limit(3),
+    
+    // Events: Now using section 'events'
+    supabase.from('posts').select('*').eq('lang', lang).eq('is_published', true).eq('section', 'events').order('created_at', { ascending: false }).limit(4)
   ]);
 
   const hero = heroPosts?.[0];
@@ -60,13 +63,13 @@ export default async function HomePage({ params: { lang } }: { params: { lang: s
         </div>
         <div className="flex whitespace-nowrap py-4 pl-40 animate-[scroll_50s_linear_infinite] hover:[animation-play-state:paused]">
           {(trendingPosts || []).map((post) => (
-            <Link key={post.id} href={`/${lang}/${post.categories?.slug}/${post.slug}`} className="mx-8 font-black text-sm uppercase hover:text-[#ef4444] transition-colors">
+            <Link key={post.id} href={`/${lang}/${post.section || 'news'}/${post.slug}`} className="mx-8 font-black text-sm uppercase hover:text-[#ef4444] transition-colors">
               • {post.title}
             </Link>
           ))}
           {/* Duplicate for infinite effect */}
           {(trendingPosts || []).map((post) => (
-            <Link key={`${post.id}-dup`} href={`/${lang}/${post.categories?.slug}/${post.slug}`} className="mx-8 font-black text-sm uppercase hover:text-[#ef4444] transition-colors">
+            <Link key={`${post.id}-dup`} href={`/${lang}/${post.section || 'news'}/${post.slug}`} className="mx-8 font-black text-sm uppercase hover:text-[#ef4444] transition-colors">
               • {post.title}
             </Link>
           ))}
@@ -96,7 +99,7 @@ export default async function HomePage({ params: { lang } }: { params: { lang: s
                 <div className="relative border-4 border-black group bg-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all h-full flex flex-col">
                   <div className="aspect-[16/10] relative overflow-hidden border-b-4 border-black">
                     <img 
-                      src={hero.featured_image} 
+                      src={hero.featured_image || ''} 
                       alt={hero.title} 
                       className="absolute inset-0 w-full h-full object-cover transition-all duration-500" 
                     />
@@ -108,16 +111,16 @@ export default async function HomePage({ params: { lang } }: { params: { lang: s
                   </div>
                   <div className="p-6 flex flex-col flex-grow justify-center">
                     <span className="font-black text-[#ef4444] text-xs uppercase mb-2">
-                      {hero.categories?.name || 'Uncategorized'}
+                      {hero.section?.toUpperCase() || 'NEWS'}
                     </span>
                     <h2 className="text-3xl lg:text-4xl font-display font-black leading-tight tracking-tight mb-4 group-hover:text-[#ef4444] transition-colors">
-                      <Link href={`/${lang}/${hero.categories?.slug}/${hero.slug}`}>{hero.title}</Link>
+                      <Link href={`/${lang}/${hero.section || 'news'}/${hero.slug}`}>{hero.title}</Link>
                     </h2>
                     <p className="text-lg font-bold leading-relaxed mb-6 text-slate-700 line-clamp-3">
                       {hero.excerpt}
                     </p>
                     <Link 
-                      href={`/${lang}/${hero.categories?.slug}/${hero.slug}`}
+                      href={`/${lang}/${hero.section || 'news'}/${hero.slug}`}
                       className="mt-auto inline-block border-2 border-black px-4 py-2 bg-black text-white font-black uppercase text-xs text-center hover:bg-white hover:text-black transition-all"
                     >
                       {t.read_report}
@@ -132,15 +135,15 @@ export default async function HomePage({ params: { lang } }: { params: { lang: s
                   <article key={post.id} className="group flex flex-col sm:flex-row border-4 border-black bg-white shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all h-full overflow-hidden">
                     <div className="w-full sm:w-1/3 aspect-[16/9] sm:aspect-square relative overflow-hidden border-b-4 sm:border-b-0 sm:border-r-4 border-black shrink-0">
                       <img 
-                        src={post.featured_image} 
+                        src={post.featured_image || ''} 
                         alt={post.title} 
                         className="w-full h-full object-cover transition-all duration-500" 
                       />
                     </div>
                     <div className="p-4 flex flex-col flex-grow justify-center">
-                      <span className="font-black text-[10px] text-[#ef4444] uppercase mb-1">{post.categories?.name}</span>
+                      <span className="font-black text-[10px] text-[#ef4444] uppercase mb-1">{post.section?.toUpperCase() || 'News'}</span>
                       <h3 className="text-xl font-black leading-tight tracking-tight mb-2 group-hover:underline">
-                        <Link href={`/${lang}/${post.categories?.slug}/${post.slug}`}>{post.title}</Link>
+                        <Link href={`/${lang}/${post.section || 'news'}/${post.slug}`}>{post.title}</Link>
                       </h3>
                       <p className="text-sm font-bold text-slate-600 line-clamp-2 mb-4 leading-relaxed">{post.excerpt}</p>
                       <div className="mt-auto pt-2 border-t-2 border-black/10 flex justify-between items-center text-[9px] font-black uppercase">
@@ -155,7 +158,7 @@ export default async function HomePage({ params: { lang } }: { params: { lang: s
           </section>
         )}
 
-        {/* Latest Posts Grid - Pulled from all categories */}
+        {/* Latest Posts Grid - Unified Global Content */}
         <section className="mb-24">
           <SectionHeader title={t.latest_news} lang={lang} href={`/${lang}/news`} />
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -163,19 +166,19 @@ export default async function HomePage({ params: { lang } }: { params: { lang: s
               <article key={post.id} className="group flex flex-col">
                 <div className="aspect-square border-4 border-black mb-4 overflow-hidden relative shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] bg-white">
                   <img 
-                    src={post.featured_image} 
+                    src={post.featured_image || ''} 
                     alt={post.title} 
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
                   />
                 </div>
-                <span className="font-black text-xs text-[#ef4444] uppercase mb-2">{post.categories?.name}</span>
+                <span className="font-black text-xs text-[#ef4444] uppercase mb-2">{post.section?.toUpperCase() || 'News'}</span>
                 <h3 className="text-xl font-black leading-tight tracking-tight mb-4 group-hover:underline">
-                  <Link href={`/${lang}/${post.categories?.slug}/${post.slug}`}>{post.title}</Link>
+                  <Link href={`/${lang}/${post.section || 'news'}/${post.slug}`}>{post.title}</Link>
                 </h3>
                 <p className="text-sm font-bold text-slate-600 line-clamp-3 mb-4 leading-relaxed">{post.excerpt}</p>
                 <div className="mt-auto pt-4 border-t-2 border-black/10 flex justify-between items-center text-[10px] font-black uppercase">
                    <span>{new Date(post.created_at).toLocaleDateString()}</span>
-                   <span className="bg-black text-white px-2 py-0.5 uppercase">{post.categories?.slug}</span>
+                   <span className="bg-black text-white px-2 py-0.5 uppercase">{post.section || 'news'}</span>
                 </div>
               </article>
             ))}
@@ -190,11 +193,11 @@ export default async function HomePage({ params: { lang } }: { params: { lang: s
               {(comparePosts || []).length > 0 ? comparePosts?.map((post) => (
                 <div key={post.id} className="flex gap-6 items-start group">
                   <div className="w-24 h-24 flex-shrink-0 border-2 border-black overflow-hidden shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-white">
-                    <img src={post.featured_image} className="w-full h-full object-cover" alt="" />
+                    <img src={post.featured_image || ''} className="w-full h-full object-cover" alt="" />
                   </div>
                   <div>
                     <h4 className="text-lg font-black leading-tight group-hover:text-[#ef4444]">
-                      <Link href={`/${lang}/${post.categories?.slug}/${post.slug}`}>{post.title}</Link>
+                      <Link href={`/${lang}/compare/${post.slug}`}>{post.title}</Link>
                     </h4>
                     <p className="text-xs font-bold text-slate-500 mt-2 line-clamp-2">{post.excerpt}</p>
                   </div>
@@ -213,11 +216,11 @@ export default async function HomePage({ params: { lang } }: { params: { lang: s
                {(guidePosts || []).length > 0 ? guidePosts?.map((post) => (
                 <div key={post.id} className="flex gap-6 items-start group">
                   <div className="w-24 h-24 flex-shrink-0 border-2 border-black overflow-hidden shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-white">
-                    <img src={post.featured_image} className="w-full h-full object-cover" alt="" />
+                    <img src={post.featured_image || ''} className="w-full h-full object-cover" alt="" />
                   </div>
                   <div>
                     <h4 className="text-lg font-black leading-tight group-hover:text-[#ef4444]">
-                      <Link href={`/${lang}/${post.categories?.slug}/${post.slug}`}>{post.title}</Link>
+                      <Link href={`/${lang}/guide/${post.slug}`}>{post.title}</Link>
                     </h4>
                     <p className="text-xs font-bold text-slate-500 mt-2 line-clamp-2">{post.excerpt}</p>
                   </div>
@@ -239,13 +242,13 @@ export default async function HomePage({ params: { lang } }: { params: { lang: s
               <article key={post.id} className="group flex flex-col">
                 <div className="aspect-video border-4 border-black mb-4 overflow-hidden relative shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] bg-white">
                   <img 
-                    src={post.featured_image} 
+                    src={post.featured_image || ''} 
                     alt={post.title} 
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
                   />
                 </div>
                 <h3 className="text-lg font-black leading-tight tracking-tight mb-2 group-hover:underline">
-                  <Link href={`/${lang}/${post.categories?.slug}/${post.slug}`}>{post.title}</Link>
+                  <Link href={`/${lang}/events/${post.slug}`}>{post.title}</Link>
                 </h3>
                 <div className="mt-auto flex justify-between items-center text-[10px] font-black uppercase">
                    <span className="text-slate-500">{new Date(post.created_at).toLocaleDateString()}</span>
@@ -260,17 +263,17 @@ export default async function HomePage({ params: { lang } }: { params: { lang: s
           </div>
         </section>
 
-        {/* Dynamic Category Sections */}
+        {/* Dynamic Section-based blocks */}
         <NewsSection 
           lang={lang} 
-          categorySlug="ai-tools" 
+          section="compare" 
           title={t.ai_tools_title} 
           limit={4} 
         />
         
         <NewsSection 
           lang={lang} 
-          categorySlug="tutorials" 
+          section="guide" 
           title={t.tutorials_title} 
           limit={4} 
         />

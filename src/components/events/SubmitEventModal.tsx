@@ -2,19 +2,60 @@
 
 import { useState } from 'react';
 import { X, Calendar, MapPin, Link as LinkIcon, Send, CheckCircle2 } from 'lucide-react';
+import { createClient } from '@/utils/supabase/client';
 
 export default function SubmitEventModal({ lang }: { lang: string }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const supabase = createClient();
+
+  // Form State
+  const [title, setTitle] = useState('');
+  const [eventDate, setEventDate] = useState('');
+  const [location, setLocation] = useState('');
+  const [registrationLink, setRegistrationLink] = useState('');
+
+  const generateSlug = (text: string) => {
+    return text
+      .toLowerCase()
+      .trim()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^\w\s-]/g, '')
+      .replace(/[\s_-]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    setIsLoading(false);
-    setIsSubmitted(true);
+
+    try {
+      const slug = `${generateSlug(title)}-${Math.random().toString(36).substring(2, 7)}`;
+      
+      const { error } = await supabase
+        .from('posts')
+        .insert([{
+          title,
+          slug,
+          content: `User submitted event at ${location}`,
+          section: 'events',
+          is_published: false,
+          lang: lang,
+          event_date: eventDate || null,
+          location: location || null,
+          registration_link: registrationLink || null,
+          author_name: 'Community'
+        }]);
+
+      if (error) throw error;
+      
+      setIsSubmitted(true);
+    } catch (error: any) {
+      alert('Error submitting event: ' + error.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   if (!isOpen) {
@@ -57,7 +98,13 @@ export default function SubmitEventModal({ lang }: { lang: string }) {
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
                 <label className="block text-xs font-black uppercase tracking-widest text-slate-400">Event Title</label>
-                <input required className="w-full p-4 border-4 border-black font-bold uppercase text-sm focus:bg-slate-50 outline-none" placeholder="e.g. GLOBAL AI SUMMIT 2026" />
+                <input 
+                  required 
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="w-full p-4 border-4 border-black font-bold uppercase text-sm focus:bg-slate-50 outline-none" 
+                  placeholder="e.g. GLOBAL AI SUMMIT 2026" 
+                />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -65,14 +112,26 @@ export default function SubmitEventModal({ lang }: { lang: string }) {
                   <label className="block text-xs font-black uppercase tracking-widest text-slate-400">Date</label>
                   <div className="relative">
                     <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                    <input type="date" required className="w-full p-4 pl-12 border-4 border-black font-bold uppercase text-sm focus:bg-slate-50 outline-none" />
+                    <input 
+                      type="date" 
+                      required 
+                      value={eventDate}
+                      onChange={(e) => setEventDate(e.target.value)}
+                      className="w-full p-4 pl-12 border-4 border-black font-bold uppercase text-sm focus:bg-slate-50 outline-none" 
+                    />
                   </div>
                 </div>
                 <div className="space-y-2">
                   <label className="block text-xs font-black uppercase tracking-widest text-slate-400">Location</label>
                   <div className="relative">
                     <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                    <input required className="w-full p-4 pl-12 border-4 border-black font-bold uppercase text-sm focus:bg-slate-50 outline-none" placeholder="LONDON, UK" />
+                    <input 
+                      required 
+                      value={location}
+                      onChange={(e) => setLocation(e.target.value)}
+                      className="w-full p-4 pl-12 border-4 border-black font-bold uppercase text-sm focus:bg-slate-50 outline-none" 
+                      placeholder="LONDON, UK" 
+                    />
                   </div>
                 </div>
               </div>
@@ -81,7 +140,14 @@ export default function SubmitEventModal({ lang }: { lang: string }) {
                 <label className="block text-xs font-black uppercase tracking-widest text-slate-400">Registration Link</label>
                 <div className="relative">
                   <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                  <input type="url" required className="w-full p-4 pl-12 border-4 border-black font-bold uppercase text-sm focus:bg-slate-50 outline-none" placeholder="https://..." />
+                  <input 
+                    type="url" 
+                    required 
+                    value={registrationLink}
+                    onChange={(e) => setRegistrationLink(e.target.value)}
+                    className="w-full p-4 pl-12 border-4 border-black font-bold uppercase text-sm focus:bg-slate-50 outline-none" 
+                    placeholder="https://..." 
+                  />
                 </div>
               </div>
 

@@ -3,15 +3,19 @@ import SectionHeader from '@/components/SectionHeader';
 import SubmitEventModal from '@/components/events/SubmitEventModal';
 import { createClient } from '@/utils/supabase/server';
 
+export const revalidate = 0;
+
 export default async function EventsPage({ params: { lang } }: { params: { lang: string } }) {
   const supabase = createClient();
   
-  // Fetch upcoming events
+  // Fetch upcoming events from the unified posts table
   const today = new Date();
   const { data: events } = await supabase
-    .from('events')
+    .from('posts')
     .select('*')
     .eq('lang', lang)
+    .eq('section', 'events')
+    .eq('is_published', true)
     .gte('event_date', today.toISOString())
     .order('event_date', { ascending: true });
 
@@ -42,7 +46,7 @@ export default async function EventsPage({ params: { lang } }: { params: { lang:
               {/* Content */}
               <div className="p-8 flex-grow flex flex-col">
                 <h2 className="text-3xl font-black tracking-tighter leading-none mb-6 group-hover:text-[#ef4444] uppercase">
-                  {event.title}
+                  <Link href={`/${lang}/events/${event.slug}`}>{event.title}</Link>
                 </h2>
                 
                 <div className="mt-auto space-y-4">
@@ -53,13 +57,21 @@ export default async function EventsPage({ params: { lang } }: { params: { lang:
                     <span className="font-black uppercase text-sm">{event.location}</span>
                   </div>
                   
-                  <Link 
-                    href={event.registration_link || '#'} 
-                    target="_blank"
-                    className="block text-center bg-white text-black py-4 border-4 border-black font-black uppercase text-sm hover:bg-black hover:text-white transition-all shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-none"
-                  >
-                    Get Tickets →
-                  </Link>
+                  <div className="flex gap-2">
+                    <Link 
+                      href={`/${lang}/events/${event.slug}`}
+                      className="flex-1 text-center bg-white text-black py-4 border-4 border-black font-black uppercase text-xs hover:bg-black hover:text-white transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none"
+                    >
+                      Details
+                    </Link>
+                    <Link 
+                      href={event.registration_link || '#'} 
+                      target="_blank"
+                      className="flex-1 text-center bg-[#ef4444] text-white py-4 border-4 border-black font-black uppercase text-xs hover:bg-black hover:text-white transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none"
+                    >
+                      Tickets →
+                    </Link>
+                  </div>
                 </div>
               </div>
             </div>
