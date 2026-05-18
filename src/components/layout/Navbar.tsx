@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { ChevronDown } from 'lucide-center'; // Note: Lucide icon fix if needed
 import { ChevronDown as ChevronIcon } from 'lucide-react';
 import GlobalSearch from '@/components/search/GlobalSearch';
 import { useState } from 'react';
