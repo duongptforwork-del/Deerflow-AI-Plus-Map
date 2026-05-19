@@ -38,6 +38,8 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
   const [excerpt, setExcerpt] = useState('');
   const [content, setContent] = useState('');
   const [section, setSection] = useState('news');
+  const [categoryId, setCategoryId] = useState('');
+  const [categories, setCategories] = useState<any[]>([]);
   const [featuredImage, setFeaturedImage] = useState('');
   const [isPublished, setIsPublished] = useState(false);
   const [postLang, setPostLang] = useState(lang);
@@ -55,6 +57,19 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
       setIsAuthorized(true);
     }
   }, [lang, router]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      const { data, error } = await supabase
+        .from('categories')
+        .select('*')
+        .order('name', { ascending: true });
+      if (data && !error) {
+        setCategories(data);
+      }
+    };
+    fetchCategories();
+  }, []);
 
   useEffect(() => {
     if (!isNew && postId) {
@@ -75,6 +90,7 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
       setExcerpt(data.excerpt || '');
       setContent(data.content || '');
       setSection(data.section || 'news');
+      setCategoryId(data.category_id || '');
       setFeaturedImage(data.featured_image || '');
       setIsPublished(data.is_published || false);
       setPostLang(data.lang || lang);
@@ -173,6 +189,7 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
       excerpt,
       content,
       section,
+      category_id: categoryId || null,
       featured_image: featuredImage,
       is_published: publish,
       lang: postLang
@@ -244,6 +261,18 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
       if (!res.ok) throw new Error('Translation API failed');
       const translatedData = await res.json();
 
+      // Try to find counterpart category in target language by slug
+      let targetCategoryId = null;
+      if (categoryId) {
+        const currentCategory = categories.find(c => c.id === categoryId);
+        if (currentCategory) {
+          const counterpart = categories.find(c => c.slug === currentCategory.slug && c.lang === targetLang);
+          if (counterpart) {
+            targetCategoryId = counterpart.id;
+          }
+        }
+      }
+
       // Insert the translated version
       const translatedPostData = {
         title: translatedData.title,
@@ -251,6 +280,7 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
         excerpt: translatedData.excerpt,
         content: translatedData.content,
         section,
+        category_id: targetCategoryId,
         featured_image: featuredImage,
         is_published: true,
         lang: targetLang
@@ -371,6 +401,22 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
                     <option value="guide">Guide</option>
                   </select>
                 </div>
+
+                {section === 'news' && (
+                  <div>
+                    <label className="block text-xs font-black uppercase tracking-widest mb-2">Category (Chuyên mục)</label>
+                    <select 
+                      value={categoryId}
+                      onChange={(e) => setCategoryId(e.target.value)}
+                      className="w-full p-3 border-2 border-black text-sm font-bold uppercase tracking-widest outline-none bg-white"
+                    >
+                      <option value="">-- No Category (Không chọn chuyên mục) --</option>
+                      {categories.filter(c => c.lang === postLang).map(cat => (
+                        <option key={cat.id} value={cat.id}>{cat.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
 
                 <div>
                   <label className="block text-xs font-black uppercase tracking-widest mb-2">Excerpt (Summary)</label>

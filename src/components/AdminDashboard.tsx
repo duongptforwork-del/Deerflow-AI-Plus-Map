@@ -13,11 +13,26 @@ import {
   Lock,
   LogOut,
   MoreVertical,
-  Loader2
+  Loader2,
+  FolderOpen,
+  Save
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { verifyPassword, setAdminSession, clearAdminSession, getAdminSession } from '@/utils/auth';
+
+const slugify = (str: string) => {
+  return String(str)
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/Đ/g, 'D')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9 -]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-');
+};
 
 const AdminDashboard = ({ posts = [], lang = 'en' }: { posts?: any[], lang?: string }) => {
   const router = useRouter();
@@ -27,6 +42,109 @@ const AdminDashboard = ({ posts = [], lang = 'en' }: { posts?: any[], lang?: str
   const [isChecking, setIsChecking] = useState(false);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+
+  // Category Management States
+  const [categories, setCategories] = useState<any[]>([]);
+  const [loadingCategories, setLoadingCategories] = useState(false);
+  const [showCategoryForm, setShowCategoryForm] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<any>(null);
+  const [catName, setCatName] = useState('');
+  const [catSlug, setCatSlug] = useState('');
+  const [catDescription, setCatDescription] = useState('');
+  const [catLang, setCatLang] = useState(lang);
+  const [isSavingCategory, setIsSavingCategory] = useState(false);
+
+  const fetchCategories = async () => {
+    setLoadingCategories(true);
+    const { data, error } = await supabase
+      .from('categories')
+      .select('*')
+      .order('name', { ascending: true });
+    if (data && !error) {
+      setCategories(data);
+    }
+    setLoadingCategories(false);
+  };
+
+  const handleSaveCategory = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!catName || !catSlug) {
+      alert('Tên danh mục và Slug là bắt buộc!');
+      return;
+    }
+    setIsSavingCategory(true);
+
+    const categoryData = {
+      name: catName,
+      slug: catSlug,
+      description: catDescription,
+      lang: catLang
+    };
+
+    if (editingCategory) {
+      const { error } = await supabase
+        .from('categories')
+        .update(categoryData)
+        .eq('id', editingCategory.id);
+
+      if (error) {
+        alert('Lỗi khi sửa danh mục: ' + error.message);
+      } else {
+        alert('Cập nhật danh mục thành công!');
+        fetchCategories();
+        resetCategoryForm();
+      }
+    } else {
+      const { error } = await supabase
+        .from('categories')
+        .insert([categoryData]);
+
+      if (error) {
+        alert('Lỗi khi tạo danh mục: ' + error.message);
+      } else {
+        alert('Tạo danh mục thành công!');
+        fetchCategories();
+        resetCategoryForm();
+      }
+    }
+    setIsSavingCategory(false);
+  };
+
+  const handleDeleteCategory = async (id: string) => {
+    if (confirm('Sếp chắc chắn muốn xóa danh mục này? Các bài viết liên quan sẽ bị mất liên kết.')) {
+      const { error } = await supabase.from('categories').delete().eq('id', id);
+      if (error) {
+        alert('Lỗi khi xóa danh mục: ' + error.message);
+      } else {
+        fetchCategories();
+      }
+    }
+  };
+
+  const startEditCategory = (cat: any) => {
+    setEditingCategory(cat);
+    setCatName(cat.name || '');
+    setCatSlug(cat.slug || '');
+    setCatDescription(cat.description || '');
+    setCatLang(cat.lang || lang);
+    setShowCategoryForm(true);
+  };
+
+  const resetCategoryForm = () => {
+    setEditingCategory(null);
+    setCatName('');
+    setCatSlug('');
+    setCatDescription('');
+    setCatLang(lang);
+    setShowCategoryForm(false);
+  };
+
+  const handleCatNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setCatName(e.target.value);
+    if (!editingCategory) {
+      setCatSlug(slugify(e.target.value));
+    }
+  };
 
   const handleDeletePost = async (id: string) => {
     if (confirm('Sếp chắc chắn muốn xóa bài này chứ?')) {
@@ -59,7 +177,11 @@ const AdminDashboard = ({ posts = [], lang = 'en' }: { posts?: any[], lang?: str
   }, []);
 
   useEffect(() => {
-    setIsAuthorized(getAdminSession());
+    const authorized = getAdminSession();
+    setIsAuthorized(authorized);
+    if (authorized) {
+      fetchCategories();
+    }
   }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -120,6 +242,7 @@ const AdminDashboard = ({ posts = [], lang = 'en' }: { posts?: any[], lang?: str
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'posts', label: 'All Posts', icon: FileText },
     { id: 'news', label: 'News Feed', icon: FileText },
+    { id: 'categories', label: 'Categories', icon: FolderOpen },
     { id: 'compare', label: 'Comparison', icon: FileText },
     { id: 'guide', label: 'Guides', icon: FileText },
     { id: 'events', label: 'Events', icon: Calendar },
@@ -297,6 +420,159 @@ const AdminDashboard = ({ posts = [], lang = 'en' }: { posts?: any[], lang?: str
                         <tr>
                           <td colSpan={5} className="px-6 py-16 text-center text-slate-400 font-black uppercase tracking-widest">
                             No content found for this section.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </>
+            )}
+
+            {activeTab === 'categories' && (
+              <>
+                <div className="flex items-center justify-between mb-10">
+                  <div>
+                    <h1 className="text-4xl font-display font-black text-black tracking-tight uppercase leading-none">Categories</h1>
+                    <p className="text-slate-500 mt-2 font-bold italic uppercase text-xs tracking-widest">Manage article categories for multilingual news feeds.</p>
+                  </div>
+                  
+                  {!showCategoryForm && (
+                    <button 
+                      onClick={() => setShowCategoryForm(true)}
+                      className="flex items-center gap-2 bg-[#ef4444] text-white px-6 py-3 border-4 border-black font-black uppercase tracking-widest shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all"
+                    >
+                      <Plus size={20} />
+                      <span>New Category</span>
+                    </button>
+                  )}
+                </div>
+
+                {showCategoryForm && (
+                  <form onSubmit={handleSaveCategory} className="bg-white border-4 border-black shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] p-8 mb-10 space-y-6">
+                    <h3 className="font-display font-black text-xl uppercase border-b-2 border-black pb-2">
+                      {editingCategory ? 'Edit Category' : 'Create New Category'}
+                    </h3>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-xs font-black uppercase tracking-widest mb-2">Category Name</label>
+                        <input 
+                          type="text" 
+                          value={catName}
+                          onChange={handleCatNameChange}
+                          placeholder="e.g. Technology, AI Agents..."
+                          className="w-full p-3 border-2 border-black font-bold outline-none focus:bg-slate-50"
+                          required
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="block text-xs font-black uppercase tracking-widest mb-2">Slug</label>
+                        <input 
+                          type="text" 
+                          value={catSlug}
+                          onChange={(e) => setCatSlug(slugify(e.target.value))}
+                          placeholder="e.g. technology, ai-agents..."
+                          className="w-full p-3 border-2 border-black font-bold outline-none focus:bg-slate-50"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-xs font-black uppercase tracking-widest mb-2">Language</label>
+                        <select 
+                          value={catLang}
+                          onChange={(e) => setCatLang(e.target.value)}
+                          className="w-full p-3 border-2 border-black font-bold uppercase tracking-widest bg-white outline-none"
+                        >
+                          <option value="en">English</option>
+                          <option value="vi">Vietnamese</option>
+                          <option value="de">German</option>
+                          <option value="hi">Hindi</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-black uppercase tracking-widest mb-2">Description</label>
+                        <textarea 
+                          value={catDescription}
+                          onChange={(e) => setCatDescription(e.target.value)}
+                          placeholder="Brief description of this category (useful for SEO)..."
+                          className="w-full p-3 border-2 border-black font-bold outline-none focus:bg-slate-50 h-12 resize-none"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex gap-4">
+                      <button 
+                        type="submit"
+                        disabled={isSavingCategory}
+                        className="flex items-center gap-2 bg-[#ef4444] text-white px-6 py-3 border-4 border-black font-black uppercase tracking-widest shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5 transition-all"
+                      >
+                        {isSavingCategory ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
+                        Save Category
+                      </button>
+                      
+                      <button 
+                        type="button"
+                        onClick={resetCategoryForm}
+                        className="px-6 py-3 bg-white border-4 border-black font-black uppercase tracking-widest shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5 transition-all"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                )}
+
+                <div className="bg-white border-4 border-black shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] overflow-hidden mb-10">
+                  <table className="w-full text-left">
+                    <thead className="bg-black text-white">
+                      <tr>
+                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest">Name</th>
+                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest">Slug</th>
+                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest">Language</th>
+                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest">Description</th>
+                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y-2 divide-black">
+                      {loadingCategories ? (
+                        <tr>
+                          <td colSpan={5} className="px-6 py-16 text-center">
+                            <Loader2 className="animate-spin inline-block mr-2" /> Loading categories...
+                          </td>
+                        </tr>
+                      ) : (
+                        categories.filter(c => c.lang === lang).map((cat) => (
+                          <tr key={cat.id} className="hover:bg-slate-50 transition-colors">
+                            <td className="px-6 py-4 font-black uppercase text-sm">{cat.name}</td>
+                            <td className="px-6 py-4 text-[10px] font-bold text-slate-500 tracking-wider">/category/{cat.slug}</td>
+                            <td className="px-6 py-4 text-xs font-black uppercase tracking-widest">{cat.lang}</td>
+                            <td className="px-6 py-4 text-xs text-slate-500 font-medium max-w-xs truncate">{cat.description || 'N/A'}</td>
+                            <td className="px-6 py-4 text-right space-x-2">
+                              <button 
+                                onClick={() => startEditCategory(cat)}
+                                className="px-3 py-1.5 border-2 border-black bg-white hover:bg-black hover:text-white transition-colors text-[10px] font-black uppercase tracking-widest"
+                              >
+                                Edit
+                              </button>
+                              <button 
+                                onClick={() => handleDeleteCategory(cat.id)}
+                                className="px-3 py-1.5 border-2 border-[#ef4444] text-[#ef4444] bg-white hover:bg-[#ef4444] hover:text-white transition-colors text-[10px] font-black uppercase tracking-widest"
+                              >
+                                Delete
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                      {!loadingCategories && categories.filter(c => c.lang === lang).length === 0 && (
+                        <tr>
+                          <td colSpan={5} className="px-6 py-16 text-center text-slate-400 font-black uppercase tracking-widest">
+                            No categories found for this language.
                           </td>
                         </tr>
                       )}
