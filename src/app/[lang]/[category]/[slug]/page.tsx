@@ -89,7 +89,7 @@ export default async function PostDetailPage({ params: { lang, category, slug } 
               </span>
             </div>
             
-            <h1 className="text-lg md:text-xl lg:text-2xl font-display font-black leading-tight mb-8 tracking-tight">
+            <h1 className="text-2xl md:text-3xl lg:text-4xl font-display font-black leading-tight mb-8 tracking-tight">
               {post.title}
             </h1>
             

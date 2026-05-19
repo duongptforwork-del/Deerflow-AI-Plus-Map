@@ -147,7 +147,7 @@ export default async function HomePage({ params: { lang } }: { params: { lang: s
                     <span className="font-black text-[#ef4444] text-xs uppercase mb-2">
                       {hero.section?.toUpperCase() || 'NEWS'}
                     </span>
-                    <h2 className="text-3xl lg:text-4xl font-display font-black leading-tight tracking-tight mb-4 group-hover:text-[#ef4444] transition-colors">
+                    <h2 className="text-xl lg:text-2xl font-display font-black leading-tight tracking-tight mb-4 group-hover:text-[#ef4444] transition-colors">
                       <Link href={`/${lang}/${hero.section || 'news'}/${hero.slug}`}>{hero.title}</Link>
                     </h2>
                     <p className="text-lg font-bold leading-relaxed mb-6 text-slate-700 line-clamp-3">
