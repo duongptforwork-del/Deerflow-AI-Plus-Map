@@ -77,8 +77,6 @@ export default async function PostDetailPage({ params: { lang, category, slug } 
 
   return (
     <div className="min-h-screen bg-[#F3F4F6] text-black selection:bg-[#ef4444] selection:text-white">
-      <Navbar lang={lang} />
-
       <main className="max-w-4xl mx-auto px-4 py-20">
         <article>
           <header className="mb-12">
@@ -161,8 +159,6 @@ export default async function PostDetailPage({ params: { lang, category, slug } 
           </section>
         )}
       </main>
-
-      <Footer lang={lang} />
     </div>
   );
 }

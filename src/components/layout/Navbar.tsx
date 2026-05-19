@@ -6,9 +6,29 @@ import { ChevronDown as ChevronIcon } from 'lucide-react';
 import GlobalSearch from '@/components/search/GlobalSearch';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
+import { usePathname, useRouter } from 'next/navigation';
 
 export default function Navbar({ lang }: { lang: string }) {
   const [categories, setCategories] = useState<any[]>([]);
+  const [langDropdownOpen, setLangDropdownOpen] = useState(false);
+  const pathname = usePathname();
+  const router = useRouter();
+
+  const languages = [
+    { code: 'en', label: 'EN', flag: '🇺🇸', name: 'English' },
+    { code: 'vi', label: 'VI', flag: '🇻🇳', name: 'Tiếng Việt' },
+    { code: 'ko', label: 'KO', flag: '🇰🇷', name: '한국어' },
+    { code: 'ja', label: 'JA', flag: '🇯🇵', name: '日本語' },
+    { code: 'fr', label: 'FR', flag: '🇫🇷', name: 'Français' },
+  ];
+
+  const handleLanguageChange = (newLang: string) => {
+    if (!pathname) return;
+    const segments = pathname.split('/');
+    segments[1] = newLang;
+    const newPath = segments.join('/');
+    router.push(newPath);
+  };
 
   useEffect(() => {
     const fetchNavbarCategories = async () => {
@@ -24,12 +44,32 @@ export default function Navbar({ lang }: { lang: string }) {
     fetchNavbarCategories();
   }, [lang]);
 
-  // Mapping for sections
+  // Mapping for sections supporting 5 languages
   const sections = [
-    { name: lang === 'vi' ? 'TIN TỨC' : 'NEWS', slug: 'news' },
-    { name: lang === 'vi' ? 'SO SÁNH' : 'COMPARE', slug: 'compare' },
-    { name: lang === 'vi' ? 'HƯỚNG DẪN' : 'GUIDES', slug: 'guide' },
-    { name: lang === 'vi' ? 'SỰ KIỆN' : 'EVENTS', slug: 'events' },
+    { 
+      name: { 
+        vi: 'TIN TỨC', en: 'NEWS', ko: '뉴스', ja: 'ニュース', fr: 'ACTUALITÉS' 
+      }[lang] || 'NEWS', 
+      slug: 'news' 
+    },
+    { 
+      name: { 
+        vi: 'SO SÁNH', en: 'COMPARE', ko: '비교', ja: '比較', fr: 'COMPARER' 
+      }[lang] || 'COMPARE', 
+      slug: 'compare' 
+    },
+    { 
+      name: { 
+        vi: 'HƯỚNG DẪN', en: 'GUIDES', ko: '가이드', ja: 'ガイド', fr: 'GUIDES' 
+      }[lang] || 'GUIDES', 
+      slug: 'guide' 
+    },
+    { 
+      name: { 
+        vi: 'SỰ KIỆN', en: 'EVENTS', ko: '이벤트', ja: 'イベント', fr: 'ÉVÉNEMENTS' 
+      }[lang] || 'EVENTS', 
+      slug: 'events' 
+    },
   ];
 
   return (
@@ -58,7 +98,9 @@ export default function Navbar({ lang }: { lang: string }) {
           <div className="flex items-center gap-6">
             <nav className="hidden lg:block">
               <ul className="flex items-center gap-1 font-black text-sm uppercase italic">
-                <li><Link href={`/${lang}`} className="px-3 py-2 hover:bg-black hover:text-white transition-colors">{lang === 'vi' ? 'Trang Chủ' : 'Home'}</Link></li>
+                <li><Link href={`/${lang}`} className="px-3 py-2 hover:bg-black hover:text-white transition-colors">{
+                  { vi: 'Trang Chủ', en: 'Home', ko: '홈', ja: 'ホーム', fr: 'Accueil' }[lang] || 'Home'
+                }</Link></li>
                 
                 {sections.map((section) => {
                   if (section.slug === 'news') {
@@ -97,7 +139,43 @@ export default function Navbar({ lang }: { lang: string }) {
                 })}
               </ul>
             </nav>
-            <GlobalSearch lang={lang} />
+            <div className="flex items-center gap-4">
+              <GlobalSearch lang={lang} />
+              
+              <div className="relative">
+                <button 
+                  onClick={() => setLangDropdownOpen(!langDropdownOpen)}
+                  className="flex items-center gap-1.5 px-3 py-2 border-2 border-black font-black uppercase text-xs hover:bg-black hover:text-white transition-colors bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+                >
+                  <span>{languages.find(l => l.code === lang)?.flag || '🇺🇸'}</span>
+                  <span>{lang.toUpperCase()}</span>
+                  <ChevronIcon size={12} className={`transition-transform duration-200 ${langDropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {langDropdownOpen && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setLangDropdownOpen(false)} />
+                    <div className="absolute right-0 mt-2 w-40 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] z-50 flex flex-col">
+                      {languages.map((l) => (
+                        <button
+                          key={l.code}
+                          onClick={() => {
+                            handleLanguageChange(l.code);
+                            setLangDropdownOpen(false);
+                          }}
+                          className={`flex items-center gap-2 px-4 py-2.5 text-xs font-black uppercase tracking-wider text-left border-b-2 border-black last:border-0 hover:bg-black hover:text-white transition-colors ${
+                            lang === l.code ? 'bg-[#ef4444] text-white' : 'text-black bg-white'
+                          }`}
+                        >
+                          <span>{l.flag}</span>
+                          <span>{l.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>

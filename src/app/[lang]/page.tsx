@@ -10,18 +10,42 @@ export default async function HomePage({ params: { lang } }: { params: { lang: s
 
   // Mapping for translations
   const t = {
-    trending: lang === 'vi' ? 'XU HƯỚNG' : 'TRENDING NOW',
-    featured: lang === 'vi' ? 'NỔI BẬT' : 'FEATURED',
-    read_report: lang === 'vi' ? 'XEM CHI TIẾT' : 'READ REPORT',
-    latest_news: lang === 'vi' ? 'Tin Mới Nhất' : 'Latest News',
-    compare_ai: lang === 'vi' ? 'So Sánh AI' : 'Compare AI',
-    ai_guide: lang === 'vi' ? 'Cẩm Nang AI' : 'AI Guide',
-    ai_events: lang === 'vi' ? 'Sự Kiện AI' : 'AI Events',
-    new: lang === 'vi' ? 'MỚI' : 'NEW',
-    see_all: lang === 'vi' ? 'XEM TẤT CẢ' : 'SEE ALL',
-    no_events: lang === 'vi' ? 'Chưa có sự kiện nào sắp tới' : 'No upcoming events scheduled',
-    ai_tools_title: lang === 'vi' ? "So Sánh Chuyên Sâu" : "Deep Comparisons",
-    tutorials_title: lang === 'vi' ? "Cẩm Nang Hướng Dẫn" : "AI Learning Guides"
+    trending: {
+      vi: 'XU HƯỚNG', en: 'TRENDING NOW', ko: '실시간 트렌드', ja: 'トレンド', fr: 'TENDANCES NOW'
+    }[lang] || 'TRENDING NOW',
+    featured: {
+      vi: 'NỔI BẬT', en: 'FEATURED', ko: '추천', ja: '注目', fr: 'À LA UNE'
+    }[lang] || 'FEATURED',
+    read_report: {
+      vi: 'XEM CHI TIẾT', en: 'READ REPORT', ko: '상세보기', ja: '詳細を見る', fr: 'LIRE LE RAPPORT'
+    }[lang] || 'READ REPORT',
+    latest_news: {
+      vi: 'Tin Mới Nhất', en: 'Latest News', ko: '최신 뉴스', ja: '最新ニュース', fr: 'Dernières Nouvelles'
+    }[lang] || 'Latest News',
+    compare_ai: {
+      vi: 'So Sánh AI', en: 'Compare AI', ko: 'AI 비교', ja: 'AIの比較', fr: 'Comparer l\'AI'
+    }[lang] || 'Compare AI',
+    ai_guide: {
+      vi: 'Cẩm Nang AI', en: 'AI Guide', ko: 'AI 가이드', ja: 'AIガイド', fr: 'Guide de l\'AI'
+    }[lang] || 'AI Guide',
+    ai_events: {
+      vi: 'Sự Kiện AI', en: 'AI Events', ko: 'AI 이벤트', ja: 'AIイベント', fr: 'Événements AI'
+    }[lang] || 'AI Events',
+    new: {
+      vi: 'MỚI', en: 'NEW', ko: '신규', ja: '新規', fr: 'NOUVEAU'
+    }[lang] || 'NEW',
+    see_all: {
+      vi: 'XEM TẤT CẢ', en: 'SEE ALL', ko: '전체보기', ja: 'すべて見る', fr: 'VOIR TOUT'
+    }[lang] || 'SEE ALL',
+    no_events: {
+      vi: 'Chưa có sự kiện nào sắp tới', en: 'No upcoming events scheduled', ko: '예정된 이벤트가 없습니다', ja: '今後のイベント予定はありません', fr: 'Aucun événement à venir'
+    }[lang] || 'No upcoming events scheduled',
+    ai_tools_title: {
+      vi: "So Sánh Chuyên Sâu", en: "Deep Comparisons", ko: "심층 비교", ja: "ディープ比較", fr: "Comparaisons Approfondies"
+    }[lang] || "Deep Comparisons",
+    tutorials_title: {
+      vi: "Cẩm Nang Hướng Dẫn", en: "AI Learning Guides", ko: "AI 학습 가이드", ja: "AI学習ガイド", fr: "Guides d'Apprentissage AI"
+    }[lang] || "AI Learning Guides"
   };
 
   // Fetching content for different sections
@@ -80,12 +104,22 @@ export default async function HomePage({ params: { lang } }: { params: { lang: s
         {/* Magazine Header - SEO Optimized H1 */}
         <div className="mb-12 border-b-8 border-black pb-8">
           <h1 className="text-3xl md:text-5xl lg:text-6xl font-display font-black tracking-tight leading-tight uppercase">
-            AI News <span className="text-[#ef4444]">{lang === 'vi' ? 'Hôm Nay' : 'Today'}</span>
+            AI News <span className="text-[#ef4444]">{
+              { vi: 'Hôm Nay', en: 'Today', ko: '오늘', ja: '今日', fr: 'Aujourd\'hui' }[lang] || 'Today'
+            }</span>
           </h1>
           <div className="flex justify-between items-center mt-4 font-black uppercase text-sm">
             <div className="flex gap-4">
               <span className="bg-black text-white px-2">Intelligence Cartography</span>
-              <span className="hidden md:inline">{lang === 'vi' ? 'Cập Nhật AI Mới Nhất Mỗi Ngày' : 'Daily AI Ranking & Best AI Updates'}</span>
+              <span className="hidden md:inline">{
+                { 
+                  vi: 'Cập Nhật AI Mới Nhất Mỗi Ngày', 
+                  en: 'Daily AI Ranking & Best AI Updates',
+                  ko: '일일 AI 랭킹 및 최고의 AI 업데이트',
+                  ja: '毎日AIランキング＆最高のAIアップデート',
+                  fr: 'Classement AI quotidien & meilleures mises à jour AI'
+                }[lang] || 'Daily AI Ranking & Best AI Updates'
+              }</span>
             </div>
           </div>
         </div>

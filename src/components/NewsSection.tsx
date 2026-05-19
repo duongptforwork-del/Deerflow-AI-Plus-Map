@@ -50,7 +50,9 @@ export default async function NewsSection({
           href={`/${lang}/${section}`}
           className="group flex items-center gap-2 font-black text-sm uppercase hover:text-[#ef4444] transition-colors"
         >
-          View All <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+          {( {
+            vi: 'Xem Tất Cả', en: 'View All', ko: '전체보기', ja: 'すべて見る', fr: 'Voir Tout'
+          }[lang] || 'View All' )} <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
         </Link>
       </div>
 
@@ -69,7 +71,7 @@ export default async function NewsSection({
                 </span>
               </div>
             </div>
-            <div className="p-5 flex flex-col flex-1">
+            <div className="p-5 flex flex-col flex-grow">
               <h3 className="text-xl font-black leading-tight tracking-tight mb-3 group-hover:text-[#ef4444] transition-colors line-clamp-2">
                 <Link href={`/${lang}/${post.section || 'news'}/${post.slug}`}>{post.title}</Link>
               </h3>
@@ -84,7 +86,9 @@ export default async function NewsSection({
                   href={`/${lang}/${post.section || 'news'}/${post.slug}`}
                   className="text-xs font-black uppercase underline hover:text-[#ef4444]"
                 >
-                  Read More
+                  {( {
+                    vi: 'Đọc Tiếp', en: 'Read More', ko: '자세히 보기', ja: '続きを読む', fr: 'Lire Plus'
+                  }[lang] || 'Read More' )}
                 </Link>
               </div>
             </div>

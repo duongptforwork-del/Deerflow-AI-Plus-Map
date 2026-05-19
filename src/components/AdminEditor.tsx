@@ -50,6 +50,8 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
   
   const [isSaving, setIsSaving] = useState(false);
   const [isTranslating, setIsTranslating] = useState(false);
+  const [isTranslateModalOpen, setIsTranslateModalOpen] = useState(false);
+  const [targetTranslationLangs, setTargetTranslationLangs] = useState<string[]>(['en', 'vi', 'ko', 'ja', 'fr']);
   const [uploadingImage, setUploadingImage] = useState(false);
   
   const editorRef = useRef<HTMLDivElement>(null);
@@ -377,69 +379,117 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
       alert('Please fill out the post before translating.');
       return;
     }
+    setIsTranslateModalOpen(true);
+  };
+
+  const executeTranslations = async () => {
+    const activeTargets = targetTranslationLangs.filter(l => l !== postLang);
+    
+    if (activeTargets.length === 0) {
+      alert('Please select at least one target language to translate to.');
+      return;
+    }
 
     setIsTranslating(true);
-    
+    setIsTranslateModalOpen(false);
+
     try {
-      // First, let's just make sure the current post is saved
       const savedId = await handleSave(true);
       if (!savedId) throw new Error("Could not save original post");
 
-      // Target language
-      const targetLang = postLang === 'en' ? 'vi' : 'en';
+      const results: string[] = [];
+      const errors: string[] = [];
 
-      const res = await fetch('/api/translate-post', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          title,
-          excerpt,
-          content,
-          targetLang
-        })
-      });
+      for (const targetLang of activeTargets) {
+        try {
+          const res = await fetch('/api/translate-post', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              title,
+              excerpt,
+              content,
+              targetLang
+            })
+          });
 
-      if (!res.ok) throw new Error('Translation API failed');
-      const translatedData = await res.json();
-
-      // Try to find counterpart category in target language by slug
-      let targetCategoryId = null;
-      if (categoryId) {
-        const currentCategory = categories.find(c => c.id === categoryId);
-        if (currentCategory) {
-          const counterpart = categories.find(c => c.slug === currentCategory.slug && c.lang === targetLang);
-          if (counterpart) {
-            targetCategoryId = counterpart.id;
+          if (!res.ok) {
+            let errMsg = `API failed for ${targetLang}`;
+            try {
+              const errJson = await res.json();
+              if (errJson && errJson.error) {
+                errMsg = errJson.error;
+              }
+            } catch (_) {}
+            throw new Error(errMsg);
           }
+          const translatedData = await res.json();
+
+          let targetCategoryId = null;
+          if (categoryId) {
+            const currentCategory = categories.find(c => c.id === categoryId);
+            if (currentCategory) {
+              const counterpart = categories.find(c => c.slug === currentCategory.slug && c.lang === targetLang);
+              if (counterpart) {
+                targetCategoryId = counterpart.id;
+              }
+            }
+          }
+
+          const translatedPostData = {
+            title: translatedData.title,
+            slug: slug,
+            excerpt: translatedData.excerpt,
+            content: translatedData.content,
+            section,
+            category_id: targetCategoryId,
+            featured_image: featuredImage,
+            is_published: true,
+            lang: targetLang,
+            author_name: authorName
+          };
+
+          // Try updating first in case a translation for this slug & lang already exists
+          const { data: existingPost } = await supabase
+            .from('posts')
+            .select('id')
+            .eq('slug', slug)
+            .eq('lang', targetLang)
+            .maybeSingle();
+
+          let error = null;
+          if (existingPost) {
+            const { error: updateError } = await supabase
+              .from('posts')
+              .update(translatedPostData)
+              .eq('id', existingPost.id);
+            error = updateError;
+          } else {
+            const { error: insertError } = await supabase
+              .from('posts')
+              .insert([translatedPostData]);
+            error = insertError;
+          }
+
+          if (error) {
+            throw new Error(`DB save failed for ${targetLang}: ${error.message}`);
+          }
+
+          results.push(targetLang.toUpperCase());
+        } catch (e: any) {
+          errors.push(`${targetLang.toUpperCase()}: ${e.message}`);
         }
       }
 
-      // Insert the translated version
-      const translatedPostData = {
-        title: translatedData.title,
-        slug: slug, // Keep same slug for easy mapping between languages
-        excerpt: translatedData.excerpt,
-        content: translatedData.content,
-        section,
-        category_id: targetCategoryId,
-        featured_image: featuredImage,
-        is_published: true,
-        lang: targetLang,
-        author_name: authorName
-      };
-
-      const { error } = await supabase
-        .from('posts')
-        .insert([translatedPostData]);
-
-      if (error) {
-        alert('Translated post saved with error: ' + error.message);
+      if (errors.length > 0) {
+        alert(`Translation completed with errors:\nSuccess: ${results.join(', ') || 'None'}\nFailed:\n${errors.join('\n')}`);
       } else {
-        alert(`Successfully published and translated to ${targetLang.toUpperCase()}!`);
-        router.push(`/${lang}/xyz_safe`);
+        alert(`Successfully published and translated to: ${results.join(', ')}!`);
       }
+      
+      router.push(`/${lang}/xyz_safe`);
     } catch (err: any) {
       alert('Translation process failed: ' + err.message);
     } finally {
@@ -527,8 +577,9 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
                     >
                       <option value="en">English</option>
                       <option value="vi">Vietnamese</option>
-                      <option value="de">German</option>
-                      <option value="hi">Hindi</option>
+                      <option value="ko">Korean</option>
+                      <option value="ja">Japanese</option>
+                      <option value="fr">French</option>
                     </select>
                   </div>
                 </div>
@@ -711,6 +762,73 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
           </div>
         </div>
       </div>
+
+      {/* Neo-brutalist Multi-language Translation Modal */}
+      {isTranslateModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-white border-8 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] max-w-lg w-full p-8 relative">
+            <h3 className="text-2xl font-black uppercase tracking-tight mb-4 border-b-4 border-black pb-2 flex items-center justify-between">
+              <span>🌎 Translate & Publish</span>
+              <button 
+                onClick={() => setIsTranslateModalOpen(false)}
+                className="text-black hover:text-[#ef4444] transition-colors font-black text-xl"
+              >
+                ✕
+              </button>
+            </h3>
+            
+            <p className="font-bold text-sm text-slate-700 mb-6 leading-relaxed">
+              Select the target languages to translate your post into. This will automatically translate the title, excerpt, and content, and publish them.
+            </p>
+            
+            <div className="space-y-3 mb-8">
+              {[
+                { code: 'en', label: 'English (EN) 🇺🇸' },
+                { code: 'vi', label: 'Tiếng Việt (VI) 🇻🇳' },
+                { code: 'ko', label: '한국어 (KO) 🇰🇷' },
+                { code: 'ja', label: '日本語 (JA) 🇯🇵' },
+                { code: 'fr', label: 'Français (FR) 🇫🇷' },
+              ]
+                .filter(l => l.code !== postLang)
+                .map((l) => (
+                  <label 
+                    key={l.code} 
+                    className="flex items-center gap-3 p-3 border-2 border-black font-black uppercase text-xs cursor-pointer hover:bg-slate-50 transition-colors select-none"
+                  >
+                    <input 
+                      type="checkbox"
+                      checked={targetTranslationLangs.includes(l.code)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setTargetTranslationLangs([...targetTranslationLangs, l.code]);
+                        } else {
+                          setTargetTranslationLangs(targetTranslationLangs.filter(c => c !== l.code));
+                        }
+                      }}
+                      className="w-4 h-4 border-2 border-black rounded-none checked:bg-black accent-black shrink-0"
+                    />
+                    <span>{l.label}</span>
+                  </label>
+                ))}
+            </div>
+
+            <div className="flex gap-4">
+              <button
+                onClick={() => setIsTranslateModalOpen(false)}
+                className="flex-1 py-3 border-2 border-black font-black uppercase text-xs hover:bg-slate-100 transition-all bg-white"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={executeTranslations}
+                className="flex-1 py-3 bg-[#ef4444] text-white border-2 border-black font-black uppercase text-xs hover:bg-black transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-1 active:translate-y-1 active:shadow-none"
+              >
+                Start Translation
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -18,7 +18,9 @@ export default function SectionHeader({ title, lang, href, className = "" }: Sec
           href={href} 
           className="text-xs font-black bg-black text-white px-4 py-2 hover:bg-[#ef4444] transition-colors flex items-center gap-1 group"
         >
-          SEE ALL
+          {( {
+            vi: 'XEM TẤT CẢ', en: 'SEE ALL', ko: '전체보기', ja: 'すべて見る', fr: 'VOIR TOUT'
+          }[lang] || 'SEE ALL' )}
           <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
           </svg>
