@@ -9,6 +9,8 @@ import remarkGfm from 'remark-gfm';
 import remarkBreaks from 'remark-breaks';
 import { Loader2, Image as ImageIcon, Link as LinkIcon, Save, Languages, ArrowLeft, Type, Bold, Italic, Heading1, Heading2, Heading3 } from 'lucide-react';
 import { getAdminSession } from '@/utils/auth';
+import { marked } from 'marked';
+import TurndownService from 'turndown';
 
 const slugify = (str: string) => {
   return String(str)
@@ -48,7 +50,14 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
   const [isTranslating, setIsTranslating] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   
-  const contentRef = useRef<HTMLTextAreaElement>(null);
+  const editorRef = useRef<HTMLDivElement>(null);
+
+  // Load content into editor on post load once editorRef is available
+  useEffect(() => {
+    if (editorRef.current && content && editorRef.current.innerHTML === '') {
+      editorRef.current.innerHTML = marked.parse(content) as string;
+    }
+  }, [content]);
 
   useEffect(() => {
     if (!getAdminSession()) {
@@ -94,6 +103,9 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
       setFeaturedImage(data.featured_image || '');
       setIsPublished(data.is_published || false);
       setPostLang(data.lang || lang);
+      if (editorRef.current) {
+        editorRef.current.innerHTML = marked.parse(data.content || '') as string;
+      }
     } else {
       alert('Failed to load post');
       router.push(`/${lang}/xyz_safe`);
@@ -150,20 +162,50 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
     setUploadingImage(false);
   };
 
-  const insertAtCursor = (textToInsert: string) => {
-    const textarea = contentRef.current;
-    if (!textarea) return;
+  const updateContentFromDom = () => {
+    if (!editorRef.current) return;
+    const html = editorRef.current.innerHTML;
+    
+    // Convert HTML to Markdown using Turndown
+    const turndownService = new TurndownService({
+      headingStyle: 'atx',
+      hr: '---',
+      bulletListMarker: '-',
+      codeBlockStyle: 'fenced'
+    });
 
-    const startPos = textarea.selectionStart;
-    const endPos = textarea.selectionEnd;
+    // Clean up images replacement
+    turndownService.addRule('cleanImages', {
+      filter: 'img',
+      replacement: function (content, node: any) {
+        const src = node.getAttribute('src') || '';
+        const alt = node.getAttribute('alt') || 'image';
+        return `\n![${alt}](${src})\n`;
+      }
+    });
+
+    const markdown = turndownService.turndown(html);
+    setContent(markdown);
+  };
+
+  const insertImageToEditor = (imageUrl: string, alt: string) => {
+    if (editorRef.current) {
+      editorRef.current.focus();
+    }
+    document.execCommand('insertImage', false, imageUrl);
     
-    const newContent = content.substring(0, startPos) + textToInsert + content.substring(endPos);
-    setContent(newContent);
-    
+    // Add nice brutalist style classes to the inserted image
     setTimeout(() => {
-      textarea.focus();
-      textarea.setSelectionRange(startPos + textToInsert.length, startPos + textToInsert.length);
-    }, 0);
+      if (editorRef.current) {
+        const imgs = editorRef.current.querySelectorAll('img');
+        if (imgs && imgs.length > 0) {
+          const lastImg = imgs[imgs.length - 1];
+          lastImg.setAttribute('alt', alt);
+          lastImg.className = 'border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] my-6 max-w-full block';
+        }
+      }
+      updateContentFromDom();
+    }, 50);
   };
 
   const handleContentImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -172,7 +214,25 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
     const file = e.target.files[0];
     const url = await uploadImage(file);
     if (url) {
-      insertAtCursor(`\n![${file.name.split('.')[0]}](${url})\n`);
+      insertImageToEditor(url, file.name.split('.')[0]);
+    }
+  };
+
+  const applyHeading = (tag: string) => {
+    document.execCommand('formatBlock', false, tag);
+    updateContentFromDom();
+  };
+
+  const applyStyle = (command: string) => {
+    document.execCommand(command, false);
+    updateContentFromDom();
+  };
+
+  const applyLink = () => {
+    const url = prompt(postLang === 'vi' ? 'Nhập link liên kết:' : 'Enter URL:');
+    if (url) {
+      document.execCommand('createLink', false, url);
+      updateContentFromDom();
     }
   };
 
@@ -450,14 +510,14 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
 
             <div className="bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] flex flex-col h-[600px]">
               <div className="p-2 border-b-4 border-black bg-[#F3F4F6] flex items-center gap-2 flex-wrap">
-                <button onClick={() => insertAtCursor('# ')} title="Heading 1" className="p-2 bg-white border-2 border-black hover:bg-black hover:text-white transition-colors"><Heading1 size={16} /></button>
-                <button onClick={() => insertAtCursor('## ')} title="Heading 2" className="p-2 bg-white border-2 border-black hover:bg-black hover:text-white transition-colors"><Heading2 size={16} /></button>
-                <button onClick={() => insertAtCursor('### ')} title="Heading 3" className="p-2 bg-white border-2 border-black hover:bg-black hover:text-white transition-colors"><Heading3 size={16} /></button>
+                <button type="button" onClick={() => applyHeading('<h1>')} title="Heading 1" className="p-2 bg-white border-2 border-black hover:bg-black hover:text-white transition-colors"><Heading1 size={16} /></button>
+                <button type="button" onClick={() => applyHeading('<h2>')} title="Heading 2" className="p-2 bg-white border-2 border-black hover:bg-black hover:text-white transition-colors"><Heading2 size={16} /></button>
+                <button type="button" onClick={() => applyHeading('<h3>')} title="Heading 3" className="p-2 bg-white border-2 border-black hover:bg-black hover:text-white transition-colors"><Heading3 size={16} /></button>
                 <div className="w-px h-6 bg-black mx-1"></div>
-                <button onClick={() => insertAtCursor('**bold**')} title="Bold" className="p-2 bg-white border-2 border-black hover:bg-black hover:text-white transition-colors"><Bold size={16} /></button>
-                <button onClick={() => insertAtCursor('*italic*')} title="Italic" className="p-2 bg-white border-2 border-black hover:bg-black hover:text-white transition-colors"><Italic size={16} /></button>
+                <button type="button" onClick={() => applyStyle('bold')} title="Bold" className="p-2 bg-white border-2 border-black hover:bg-black hover:text-white transition-colors"><Bold size={16} /></button>
+                <button type="button" onClick={() => applyStyle('italic')} title="Italic" className="p-2 bg-white border-2 border-black hover:bg-black hover:text-white transition-colors"><Italic size={16} /></button>
                 <div className="w-px h-6 bg-black mx-1"></div>
-                <button onClick={() => insertAtCursor('[link text](url)')} title="Link" className="p-2 bg-white border-2 border-black hover:bg-black hover:text-white transition-colors"><LinkIcon size={16} /></button>
+                <button type="button" onClick={applyLink} title="Link" className="p-2 bg-white border-2 border-black hover:bg-black hover:text-white transition-colors"><LinkIcon size={16} /></button>
                 
                 <label className="cursor-pointer p-2 bg-white border-2 border-black hover:bg-black hover:text-white transition-colors flex items-center justify-center" title="Upload Image to Content">
                   <ImageIcon size={16} />
@@ -465,12 +525,19 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
                 </label>
               </div>
               
-              <textarea
-                ref={contentRef}
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                className="flex-1 w-full p-6 outline-none resize-none font-mono text-sm leading-relaxed"
-                placeholder="Write your article in Markdown..."
+              <div
+                ref={editorRef}
+                contentEditable
+                onInput={updateContentFromDom}
+                className="flex-1 w-full p-6 outline-none overflow-y-auto font-sans text-base leading-relaxed bg-white border-0 prose prose-slate prose-lg max-w-none 
+                  prose-headings:font-black prose-headings:tracking-tight prose-headings:my-4
+                  prose-p:font-bold prose-p:leading-relaxed prose-p:text-slate-800 prose-p:my-3
+                  prose-strong:font-black prose-strong:text-black
+                  prose-em:italic prose-em:text-[#ef4444]
+                  prose-img:border-4 prose-img:border-black prose-img:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] prose-img:my-6
+                  prose-blockquote:border-l-8 prose-blockquote:border-[#ef4444] prose-blockquote:bg-white prose-blockquote:p-8 prose-blockquote:font-black prose-blockquote:italic
+                  prose-li:font-bold"
+                style={{ minHeight: '400px' }}
               />
             </div>
           </div>
