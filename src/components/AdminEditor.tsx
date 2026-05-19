@@ -438,9 +438,11 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
             }
           }
 
+          const targetSlug = `${slug}-${targetLang}`;
+
           const translatedPostData = {
             title: translatedData.title,
-            slug: slug,
+            slug: targetSlug,
             excerpt: translatedData.excerpt,
             content: translatedData.content,
             section,
@@ -455,7 +457,7 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
           const { data: existingPost } = await supabase
             .from('posts')
             .select('id')
-            .eq('slug', slug)
+            .eq('slug', targetSlug)
             .eq('lang', targetLang)
             .maybeSingle();
 

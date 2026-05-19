@@ -25,7 +25,7 @@ body {
 
 /* Brutalist Article Content Styling */
 .article-content p {
-  font-weight: 700;
+  font-weight: 500; /* Regular readable font weight, not bold */
   line-height: 1.75;
   color: #1e293b; /* slate-800 */
   margin-bottom: 2rem !important; /* Forces vertical paragraph spacing of 32px! */
@@ -54,7 +54,6 @@ body {
 
 .article-content em {
   font-style: italic;
-  color: #ef4444;
 }
 
 .article-content img {

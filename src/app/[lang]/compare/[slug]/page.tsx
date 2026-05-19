@@ -84,7 +84,7 @@ export default async function CompareDetailPage({ params: { lang, slug } }: { pa
               </span>
             </div>
             
-            <h1 className="text-xl md:text-2xl lg:text-3xl font-black leading-tight mb-8 tracking-tight text-balance">
+            <h1 className="text-lg md:text-xl lg:text-2xl font-black leading-tight mb-8 tracking-tight text-balance">
               {post.title}
             </h1>
             
