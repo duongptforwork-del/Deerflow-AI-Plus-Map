@@ -104,7 +104,8 @@ export default async function HomePage({ params: { lang } }: { params: { lang: s
         {/* Magazine Header - SEO Optimized H1 */}
         <div className="mb-12 border-b-8 border-black pb-8">
           <h1 className="text-3xl md:text-5xl lg:text-6xl font-display font-black tracking-tight leading-tight uppercase">
-            AI News <span className="text-[#ef4444]">{
+            {{ vi: 'Tin Tức AI', en: 'AI News', ko: 'AI 뉴스', ja: 'AIニュース', fr: 'Nouvelles AI' }[lang] || 'AI News'}{' '}
+            <span className="text-[#ef4444]">{
               { vi: 'Hôm Nay', en: 'Today', ko: '오늘', ja: '今日', fr: 'Aujourd\'hui' }[lang] || 'Today'
             }</span>
           </h1>
