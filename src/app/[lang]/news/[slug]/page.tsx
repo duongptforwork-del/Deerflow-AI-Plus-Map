@@ -87,7 +87,7 @@ export default async function NewsDetailPage({ params: { lang, slug } }: { param
               </span>
             </div>
             
-            <h1 className="text-3xl md:text-5xl font-black leading-tight mb-8 tracking-tight">
+            <h1 className="text-2xl md:text-4xl font-black leading-tight mb-8 tracking-tight">
               {post.title}
             </h1>
             
@@ -102,7 +102,7 @@ export default async function NewsDetailPage({ params: { lang, slug } }: { param
 
           <div className="prose prose-slate prose-lg max-w-none 
             prose-headings:font-black prose-headings:tracking-tight
-            prose-p:font-bold prose-p:leading-relaxed prose-p:text-slate-800
+            prose-p:font-bold prose-p:leading-relaxed prose-p:text-slate-800 prose-p:mb-6
             prose-strong:font-black prose-strong:text-black
             prose-em:italic prose-em:text-[#ef4444]
             prose-img:border-4 prose-img:border-black prose-img:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]

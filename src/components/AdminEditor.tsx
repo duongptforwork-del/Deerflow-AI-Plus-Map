@@ -45,6 +45,8 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
   const [featuredImage, setFeaturedImage] = useState('');
   const [isPublished, setIsPublished] = useState(false);
   const [postLang, setPostLang] = useState(lang);
+  const [authorName, setAuthorName] = useState('Sếp');
+  const [authors, setAuthors] = useState<string[]>(['Sếp', 'AI Plus Team', 'Community']);
   
   const [isSaving, setIsSaving] = useState(false);
   const [isTranslating, setIsTranslating] = useState(false);
@@ -66,6 +68,33 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
       setIsAuthorized(true);
     }
   }, [lang, router]);
+
+  const fetchAuthors = async () => {
+    const local = localStorage.getItem('local_authors');
+    let authorList = ['Sếp', 'AI Plus Team', 'Community'];
+    if (local) {
+      try {
+        authorList = JSON.parse(local);
+      } catch (e) {}
+    }
+
+    const { data, error } = await supabase
+      .from('authors')
+      .select('name')
+      .order('name', { ascending: true });
+      
+    if (data && !error && data.length > 0) {
+      const dbNames = data.map((a: any) => a.name);
+      const merged = Array.from(new Set([...authorList, ...dbNames])).sort();
+      setAuthors(merged);
+    } else {
+      setAuthors(authorList.sort());
+    }
+  };
+
+  useEffect(() => {
+    fetchAuthors();
+  }, []);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -103,6 +132,7 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
       setFeaturedImage(data.featured_image || '');
       setIsPublished(data.is_published || false);
       setPostLang(data.lang || lang);
+      setAuthorName(data.author_name || 'Sếp');
       if (editorRef.current) {
         editorRef.current.innerHTML = marked.parse(data.content || '') as string;
       }
@@ -116,6 +146,48 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
     setTitle(e.target.value);
     if (isNew) {
       setSlug(slugify(e.target.value));
+    }
+  };
+
+  const handleAddAuthor = async () => {
+    const name = prompt(postLang === 'vi' ? 'Nhập tên tác giả mới:' : 'Enter new author name:');
+    if (!name) return;
+    const trimmed = name.trim();
+    if (!trimmed) return;
+
+    if (authors.includes(trimmed)) {
+      alert(postLang === 'vi' ? 'Tác giả này đã tồn tại!' : 'Author already exists!');
+      return;
+    }
+
+    const { error } = await supabase.from('authors').insert([{ name: trimmed }]);
+    const updated = [...authors, trimmed].sort();
+    setAuthors(updated);
+    localStorage.setItem('local_authors', JSON.stringify(updated));
+    setAuthorName(trimmed);
+    
+    if (!error) {
+      fetchAuthors();
+    }
+  };
+
+  const handleDeleteAuthor = async () => {
+    if (!authorName) return;
+    if (['Sếp', 'AI Plus Team', 'Community'].includes(authorName)) {
+      alert(postLang === 'vi' ? 'Không thể xóa tác giả mặc định!' : 'Cannot delete default authors!');
+      return;
+    }
+
+    if (confirm(postLang === 'vi' ? `Bạn có chắc chắn muốn xóa tác giả "${authorName}"?` : `Are you sure you want to delete author "${authorName}"?`)) {
+      const { error } = await supabase.from('authors').delete().eq('name', authorName);
+      const updated = authors.filter(a => a !== authorName);
+      setAuthors(updated);
+      localStorage.setItem('local_authors', JSON.stringify(updated));
+      setAuthorName('Sếp');
+      
+      if (!error) {
+        fetchAuthors();
+      }
     }
   };
 
@@ -181,6 +253,16 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
         const src = node.getAttribute('src') || '';
         const alt = node.getAttribute('alt') || 'image';
         return `\n![${alt}](${src})\n`;
+      }
+    });
+
+    // Custom rule to ensure paragraphs and divs have clear double newlines in markdown
+    turndownService.addRule('paragraphsAndDivs', {
+      filter: ['p', 'div'],
+      replacement: function (content, node) {
+        const text = content.trim();
+        if (!text) return '';
+        return '\n\n' + text + '\n\n';
       }
     });
 
@@ -252,7 +334,8 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
       category_id: categoryId || null,
       featured_image: featuredImage,
       is_published: publish,
-      lang: postLang
+      lang: postLang,
+      author_name: authorName
     };
 
     let resultId = postId;
@@ -343,7 +426,8 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
         category_id: targetCategoryId,
         featured_image: featuredImage,
         is_published: true,
-        lang: targetLang
+        lang: targetLang,
+        author_name: authorName
       };
 
       const { error } = await supabase
@@ -462,6 +546,41 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
                   </select>
                 </div>
 
+                <div>
+                  <label className="block text-xs font-black uppercase tracking-widest mb-2">Author (Tác giả)</label>
+                  <div className="flex gap-2">
+                    <select 
+                      value={authorName}
+                      onChange={(e) => setAuthorName(e.target.value)}
+                      className="flex-1 p-3 border-2 border-black text-sm font-bold uppercase tracking-widest outline-none bg-white"
+                    >
+                      {authors.map((auth) => (
+                        <option key={auth} value={auth}>{auth}</option>
+                      ))}
+                    </select>
+                    
+                    <button
+                      type="button"
+                      onClick={handleAddAuthor}
+                      className="px-4 py-2 bg-emerald-400 text-black border-2 border-black font-black uppercase text-xs hover:bg-black hover:text-white transition-colors"
+                      title="Add new author"
+                    >
+                      + Add
+                    </button>
+                    
+                    {!['Sếp', 'AI Plus Team', 'Community'].includes(authorName) && (
+                      <button
+                        type="button"
+                        onClick={handleDeleteAuthor}
+                        className="px-4 py-2 bg-red-400 text-black border-2 border-black font-black uppercase text-xs hover:bg-[#ef4444] hover:text-white transition-colors"
+                        title="Delete selected author"
+                      >
+                        Delete
+                      </button>
+                    )}
+                  </div>
+                </div>
+
                 {section === 'news' && (
                   <div>
                     <label className="block text-xs font-black uppercase tracking-widest mb-2">Category (Chuyên mục)</label>
@@ -559,7 +678,7 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
                     </span>
                   </div>
                   
-                  <h1 className="text-3xl md:text-5xl font-black leading-tight mb-8 tracking-tight">
+                  <h1 className="text-2xl md:text-4xl font-black leading-tight mb-8 tracking-tight">
                     {title || 'Post Title Goes Here'}
                   </h1>
                   
@@ -576,7 +695,7 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
 
                 <div className="prose prose-slate prose-lg max-w-none 
                   prose-headings:font-black prose-headings:tracking-tight
-                  prose-p:font-bold prose-p:leading-relaxed prose-p:text-slate-800
+                  prose-p:font-bold prose-p:leading-relaxed prose-p:text-slate-800 prose-p:mb-6
                   prose-strong:font-black prose-strong:text-black
                   prose-em:italic prose-em:text-[#ef4444]
                   prose-img:border-4 prose-img:border-black prose-img:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]
