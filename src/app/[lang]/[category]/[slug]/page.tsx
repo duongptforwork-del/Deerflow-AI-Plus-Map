@@ -89,7 +89,7 @@ export default async function PostDetailPage({ params: { lang, category, slug } 
               </span>
             </div>
             
-            <h1 className="text-3xl md:text-4xl font-display font-black leading-tight mb-8 tracking-tight">
+            <h1 className="text-xl md:text-2xl lg:text-3xl font-display font-black leading-tight mb-8 tracking-tight">
               {post.title}
             </h1>
             
@@ -102,17 +102,11 @@ export default async function PostDetailPage({ params: { lang, category, slug } 
             <img src={post.featured_image} alt={post.title} className="w-full h-full object-cover transition-all duration-700" />
           </div>
 
-          <div className="prose prose-slate prose-lg max-w-none 
-            prose-headings:font-display prose-headings:font-black prose-headings:tracking-tight
-            prose-p:font-bold prose-p:leading-relaxed prose-p:text-slate-800
-            prose-strong:font-black prose-strong:text-black
-            prose-em:italic prose-em:text-[#ef4444]
-            prose-img:border-4 prose-img:border-black prose-img:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]
-            prose-blockquote:border-l-8 prose-blockquote:border-[#ef4444] prose-blockquote:bg-white prose-blockquote:p-8 prose-blockquote:font-black prose-blockquote:italic
-            prose-li:font-bold
-            ">
+          <div className="article-content max-w-none">
             <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>
-              {post.content}
+              {post.content && !post.content.includes('\n\n') 
+                ? post.content.replace(/\n/g, '\n\n') 
+                : post.content}
             </ReactMarkdown>
           </div>
           
