@@ -347,7 +347,7 @@ const AdminDashboard = ({ posts = [], lang = 'en' }: { posts?: any[], lang?: str
                   </div>
                 </div>
 
-                <div className="bg-white border-4 border-black shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] overflow-hidden mb-10">
+                <div className="bg-white border-4 border-black shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] mb-10">
                   <table className="w-full text-left">
                     <thead className="bg-black text-white">
                       <tr>
