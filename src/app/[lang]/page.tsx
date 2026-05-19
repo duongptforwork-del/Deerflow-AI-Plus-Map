@@ -150,7 +150,7 @@ export default async function HomePage({ params: { lang } }: { params: { lang: s
                     <h2 className="text-xl lg:text-2xl font-display font-black leading-tight tracking-tight mb-4 group-hover:text-[#ef4444] transition-colors">
                       <Link href={`/${lang}/${hero.section || 'news'}/${hero.slug}`}>{hero.title}</Link>
                     </h2>
-                    <p className="text-lg font-bold leading-relaxed mb-6 text-slate-700 line-clamp-3">
+                    <p className="text-xs md:text-sm font-bold leading-relaxed mb-6 text-slate-700 line-clamp-3">
                       {hero.excerpt}
                     </p>
                     <Link 
