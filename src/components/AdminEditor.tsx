@@ -379,9 +379,13 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
       alert('Please fill out the post before translating.');
       return;
     }
-    setIsTranslateModalOpen(true);
+    // Determine all target languages excluding current language
+    const allLangs = ['en', 'vi', 'ko', 'ja', 'fr'];
+    const targets = allLangs.filter(l => l !== postLang);
+    setTargetTranslationLangs(targets);
+    // Directly start translation without opening modal
+    await executeTranslations();
   };
-
   const executeTranslations = async () => {
     const activeTargets = targetTranslationLangs.filter(l => l !== postLang);
     
