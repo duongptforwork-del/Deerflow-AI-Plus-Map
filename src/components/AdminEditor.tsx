@@ -442,7 +442,7 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
             }
           }
 
-          const targetSlug = `${slug}-${targetLang}`;
+          const targetSlug = slug;
 
           const translatedPostData = {
             title: translatedData.title,
