@@ -8,12 +8,27 @@ export const revalidate = 0;
 export default async function EventsPage({ params: { lang } }: { params: { lang: string } }) {
   const supabase = createClient();
   
-  // Fetch upcoming events from the unified posts table
+  let currentLang = lang;
   const today = new Date();
+  
+  // Check if current language has any published events
+  const { count: eventsCount } = await supabase
+    .from('posts')
+    .select('*', { count: 'exact', head: true })
+    .eq('lang', lang)
+    .eq('section', 'events')
+    .eq('is_published', true)
+    .gte('event_date', today.toISOString());
+    
+  if (eventsCount === 0 && lang !== 'en') {
+    currentLang = 'en';
+  }
+
+  // Fetch upcoming events from the unified posts table
   const { data: events } = await supabase
     .from('posts')
     .select('*')
-    .eq('lang', lang)
+    .eq('lang', currentLang)
     .eq('section', 'events')
     .eq('is_published', true)
     .gte('event_date', today.toISOString())

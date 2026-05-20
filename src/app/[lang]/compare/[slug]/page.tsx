@@ -25,13 +25,26 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params: { lang, slug } }: { params: { lang: string; slug: string } }) {
   const supabase = createClient();
-  const { data: post } = await supabase
+  let { data: post } = await supabase
     .from('posts')
     .select('*, categories(*)')
     .eq('slug', slug)
     .eq('lang', lang)
     .eq('section', 'compare')
     .single();
+
+  if (!post && lang !== 'en') {
+    const { data: fallbackPost } = await supabase
+      .from('posts')
+      .select('*, categories(*)')
+      .eq('slug', slug)
+      .eq('lang', 'en')
+      .eq('section', 'compare')
+      .single();
+    if (fallbackPost) {
+      post = fallbackPost;
+    }
+  }
 
   if (!post) return {};
 
@@ -50,7 +63,7 @@ export async function generateMetadata({ params: { lang, slug } }: { params: { l
 export default async function CompareDetailPage({ params: { lang, slug } }: { params: { lang: string; slug: string } }) {
   const supabase = createClient();
 
-  const { data: post } = await supabase
+  let { data: post } = await supabase
     .from('posts')
     .select('*, categories(*)')
     .eq('slug', slug)
@@ -58,13 +71,26 @@ export default async function CompareDetailPage({ params: { lang, slug } }: { pa
     .eq('section', 'compare')
     .single();
 
+  if (!post && lang !== 'en') {
+    const { data: fallbackPost } = await supabase
+      .from('posts')
+      .select('*, categories(*)')
+      .eq('slug', slug)
+      .eq('lang', 'en')
+      .eq('section', 'compare')
+      .single();
+    if (fallbackPost) {
+      post = fallbackPost;
+    }
+  }
+
   if (!post) return notFound();
 
   // Fetch related comparisons using the section filter
   const { data: relatedPosts } = await supabase
     .from('posts')
     .select('*, categories(*)')
-    .eq('lang', lang)
+    .eq('lang', post.lang)
     .eq('section', 'compare')
     .neq('id', post.id)
     .order('created_at', { ascending: false })

@@ -531,16 +531,14 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
               <Save size={18} /> Publish
             </button>
             
-            {postLang === 'en' && (
-              <button 
-                onClick={handleTranslateAndSave}
-                disabled={isSaving || isTranslating}
-                className="flex items-center gap-2 px-6 py-2 bg-[#ef4444] text-white border-4 border-black font-black uppercase text-sm tracking-widest shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all"
-              >
-                {isTranslating ? <Loader2 className="animate-spin" size={18} /> : <Languages size={18} />}
-                Publish & Translate
-              </button>
-            )}
+            <button 
+              onClick={handleTranslateAndSave}
+              disabled={isSaving || isTranslating}
+              className="flex items-center gap-2 px-6 py-2 bg-[#ef4444] text-white border-4 border-black font-black uppercase text-sm tracking-widest shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all"
+            >
+              {isTranslating ? <Loader2 className="animate-spin" size={18} /> : <Languages size={18} />}
+              Publish & Translate
+            </button>
           </div>
         </div>
 

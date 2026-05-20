@@ -25,12 +25,24 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params: { lang, category, slug } }: { params: { lang: string; category: string; slug: string } }) {
   const supabase = createClient();
   
-  const { data: post } = await supabase
+  let { data: post } = await supabase
     .from('posts')
     .select('*')
     .eq('slug', slug)
     .eq('lang', lang)
     .single();
+
+  if (!post && lang !== 'en') {
+    const { data: fallbackPost } = await supabase
+      .from('posts')
+      .select('*')
+      .eq('slug', slug)
+      .eq('lang', 'en')
+      .single();
+    if (fallbackPost) {
+      post = fallbackPost;
+    }
+  }
 
   if (!post) return {};
 
@@ -49,12 +61,24 @@ export async function generateMetadata({ params: { lang, category, slug } }: { p
 export default async function PostDetailPage({ params: { lang, category, slug } }: { params: { lang: string; category: string; slug: string } }) {
   const supabase = createClient();
 
-  const { data: post } = await supabase
+  let { data: post } = await supabase
     .from('posts')
     .select('*')
     .eq('slug', slug)
     .eq('lang', lang)
     .single();
+
+  if (!post && lang !== 'en') {
+    const { data: fallbackPost } = await supabase
+      .from('posts')
+      .select('*')
+      .eq('slug', slug)
+      .eq('lang', 'en')
+      .single();
+    if (fallbackPost) {
+      post = fallbackPost;
+    }
+  }
 
   if (!post) return notFound();
 
@@ -68,7 +92,7 @@ export default async function PostDetailPage({ params: { lang, category, slug } 
   const { data: relatedPosts } = await supabase
     .from('posts')
     .select('*')
-    .eq('lang', lang)
+    .eq('lang', post.lang)
     .eq('section', post.section)
     .eq('is_published', true)
     .neq('id', post.id)

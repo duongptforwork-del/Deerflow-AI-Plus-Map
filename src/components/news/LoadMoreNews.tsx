@@ -17,12 +17,15 @@ interface Post {
 export default function LoadMoreNews({ 
   initialPosts, 
   lang, 
+  queryLang,
   startOffset 
 }: { 
   initialPosts: Post[]; 
   lang: string; 
+  queryLang?: string;
   startOffset: number;
 }) {
+  const actualQueryLang = queryLang || lang;
   const [posts, setPosts] = useState<Post[]>(initialPosts);
   const [offset, setOffset] = useState(startOffset);
   const [hasMore, setHasMore] = useState(initialPosts.length === 8); // Assuming limit 8
@@ -37,7 +40,7 @@ export default function LoadMoreNews({
     const { data } = await supabase
       .from('posts')
       .select('id, title, slug, featured_image, excerpt, created_at, section')
-      .eq('lang', lang)
+      .eq('lang', actualQueryLang)
       .eq('section', 'news')
       .eq('is_published', true)
       .order('created_at', { ascending: false })

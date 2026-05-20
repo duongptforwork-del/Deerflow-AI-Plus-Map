@@ -48,6 +48,19 @@ export default async function HomePage({ params: { lang } }: { params: { lang: s
     }[lang] || "AI Learning Guides"
   };
 
+  let currentLang = lang;
+  
+  // Check if current language has any published posts
+  const { count } = await supabase
+    .from('posts')
+    .select('*', { count: 'exact', head: true })
+    .eq('lang', lang)
+    .eq('is_published', true);
+    
+  if (count === 0 && lang !== 'en') {
+    currentLang = 'en';
+  }
+
   // Fetching content for different sections
   // "xôi thịt" (dense content) aesthetic: pull latest posts across ALL sections for Hero & Trending
   const [
@@ -59,20 +72,20 @@ export default async function HomePage({ params: { lang } }: { params: { lang: s
     { data: eventPosts }
   ] = await Promise.all([
     // Hero: Fetch 4 latest posts across ALL sections
-    supabase.from('posts').select('*').eq('lang', lang).eq('is_published', true).order('created_at', { ascending: false }).limit(4),
+    supabase.from('posts').select('*').eq('lang', currentLang).eq('is_published', true).order('created_at', { ascending: false }).limit(4),
     
     // Trending: 5 latest across ALL sections
-    supabase.from('posts').select('*').eq('lang', lang).eq('is_published', true).order('created_at', { ascending: false }).limit(5),
+    supabase.from('posts').select('*').eq('lang', currentLang).eq('is_published', true).order('created_at', { ascending: false }).limit(5),
     
     // Latest Posts Grid: Posts 5-8 across ALL sections
-    supabase.from('posts').select('*').eq('lang', lang).eq('is_published', true).order('created_at', { ascending: false }).range(4, 7),
+    supabase.from('posts').select('*').eq('lang', currentLang).eq('is_published', true).order('created_at', { ascending: false }).range(4, 7),
     
     // Section Specific queries
-    supabase.from('posts').select('*').eq('lang', lang).eq('is_published', true).eq('section', 'compare').order('created_at', { ascending: false }).limit(3),
-    supabase.from('posts').select('*').eq('lang', lang).eq('is_published', true).eq('section', 'guide').order('created_at', { ascending: false }).limit(3),
+    supabase.from('posts').select('*').eq('lang', currentLang).eq('is_published', true).eq('section', 'compare').order('created_at', { ascending: false }).limit(3),
+    supabase.from('posts').select('*').eq('lang', currentLang).eq('is_published', true).eq('section', 'guide').order('created_at', { ascending: false }).limit(3),
     
     // Events: Now using section 'events'
-    supabase.from('posts').select('*').eq('lang', lang).eq('is_published', true).eq('section', 'events').order('created_at', { ascending: false }).limit(4)
+    supabase.from('posts').select('*').eq('lang', currentLang).eq('is_published', true).eq('section', 'events').order('created_at', { ascending: false }).limit(4)
   ]);
 
   const hero = heroPosts?.[0];

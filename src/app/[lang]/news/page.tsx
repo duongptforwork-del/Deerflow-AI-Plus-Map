@@ -11,11 +11,25 @@ export default async function NewsPage({
 }) {
   const supabase = createClient();
   
+  let currentLang = lang;
+  
+  // Check if current language has any published posts in news
+  const { count } = await supabase
+    .from('posts')
+    .select('*', { count: 'exact', head: true })
+    .eq('lang', lang)
+    .eq('section', 'news')
+    .eq('is_published', true);
+    
+  if (count === 0 && lang !== 'en') {
+    currentLang = 'en';
+  }
+
   // 1. Fetch 5 latest for Hero and Top Stories
   const { data: topFive } = await supabase
     .from('posts')
     .select('*, categories(slug, name)')
-    .eq('lang', lang)
+    .eq('lang', currentLang)
     .eq('section', 'news')
     .eq('is_published', true)
     .order('created_at', { ascending: false })
@@ -28,7 +42,7 @@ export default async function NewsPage({
   const { data: initialLatest } = await supabase
     .from('posts')
     .select('*, categories(slug, name)')
-    .eq('lang', lang)
+    .eq('lang', currentLang)
     .eq('section', 'news')
     .eq('is_published', true)
     .order('created_at', { ascending: false })
@@ -122,6 +136,7 @@ export default async function NewsPage({
           <LoadMoreNews 
             initialPosts={initialLatest || []} 
             lang={lang} 
+            queryLang={currentLang}
             startOffset={13} 
           />
         </section>

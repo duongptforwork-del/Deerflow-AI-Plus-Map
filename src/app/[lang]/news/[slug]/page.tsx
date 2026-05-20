@@ -26,13 +26,26 @@ import remarkBreaks from 'remark-breaks';
 
 export async function generateMetadata({ params: { lang, slug } }: { params: { lang: string; slug: string } }) {
   const supabase = createClient();
-  const { data: post } = await supabase
+  let { data: post } = await supabase
     .from('posts')
     .select('*, categories(*)')
     .eq('slug', slug)
     .eq('lang', lang)
     .eq('section', 'news')
     .single();
+
+  if (!post && lang !== 'en') {
+    const { data: fallbackPost } = await supabase
+      .from('posts')
+      .select('*, categories(*)')
+      .eq('slug', slug)
+      .eq('lang', 'en')
+      .eq('section', 'news')
+      .single();
+    if (fallbackPost) {
+      post = fallbackPost;
+    }
+  }
 
   if (!post) return {};
 
@@ -51,7 +64,7 @@ export async function generateMetadata({ params: { lang, slug } }: { params: { l
 export default async function NewsDetailPage({ params: { lang, slug } }: { params: { lang: string; slug: string } }) {
   const supabase = createClient();
 
-  const { data: post } = await supabase
+  let { data: post } = await supabase
     .from('posts')
     .select('*, categories(*)')
     .eq('slug', slug)
@@ -59,13 +72,26 @@ export default async function NewsDetailPage({ params: { lang, slug } }: { param
     .eq('section', 'news')
     .single();
 
+  if (!post && lang !== 'en') {
+    const { data: fallbackPost } = await supabase
+      .from('posts')
+      .select('*, categories(*)')
+      .eq('slug', slug)
+      .eq('lang', 'en')
+      .eq('section', 'news')
+      .single();
+    if (fallbackPost) {
+      post = fallbackPost;
+    }
+  }
+
   if (!post) return notFound();
 
   // Fetch related posts from the same section
   const { data: relatedPosts } = await supabase
     .from('posts')
     .select('*, categories(*)')
-    .eq('lang', lang)
+    .eq('lang', post.lang)
     .eq('section', 'news')
     .neq('id', post.id)
     .order('created_at', { ascending: false })

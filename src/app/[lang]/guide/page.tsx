@@ -18,11 +18,25 @@ export default async function GuidePage({
 
   const supabase = createClient();
   
+  let currentLang = lang;
+  
+  // Check if current language has any published posts in guide
+  const { count: postsCount } = await supabase
+    .from('posts')
+    .select('*', { count: 'exact', head: true })
+    .eq('lang', lang)
+    .eq('section', 'guide')
+    .eq('is_published', true);
+    
+  if (postsCount === 0 && lang !== 'en') {
+    currentLang = 'en';
+  }
+
   // Fetch posts in 'guide' section using the new column
   const { data: posts, count } = await supabase
     .from('posts')
     .select('*, categories(*)', { count: 'exact' })
-    .eq('lang', lang)
+    .eq('lang', currentLang)
     .eq('section', 'guide')
     .eq('is_published', true)
     .order('created_at', { ascending: false })
