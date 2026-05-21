@@ -10,7 +10,6 @@ import remarkBreaks from 'remark-breaks';
 import { Loader2, Image as ImageIcon, Link as LinkIcon, Save, Languages, ArrowLeft, Type, Bold, Italic, Heading1, Heading2, Heading3 } from 'lucide-react';
 import { getAdminSession } from '@/utils/auth';
 import { marked } from 'marked';
-import TurndownService from 'turndown';
 
 const slugify = (str: string) => {
   return String(str)
@@ -240,8 +239,10 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
     if (!editorRef.current) return;
     const html = editorRef.current.innerHTML;
     
-    // Convert HTML to Markdown using Turndown
-    const turndownService = new TurndownService({
+    // Convert HTML to Markdown safely using dynamically required Turndown on client
+    const Turndown = require('turndown');
+    const TurndownConstructor = Turndown.default || Turndown;
+    const turndownService = new TurndownConstructor({
       headingStyle: 'atx',
       hr: '---',
       bulletListMarker: '-',
@@ -251,7 +252,7 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
     // Clean up images replacement
     turndownService.addRule('cleanImages', {
       filter: 'img',
-      replacement: function (content, node: any) {
+      replacement: function (content: any, node: any) {
         const src = node.getAttribute('src') || '';
         const alt = node.getAttribute('alt') || 'image';
         return `\n![${alt}](${src})\n`;
@@ -261,7 +262,7 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
     // Custom rule to ensure paragraphs and divs have clear double newlines in markdown
     turndownService.addRule('paragraphsAndDivs', {
       filter: ['p', 'div'],
-      replacement: function (content, node) {
+      replacement: function (content: any, node: any) {
         const text = content.trim();
         if (!text) return '';
         return '\n\n' + text + '\n\n';
@@ -320,7 +321,7 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
     }
   };
 
-  const handleSave = async (publish: boolean = false) => {
+  const handleSave = async (publish: boolean = false, shouldRedirect: boolean = true) => {
     if (!title || !slug || !content) {
       alert('Title, Slug and Content are required!');
       return null;
@@ -353,8 +354,10 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
         alert('Error saving post: ' + error.message);
       } else {
         resultId = data.id;
-        alert('Post saved successfully!');
-        router.push(`/${lang}/xyz_safe`);
+        if (shouldRedirect) {
+          alert('Post saved successfully!');
+          router.push(`/${lang}/xyz_safe`);
+        }
       }
     } else {
       const { error } = await supabase
@@ -365,8 +368,10 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
       if (error) {
         alert('Error updating post: ' + error.message);
       } else {
-        alert('Post updated successfully!');
-        router.push(`/${lang}/xyz_safe`);
+        if (shouldRedirect) {
+          alert('Post updated successfully!');
+          router.push(`/${lang}/xyz_safe`);
+        }
       }
     }
     
@@ -398,7 +403,7 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
     setIsTranslateModalOpen(false);
 
     try {
-      const savedId = await handleSave(true);
+      const savedId = await handleSave(true, false);
       if (!savedId) throw new Error("Could not save original post");
 
       const results: string[] = [];
