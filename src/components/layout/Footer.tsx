@@ -49,7 +49,7 @@ export default function Footer({ lang }: { lang: string }) {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-16 mb-20">
           <div className="col-span-2">
             <div className="flex items-center gap-4 mb-10 group">
-              <div className="bg-[#ef4444] border-4 border-black p-2 shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] group-hover:translate-x-1 group-hover:translate-y-1 group-hover:shadow-none transition-all">
+              <div className="bg-[#ef4444] border-4 border-black p-2 shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] group-hover:translate-x-1 group-hover:translate-y-1 group-hover:shadow-none transition-all">
                 <Image 
                   src="/logo.png" 
                   alt="AI Plus Map Logo" 
@@ -62,7 +62,7 @@ export default function Footer({ lang }: { lang: string }) {
                 <span className="text-5xl font-display font-black tracking-tighter leading-none">AI PLUS MAP</span>
               </div>
             </div>
-            <p className="text-slate-400 max-w-md font-bold leading-relaxed">
+            <p className="text-white/60 max-w-md font-bold leading-relaxed">
               {t.desc}
             </p>
           </div>
@@ -91,10 +91,10 @@ export default function Footer({ lang }: { lang: string }) {
         </div>
         
         <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+          <p className="text-[10px] font-black uppercase tracking-widest text-white/40">
             &copy; 2026 AI PLUS MAP. {t.rights}
           </p>
-          <div className="flex gap-8 text-[10px] font-black uppercase tracking-widest text-slate-500">
+          <div className="flex gap-8 text-[10px] font-black uppercase tracking-widest text-white/40">
             <Link href="#" className="hover:text-white">{t.privacy}</Link>
             <Link href="#" className="hover:text-white">{t.terms}</Link>
           </div>

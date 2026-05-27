@@ -62,7 +62,7 @@ export default function SubmitEventModal({ lang }: { lang: string }) {
     return (
       <button 
         onClick={() => setIsOpen(true)}
-        className="bg-[#ef4444] text-white px-12 py-5 font-black uppercase text-sm border-4 border-[#ef4444] hover:bg-white hover:text-black hover:border-white transition-all shadow-[8px_8px_0px_0px_rgba(255,255,255,0.2)] hover:shadow-none"
+        className="bg-white border-4 border-black px-12 py-5 font-black uppercase text-sm shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 hover:bg-yellow-50 transition-all text-black"
       >
         Submit Your Event
       </button>
@@ -86,7 +86,7 @@ export default function SubmitEventModal({ lang }: { lang: string }) {
                 <CheckCircle2 size={40} className="text-green-600" />
               </div>
               <h4 className="text-3xl font-black uppercase italic mb-2">Success!</h4>
-              <p className="font-bold text-slate-500 uppercase text-sm mb-8">Your event has been sent for verification.</p>
+              <p className="font-bold text-black/60 uppercase text-sm mb-8">Your event has been sent for verification.</p>
               <button 
                 onClick={() => { setIsOpen(false); setIsSubmitted(false); }}
                 className="w-full bg-black text-white py-4 font-black uppercase text-sm border-4 border-black hover:bg-[#ef4444] transition-colors"
@@ -97,39 +97,39 @@ export default function SubmitEventModal({ lang }: { lang: string }) {
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
-                <label className="block text-xs font-black uppercase tracking-widest text-slate-400">Event Title</label>
+                <label className="block text-xs font-black uppercase tracking-widest text-black/50">Event Title</label>
                 <input 
                   required 
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full p-4 border-4 border-black font-bold uppercase text-sm focus:bg-slate-50 outline-none" 
+                  className="w-full p-4 border-4 border-black font-bold uppercase text-sm focus:bg-yellow-50 outline-none" 
                   placeholder="e.g. GLOBAL AI SUMMIT 2026" 
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="block text-xs font-black uppercase tracking-widest text-slate-400">Date</label>
+                  <label className="block text-xs font-black uppercase tracking-widest text-black/50">Date</label>
                   <div className="relative">
-                    <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                    <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-black/50" size={18} />
                     <input 
                       type="date" 
                       required 
                       value={eventDate}
                       onChange={(e) => setEventDate(e.target.value)}
-                      className="w-full p-4 pl-12 border-4 border-black font-bold uppercase text-sm focus:bg-slate-50 outline-none" 
+                      className="w-full p-4 pl-12 border-4 border-black font-bold uppercase text-sm focus:bg-yellow-50 outline-none" 
                     />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="block text-xs font-black uppercase tracking-widest text-slate-400">Location</label>
+                  <label className="block text-xs font-black uppercase tracking-widest text-black/50">Location</label>
                   <div className="relative">
-                    <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                    <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-black/50" size={18} />
                     <input 
                       required 
                       value={location}
                       onChange={(e) => setLocation(e.target.value)}
-                      className="w-full p-4 pl-12 border-4 border-black font-bold uppercase text-sm focus:bg-slate-50 outline-none" 
+                      className="w-full p-4 pl-12 border-4 border-black font-bold uppercase text-sm focus:bg-yellow-50 outline-none" 
                       placeholder="LONDON, UK" 
                     />
                   </div>
@@ -137,15 +137,15 @@ export default function SubmitEventModal({ lang }: { lang: string }) {
               </div>
 
               <div className="space-y-2">
-                <label className="block text-xs font-black uppercase tracking-widest text-slate-400">Registration Link</label>
+                <label className="block text-xs font-black uppercase tracking-widest text-black/50">Registration Link</label>
                 <div className="relative">
-                  <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                  <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-black/50" size={18} />
                   <input 
                     type="url" 
                     required 
                     value={registrationLink}
                     onChange={(e) => setRegistrationLink(e.target.value)}
-                    className="w-full p-4 pl-12 border-4 border-black font-bold uppercase text-sm focus:bg-slate-50 outline-none" 
+                    className="w-full p-4 pl-12 border-4 border-black font-bold uppercase text-sm focus:bg-yellow-50 outline-none" 
                     placeholder="https://..." 
                   />
                 </div>
@@ -154,7 +154,7 @@ export default function SubmitEventModal({ lang }: { lang: string }) {
               <button 
                 disabled={isLoading}
                 type="submit"
-                className="w-full bg-[#ef4444] text-white py-5 font-black uppercase text-sm border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all disabled:opacity-50 flex items-center justify-center gap-3"
+                className="w-full bg-[#ef4444] text-white py-5 font-black uppercase text-sm border-4 border-black shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 hover:bg-yellow-50 hover:text-black transition-all disabled:opacity-50 flex items-center justify-center gap-3"
               >
                 {isLoading ? <span className="animate-pulse">Verifying...</span> : <><Send size={18} /> Deploy Submission</>}
               </button>
@@ -162,8 +162,8 @@ export default function SubmitEventModal({ lang }: { lang: string }) {
           )}
         </div>
         
-        <div className="bg-slate-50 border-t-4 border-black p-4 text-center">
-          <p className="text-[10px] font-black uppercase text-slate-400 italic">Submissions are reviewed within 24 hours</p>
+        <div className="bg-yellow-50 border-t-4 border-black p-4 text-center">
+          <p className="text-[10px] font-black uppercase text-black/50 italic">Submissions are reviewed within 24 hours</p>
         </div>
       </div>
     </div>
