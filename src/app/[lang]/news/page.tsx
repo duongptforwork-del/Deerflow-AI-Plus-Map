@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/server';
 import LoadMoreNews from '@/components/news/LoadMoreNews';
@@ -65,7 +66,7 @@ export default async function NewsPage({
             {heroPost ? (
               <>
                 <div className="aspect-[16/9] border-b-4 border-black overflow-hidden bg-slate-100">
-                  <img 
+                  <Image fill 
                     src={heroPost.featured_image || '/placeholder.png'} 
                     alt={heroPost.title} 
                     className="w-full h-full object-cover" 
@@ -102,7 +103,7 @@ export default async function NewsPage({
               {topStories.map((post) => (
                 <div key={post.id} className="group flex gap-6 items-start border-b-2 border-black/10 pb-8 last:border-0">
                   <div className="w-24 h-24 flex-shrink-0 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] group-hover:shadow-none group-hover:translate-x-0.5 group-hover:translate-y-0.5 transition-all bg-white overflow-hidden">
-                    <img src={post.featured_image || '/placeholder.png'} alt={post.title} className="w-full h-full object-cover" />
+                    <Image fill src={post.featured_image || '/placeholder.png'} alt={post.title} className="w-full h-full object-cover" />
                   </div>
                   <div className="flex-grow">
                     <span className="text-[10px] font-black uppercase text-[#ef4444] mb-1 block tracking-wider">

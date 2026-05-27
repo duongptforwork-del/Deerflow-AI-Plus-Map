@@ -1,4 +1,5 @@
 'use client';
+import Image from 'next/image';
 
 import { useState } from 'react';
 import Link from 'next/link';
@@ -62,7 +63,7 @@ export default function LoadMoreNews({
         {posts.map((post) => (
           <article key={post.id} className="group flex flex-col">
             <div className="aspect-square border-4 border-black mb-6 transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] group-hover:shadow-none group-hover:translate-x-1 group-hover:translate-y-1 bg-white overflow-hidden">
-              <img 
+              <Image fill 
                 src={post.featured_image || '/placeholder.png'} 
                 alt={post.title} 
                 className="w-full h-full object-cover" 

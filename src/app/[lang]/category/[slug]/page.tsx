@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import React from 'react';
 import Link from 'next/link';
 import SectionHeader from '@/components/SectionHeader';
@@ -50,8 +51,8 @@ export default async function CategoryPage({ params }: { params: { lang: string,
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
             {posts.map((post) => (
               <article key={post.id} className="group flex flex-col bg-white border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all">
-                <div className="aspect-[16/10] border-b-4 border-black overflow-hidden   transition-all duration-500">
-                  <img src={post.featured_image || '/placeholder.png'} alt={post.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                <div className="relative aspect-[16/10] border-b-4 border-black overflow-hidden transition-all duration-500">
+                  <Image fill src={post.featured_image || '/placeholder.png'} alt={post.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                 </div>
                 <div className="p-8">
                   <div className="text-[10px] font-black uppercase mb-4 opacity-50">

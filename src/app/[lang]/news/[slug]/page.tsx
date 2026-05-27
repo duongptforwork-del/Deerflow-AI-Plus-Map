@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { createClient } from '@/utils/supabase/server';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
@@ -120,8 +121,8 @@ export default async function NewsDetailPage({ params: { lang, slug } }: { param
             </p>
           </header>
 
-          <div className="aspect-video w-full border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] bg-white overflow-hidden mb-16">
-            <img src={post.featured_image} alt={post.title} className="w-full h-full object-cover" />
+          <div className="relative aspect-video w-full border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] bg-white overflow-hidden mb-16">
+            <Image fill src={post.featured_image} alt={post.title} className="w-full h-full object-cover" />
           </div>
 
           <div className="article-content max-w-none">
@@ -165,8 +166,8 @@ export default async function NewsDetailPage({ params: { lang, slug } }: { param
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {relatedPosts.map((rPost) => (
                 <Link key={rPost.id} href={`/${lang}/${rPost.categories?.slug || 'news'}/${rPost.slug}`} className="group">
-                  <div className="aspect-square border-4 border-black mb-4 overflow-hidden shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] bg-white group-hover:shadow-none group-hover:translate-x-1 group-hover:translate-y-1 transition-all">
-                    <img src={rPost.featured_image} alt={rPost.title} className="w-full h-full object-cover" />
+                  <div className="relative aspect-square border-4 border-black mb-4 overflow-hidden shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] bg-white group-hover:shadow-none group-hover:translate-x-1 group-hover:translate-y-1 transition-all">
+                    <Image fill src={rPost.featured_image} alt={rPost.title} className="w-full h-full object-cover" />
                   </div>
                   <h3 className="text-xl font-black leading-none group-hover:text-[#ef4444] transition-colors">{rPost.title}</h3>
                 </Link>

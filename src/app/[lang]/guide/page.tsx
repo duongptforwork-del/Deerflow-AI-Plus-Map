@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import Link from 'next/link';
 import SectionHeader from '@/components/SectionHeader';
 import { createClient } from '@/utils/supabase/server';
@@ -61,8 +62,8 @@ export default async function GuidePage({
                 <div className="absolute -top-6 -left-6 w-20 h-20 bg-black text-white flex items-center justify-center font-black text-4xl border-4 border-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] z-10">
                   {index + 1 + (currentPage - 1) * pageSize}
                 </div>
-                <div className="aspect-video border-4 border-black overflow-hidden transition-all shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] group-hover:shadow-none group-hover:translate-x-1 group-hover:translate-y-1">
-                  <img src={post.featured_image} alt={post.title} className="w-full h-full object-cover" />
+                <div className="relative aspect-video border-4 border-black overflow-hidden transition-all shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] group-hover:shadow-none group-hover:translate-x-1 group-hover:translate-y-1">
+                  <Image fill src={post.featured_image} alt={post.title} className="w-full h-full object-cover" />
                 </div>
               </div>
               <div className="md:w-1/2 pt-4">

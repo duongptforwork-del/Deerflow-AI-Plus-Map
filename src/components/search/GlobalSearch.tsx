@@ -136,6 +136,7 @@ export default function GlobalSearch({ lang }: { lang: string }) {
     }, 300);
 
     return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query, lang]);
 
   const handleNavigate = (section: string, slug: string) => {
@@ -207,9 +208,9 @@ export default function GlobalSearch({ lang }: { lang: string }) {
                           <button
                             key={post.slug}
                             onClick={() => handleNavigate(post.section, post.slug)}
-                            className="block w-full text-left p-4 border-4 border-black bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 hover:bg-yellow-50 hover:text-black transition-all group"
+                            className="block w-full text-left p-4 border-4 border-black bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 hover:bg-yellow-50 transition-all group"
                           >
-                            <h4 className="font-black text-lg uppercase leading-none mb-1">{post.title}</h4>
+                            <h4 className="font-black text-lg uppercase leading-none mb-1 group-hover:text-[#ef4444] transition-colors">{post.title}</h4>
                             <p className="text-[10px] font-bold line-clamp-1 opacity-60 uppercase">{post.excerpt}</p>
                           </button>
                         ))}
@@ -227,9 +228,9 @@ export default function GlobalSearch({ lang }: { lang: string }) {
                           <button
                             key={guide.slug}
                             onClick={() => handleNavigate(guide.section, guide.slug)}
-                            className="block w-full text-left p-4 border-4 border-black bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 hover:bg-yellow-50 hover:text-black transition-all group"
+                            className="block w-full text-left p-4 border-4 border-black bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 hover:bg-yellow-50 transition-all group"
                           >
-                            <h4 className="font-black text-lg uppercase leading-none mb-1">{guide.title}</h4>
+                            <h4 className="font-black text-lg uppercase leading-none mb-1 group-hover:text-[#ef4444] transition-colors">{guide.title}</h4>
                             <p className="text-[10px] font-bold line-clamp-1 opacity-60 uppercase">{guide.excerpt}</p>
                           </button>
                         ))}

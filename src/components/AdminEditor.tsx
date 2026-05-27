@@ -1,4 +1,5 @@
 "use client";
+import Image from 'next/image';
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
@@ -114,6 +115,7 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
     if (!isNew && postId) {
       loadPost();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isNew, postId]);
 
   const loadPost = async () => {
@@ -679,8 +681,8 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
                     )}
                   </div>
                   {featuredImage && (
-                    <div className="mt-4 aspect-video w-full border-4 border-black overflow-hidden bg-white">
-                      <img src={featuredImage} alt="Featured" className="w-full h-full object-cover" />
+                    <div className="relative mt-4 aspect-video w-full border-4 border-black overflow-hidden bg-white">
+                      <Image fill src={featuredImage} alt="Featured" className="w-full h-full object-cover" />
                     </div>
                   )}
                 </div>
@@ -748,8 +750,8 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
                 </header>
 
                 {featuredImage && (
-                  <div className="aspect-video w-full border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-white overflow-hidden mb-16">
-                    <img src={featuredImage} alt={title} className="w-full h-full object-cover" />
+                  <div className="relative aspect-video w-full border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-white overflow-hidden mb-16">
+                    <Image fill src={featuredImage} alt={title} className="w-full h-full object-cover" />
                   </div>
                 )}
 

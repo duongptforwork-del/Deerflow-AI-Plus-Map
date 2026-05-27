@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import Link from 'next/link';
 import SectionHeader from '@/components/SectionHeader';
 import NewsSection from '@/components/NewsSection';
@@ -61,8 +62,6 @@ export default async function HomePage({ params: { lang } }: { params: { lang: s
     { data: heroPosts },
     { data: trendingPosts },
     { data: latestPosts },
-    { data: comparePosts },
-    { data: guidePosts },
     { data: eventPosts }
   ] = await Promise.all([
     // Hero: Fetch 4 latest posts across ALL sections
@@ -73,10 +72,6 @@ export default async function HomePage({ params: { lang } }: { params: { lang: s
     
     // Latest Posts Grid: Posts 5-8 across ALL sections
     supabase.from('posts').select('*').eq('lang', currentLang).eq('is_published', true).order('created_at', { ascending: false }).range(4, 7),
-    
-    // Section Specific queries
-    supabase.from('posts').select('*').eq('lang', currentLang).eq('is_published', true).eq('section', 'compare').order('created_at', { ascending: false }).limit(3),
-    supabase.from('posts').select('*').eq('lang', currentLang).eq('is_published', true).eq('section', 'guide').order('created_at', { ascending: false }).limit(3),
     
     // Events: Now using section 'events'
     supabase.from('posts').select('*').eq('lang', currentLang).eq('is_published', true).eq('section', 'events').order('created_at', { ascending: false }).limit(4)
@@ -140,8 +135,8 @@ export default async function HomePage({ params: { lang } }: { params: { lang: s
               <div className="lg:col-span-5">
                 <div className="relative border-4 border-black group bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 hover:bg-yellow-50 transition-all h-full flex flex-col">
                   <div className="aspect-[16/10] relative overflow-hidden border-b-4 border-black">
-                    <img 
-                      src={hero.featured_image || ''} 
+                    <Image fill 
+                      src={hero.featured_image || '/placeholder.png'} 
                       alt={hero.title} 
                       className="absolute inset-0 w-full h-full object-cover transition-all duration-500" 
                     />
@@ -176,15 +171,15 @@ export default async function HomePage({ params: { lang } }: { params: { lang: s
                 {subHeroes.map((post) => (
                   <article key={post.id} className="group flex flex-col sm:flex-row border-4 border-black bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 hover:bg-yellow-50 transition-all h-full overflow-hidden">
                     <div className="w-full sm:w-1/3 aspect-[16/9] sm:aspect-square relative overflow-hidden border-b-4 sm:border-b-0 sm:border-r-4 border-black shrink-0">
-                      <img 
-                        src={post.featured_image || ''} 
+                      <Image fill 
+                        src={post.featured_image || '/placeholder.png'} 
                         alt={post.title} 
                         className="w-full h-full object-cover transition-all duration-500" 
                       />
                     </div>
                     <div className="p-4 flex flex-col flex-grow justify-center">
                       <span className="font-black text-[10px] text-[#ef4444] uppercase mb-1">{post.section?.toUpperCase() || 'News'}</span>
-                      <h3 className="text-xl font-black leading-tight tracking-tight mb-2 group-hover:underline">
+                      <h3 className="text-xl font-black leading-tight tracking-tight mb-2 group-hover:text-[#ef4444] transition-colors">
                         <Link href={`/${lang}/${post.section || 'news'}/${post.slug}`}>{post.title}</Link>
                       </h3>
                       <p className="text-sm font-bold text-black/70 line-clamp-2 mb-4 leading-relaxed">{post.excerpt}</p>
@@ -207,14 +202,14 @@ export default async function HomePage({ params: { lang } }: { params: { lang: s
             {(latestPosts || []).map((post) => (
               <article key={post.id} className="group flex flex-col border-4 border-transparent hover:border-black p-2 hover:bg-yellow-50 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 transition-all">
                 <div className="aspect-square border-4 border-black mb-4 overflow-hidden relative bg-white">
-                  <img 
-                    src={post.featured_image || ''} 
+                  <Image fill 
+                    src={post.featured_image || '/placeholder.png'} 
                     alt={post.title} 
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
                   />
                 </div>
                 <span className="font-black text-xs text-[#ef4444] uppercase mb-2">{post.section?.toUpperCase() || 'News'}</span>
-                <h3 className="text-xl font-black leading-tight tracking-tight mb-4 group-hover:underline">
+                <h3 className="text-xl font-black leading-tight tracking-tight mb-4 group-hover:text-[#ef4444] transition-colors">
                   <Link href={`/${lang}/${post.section || 'news'}/${post.slug}`}>{post.title}</Link>
                 </h3>
                 <p className="text-sm font-bold text-black/70 line-clamp-3 mb-4 leading-relaxed">{post.excerpt}</p>
@@ -227,55 +222,6 @@ export default async function HomePage({ params: { lang } }: { params: { lang: s
           </div>
         </section>
 
-        {/* Compare & AI Guide */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 mb-24">
-          <section>
-            <SectionHeader title={t.compare_ai} lang={lang} href={`/${lang}/compare`} />
-            <div className="space-y-8">
-              {(comparePosts || []).length > 0 ? comparePosts?.map((post) => (
-                <div key={post.id} className="flex gap-6 items-start group border-4 border-transparent hover:border-black p-2 hover:bg-yellow-50 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 transition-all">
-                  <div className="w-24 h-24 flex-shrink-0 border-4 border-black overflow-hidden bg-white">
-                    <img src={post.featured_image || ''} className="w-full h-full object-cover group-hover:scale-110 transition-transform" alt="" />
-                  </div>
-                  <div>
-                    <h4 className="text-lg font-black leading-tight group-hover:text-[#ef4444]">
-                      <Link href={`/${lang}/compare/${post.slug}`}>{post.title}</Link>
-                    </h4>
-                    <p className="text-xs font-bold text-black/70 mt-2 line-clamp-2">{post.excerpt}</p>
-                  </div>
-                </div>
-              )) : (
-                <div className="p-8 border-4 border-dashed border-black/20 text-center font-bold text-black/40 uppercase text-xs">
-                  Coming Soon
-                </div>
-              )}
-            </div>
-          </section>
-
-          <section>
-            <SectionHeader title={t.ai_guide} lang={lang} href={`/${lang}/guide`} />
-            <div className="space-y-8">
-               {(guidePosts || []).length > 0 ? guidePosts?.map((post) => (
-                <div key={post.id} className="flex gap-6 items-start group border-4 border-transparent hover:border-black p-2 hover:bg-yellow-50 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 transition-all">
-                  <div className="w-24 h-24 flex-shrink-0 border-4 border-black overflow-hidden bg-white">
-                    <img src={post.featured_image || ''} className="w-full h-full object-cover group-hover:scale-110 transition-transform" alt="" />
-                  </div>
-                  <div>
-                    <h4 className="text-lg font-black leading-tight group-hover:text-[#ef4444]">
-                      <Link href={`/${lang}/guide/${post.slug}`}>{post.title}</Link>
-                    </h4>
-                    <p className="text-xs font-bold text-black/70 mt-2 line-clamp-2">{post.excerpt}</p>
-                  </div>
-                </div>
-              )) : (
-                <div className="p-8 border-4 border-dashed border-black/20 text-center font-bold text-black/40 uppercase text-xs">
-                  Updating...
-                </div>
-              )}
-            </div>
-          </section>
-        </div>
-
         {/* AI Events Section */}
         <section className="mb-24">
           <SectionHeader title={t.ai_events} lang={lang} href={`/${lang}/events`} />
@@ -283,13 +229,13 @@ export default async function HomePage({ params: { lang } }: { params: { lang: s
             {(eventPosts || []).length > 0 ? (eventPosts || []).map((post) => (
               <article key={post.id} className="group flex flex-col border-4 border-black bg-white p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 hover:bg-yellow-50 transition-all">
                 <div className="aspect-video border-4 border-black mb-4 overflow-hidden relative bg-white">
-                  <img 
-                    src={post.featured_image || ''} 
+                  <Image fill 
+                    src={post.featured_image || '/placeholder.png'} 
                     alt={post.title} 
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
                   />
                 </div>
-                <h3 className="text-lg font-black leading-tight tracking-tight mb-2 group-hover:underline">
+                <h3 className="text-lg font-black leading-tight tracking-tight mb-2 group-hover:text-[#ef4444] transition-colors">
                   <Link href={`/${lang}/events/${post.slug}`}>{post.title}</Link>
                 </h3>
                 <div className="mt-auto pt-4 flex justify-between items-center text-[10px] font-black uppercase">
