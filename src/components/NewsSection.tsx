@@ -58,7 +58,7 @@ export default async function NewsSection({
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
         {posts.map((post) => (
-          <article key={post.id} className="group flex flex-col bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 hover:bg-yellow-50 transition-all overflow-hidden">
+          <article key={post.id} className="group flex flex-col bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 hover:bg-yellow-50 transition-all overflow-hidden">
             <div className="aspect-[16/10] border-b-4 border-black overflow-hidden relative">
               <img 
                 src={post.featured_image || 'https://images.unsplash.com/photo-1677442136019-21780ecad995'} 

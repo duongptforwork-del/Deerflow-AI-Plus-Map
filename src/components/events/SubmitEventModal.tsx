@@ -62,7 +62,7 @@ export default function SubmitEventModal({ lang }: { lang: string }) {
     return (
       <button 
         onClick={() => setIsOpen(true)}
-        className="bg-white border-4 border-black px-12 py-5 font-black uppercase text-sm shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 hover:bg-yellow-50 transition-all text-black"
+        className="bg-white border-4 border-black px-12 py-5 font-black uppercase text-sm shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 hover:bg-yellow-50 transition-all text-black"
       >
         Submit Your Event
       </button>
@@ -71,7 +71,7 @@ export default function SubmitEventModal({ lang }: { lang: string }) {
 
   return (
     <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-      <div className="w-full max-w-xl bg-white border-4 border-black shadow-[20px_20px_0px_0px_rgba(239,68,68,1)] overflow-hidden">
+      <div className="w-full max-w-xl bg-white border-4 border-black shadow-[20px_20px_0px_0px_rgba(0,0,0,1)] overflow-hidden">
         <div className="bg-black text-white p-6 flex justify-between items-center border-b-4 border-black">
           <h3 className="text-2xl font-black uppercase italic tracking-tighter">Event Submission</h3>
           <button onClick={() => setIsOpen(false)} className="hover:rotate-90 transition-transform p-1">
@@ -154,7 +154,7 @@ export default function SubmitEventModal({ lang }: { lang: string }) {
               <button 
                 disabled={isLoading}
                 type="submit"
-                className="w-full bg-[#ef4444] text-white py-5 font-black uppercase text-sm border-4 border-black shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 hover:bg-yellow-50 hover:text-black transition-all disabled:opacity-50 flex items-center justify-center gap-3"
+                className="w-full bg-[#ef4444] text-white py-5 font-black uppercase text-sm border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 hover:bg-yellow-50 hover:text-black transition-all disabled:opacity-50 flex items-center justify-center gap-3"
               >
                 {isLoading ? <span className="animate-pulse">Verifying...</span> : <><Send size={18} /> Deploy Submission</>}
               </button>

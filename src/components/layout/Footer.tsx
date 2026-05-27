@@ -49,7 +49,7 @@ export default function Footer({ lang }: { lang: string }) {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-16 mb-20">
           <div className="col-span-2">
             <div className="flex items-center gap-4 mb-10 group">
-              <div className="bg-[#ef4444] border-4 border-black p-2 shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] group-hover:translate-x-1 group-hover:translate-y-1 group-hover:shadow-none transition-all">
+              <div className="bg-[#ef4444] border-4 border-black p-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] group-hover:translate-x-1 group-hover:translate-y-1 group-hover:shadow-none transition-all">
                 <Image 
                   src="/logo.png" 
                   alt="AI Plus Map Logo" 

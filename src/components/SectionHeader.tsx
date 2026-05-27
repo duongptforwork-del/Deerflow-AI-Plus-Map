@@ -16,7 +16,7 @@ export default function SectionHeader({ title, lang, href, className = "" }: Sec
       {href && (
         <Link 
           href={href} 
-          className="text-xs font-black bg-black text-white px-4 py-2 border-4 border-black shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 hover:bg-yellow-50 hover:text-black transition-all flex items-center gap-1 group"
+          className="text-xs font-black bg-black text-white px-4 py-2 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 hover:bg-yellow-50 hover:text-black transition-all flex items-center gap-1 group"
         >
           {( {
             vi: 'XEM TẤT CẢ', en: 'SEE ALL', ko: '전체보기', ja: 'すべて見る', fr: 'VOIR TOUT'

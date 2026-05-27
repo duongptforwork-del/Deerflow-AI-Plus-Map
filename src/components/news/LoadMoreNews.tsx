@@ -61,7 +61,7 @@ export default function LoadMoreNews({
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
         {posts.map((post) => (
           <article key={post.id} className="group flex flex-col">
-            <div className="aspect-square border-4 border-black mb-6 transition-all shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] group-hover:shadow-none group-hover:translate-x-1 group-hover:translate-y-1 bg-white overflow-hidden">
+            <div className="aspect-square border-4 border-black mb-6 transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] group-hover:shadow-none group-hover:translate-x-1 group-hover:translate-y-1 bg-white overflow-hidden">
               <img 
                 src={post.featured_image || '/placeholder.png'} 
                 alt={post.title} 
@@ -85,7 +85,7 @@ export default function LoadMoreNews({
           <button
             onClick={loadMore}
             disabled={loading}
-            className="bg-white border-4 border-black px-12 py-4 font-black uppercase text-sm shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 hover:bg-yellow-50 transition-all disabled:opacity-50 disabled:pointer-events-none"
+            className="bg-white border-4 border-black px-12 py-4 font-black uppercase text-sm shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 hover:bg-yellow-50 transition-all disabled:opacity-50 disabled:pointer-events-none"
           >
             {loading ? 'Synthesizing...' : 'Load More Intelligence'}
           </button>

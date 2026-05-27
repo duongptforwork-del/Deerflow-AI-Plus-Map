@@ -58,7 +58,7 @@ export default async function GuidePage({
           {posts && posts.length > 0 ? posts.map((post, index) => (
             <article key={post.id} className="group flex flex-col md:flex-row gap-12 items-start">
               <div className="md:w-1/2 relative">
-                <div className="absolute -top-6 -left-6 w-20 h-20 bg-black text-white flex items-center justify-center font-black text-4xl border-4 border-white shadow-[8px_8px_0px_0px_rgba(239,68,68,1)] z-10">
+                <div className="absolute -top-6 -left-6 w-20 h-20 bg-black text-white flex items-center justify-center font-black text-4xl border-4 border-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] z-10">
                   {index + 1 + (currentPage - 1) * pageSize}
                 </div>
                 <div className="aspect-video border-4 border-black overflow-hidden transition-all shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] group-hover:shadow-none group-hover:translate-x-1 group-hover:translate-y-1">

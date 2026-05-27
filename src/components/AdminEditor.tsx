@@ -286,7 +286,7 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
         if (imgs && imgs.length > 0) {
           const lastImg = imgs[imgs.length - 1];
           lastImg.setAttribute('alt', alt);
-          lastImg.className = 'border-4 border-black shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] my-6 max-w-full block';
+          lastImg.className = 'border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] my-6 max-w-full block';
         }
       }
       updateContentFromDom();
@@ -515,7 +515,7 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
-            <button onClick={() => router.push(`/${lang}/xyz_safe`)} className="p-2 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all">
+            <button onClick={() => router.push(`/${lang}/xyz_safe`)} className="p-2 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all">
               <ArrowLeft size={20} />
             </button>
             <h1 className="text-3xl font-display font-black uppercase tracking-tight">
@@ -527,7 +527,7 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
             <button 
               onClick={() => handleSave(false)}
               disabled={isSaving || isTranslating}
-              className="px-6 py-2 bg-white text-black border-4 border-black font-black uppercase text-sm tracking-widest shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] hover:bg-yellow-50 hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all"
+              className="px-6 py-2 bg-white text-black border-4 border-black font-black uppercase text-sm tracking-widest shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-yellow-50 hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all"
             >
               {isSaving ? <Loader2 className="animate-spin" size={20} /> : 'Save Draft'}
             </button>
@@ -535,7 +535,7 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
             <button 
               onClick={() => handleSave(true)}
               disabled={isSaving || isTranslating}
-              className="flex items-center gap-2 px-6 py-2 bg-[#ef4444] text-black border-4 border-black font-black uppercase text-sm tracking-widest shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] hover:bg-white hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all"
+              className="flex items-center gap-2 px-6 py-2 bg-[#ef4444] text-black border-4 border-black font-black uppercase text-sm tracking-widest shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-white hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all"
             >
               <Save size={18} /> Publish
             </button>
@@ -543,7 +543,7 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
             <button 
               onClick={handleTranslateAndSave}
               disabled={isSaving || isTranslating}
-              className="flex items-center gap-2 px-6 py-2 bg-yellow-50 text-black border-4 border-black font-black uppercase text-sm tracking-widest shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] hover:bg-white hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all"
+              className="flex items-center gap-2 px-6 py-2 bg-yellow-50 text-black border-4 border-black font-black uppercase text-sm tracking-widest shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-white hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all"
             >
               {isTranslating ? <Loader2 className="animate-spin" size={18} /> : <Languages size={18} />}
               Publish & Translate
@@ -554,7 +554,7 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Editor Column */}
           <div className="space-y-6">
-            <div className="bg-white p-6 border-4 border-black shadow-[4px_4px_0px_0px_rgba(239,68,68,1)]">
+            <div className="bg-white p-6 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
               <div className="space-y-4">
                 <div>
                   <label className="block text-xs font-black uppercase tracking-widest mb-2">Title</label>
@@ -562,7 +562,7 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
                     type="text" 
                     value={title}
                     onChange={handleTitleChange}
-                    className="w-full p-3 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] focus:outline-none focus:translate-x-1 focus:translate-y-1 focus:shadow-none focus:bg-yellow-50 transition-all font-bold text-black"
+                    className="w-full p-3 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:outline-none focus:translate-x-1 focus:translate-y-1 focus:shadow-none focus:bg-yellow-50 transition-all font-bold text-black"
                     placeholder="Post title..."
                   />
                 </div>
@@ -574,7 +574,7 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
                       type="text" 
                       value={slug}
                       onChange={(e) => setSlug(e.target.value)}
-                      className="w-full p-3 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] focus:outline-none focus:translate-x-1 focus:translate-y-1 focus:shadow-none focus:bg-yellow-50 transition-all font-bold text-black text-sm"
+                      className="w-full p-3 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:outline-none focus:translate-x-1 focus:translate-y-1 focus:shadow-none focus:bg-yellow-50 transition-all font-bold text-black text-sm"
                     />
                   </div>
                   <div>
@@ -582,7 +582,7 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
                     <select 
                       value={postLang}
                       onChange={(e) => setPostLang(e.target.value)}
-                      className="w-full p-3 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] focus:outline-none focus:translate-x-1 focus:translate-y-1 focus:shadow-none focus:bg-yellow-50 transition-all font-bold text-black text-sm uppercase tracking-widest"
+                      className="w-full p-3 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:outline-none focus:translate-x-1 focus:translate-y-1 focus:shadow-none focus:bg-yellow-50 transition-all font-bold text-black text-sm uppercase tracking-widest"
                     >
                       <option value="en">English</option>
                       <option value="vi">Vietnamese</option>
@@ -598,7 +598,7 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
                   <select 
                     value={section}
                     onChange={(e) => setSection(e.target.value)}
-                    className="w-full p-3 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] focus:outline-none focus:translate-x-1 focus:translate-y-1 focus:shadow-none focus:bg-yellow-50 transition-all font-bold text-black text-sm uppercase tracking-widest"
+                    className="w-full p-3 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:outline-none focus:translate-x-1 focus:translate-y-1 focus:shadow-none focus:bg-yellow-50 transition-all font-bold text-black text-sm uppercase tracking-widest"
                   >
                     <option value="news">News Feed</option>
                     <option value="compare">Comparison</option>
@@ -612,7 +612,7 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
                     <select 
                       value={authorName}
                       onChange={(e) => setAuthorName(e.target.value)}
-                      className="flex-1 p-3 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] focus:outline-none focus:translate-x-1 focus:translate-y-1 focus:shadow-none focus:bg-yellow-50 transition-all font-bold text-black text-sm uppercase tracking-widest"
+                      className="flex-1 p-3 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:outline-none focus:translate-x-1 focus:translate-y-1 focus:shadow-none focus:bg-yellow-50 transition-all font-bold text-black text-sm uppercase tracking-widest"
                     >
                       {authors.map((auth) => (
                         <option key={auth} value={auth}>{auth}</option>
@@ -622,7 +622,7 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
                     <button
                       type="button"
                       onClick={handleAddAuthor}
-                      className="px-4 py-2 bg-white text-black border-4 border-black font-black uppercase text-xs shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] hover:bg-yellow-50 hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all"
+                      className="px-4 py-2 bg-white text-black border-4 border-black font-black uppercase text-xs shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-yellow-50 hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all"
                       title="Add new author"
                     >
                       + Add
@@ -632,7 +632,7 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
                       <button
                         type="button"
                         onClick={handleDeleteAuthor}
-                        className="px-4 py-2 bg-white text-[#ef4444] border-4 border-black font-black uppercase text-xs shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] hover:bg-yellow-50 hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all"
+                        className="px-4 py-2 bg-white text-[#ef4444] border-4 border-black font-black uppercase text-xs shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-yellow-50 hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all"
                         title="Delete selected author"
                       >
                         Delete
@@ -647,7 +647,7 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
                     <select 
                       value={categoryId}
                       onChange={(e) => setCategoryId(e.target.value)}
-                      className="w-full p-3 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] focus:outline-none focus:translate-x-1 focus:translate-y-1 focus:shadow-none focus:bg-yellow-50 transition-all font-bold text-black text-sm uppercase tracking-widest"
+                      className="w-full p-3 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:outline-none focus:translate-x-1 focus:translate-y-1 focus:shadow-none focus:bg-yellow-50 transition-all font-bold text-black text-sm uppercase tracking-widest"
                     >
                       <option value="">-- No Category (Không chọn chuyên mục) --</option>
                       {categories.filter(c => c.lang === postLang).map(cat => (
@@ -662,7 +662,7 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
                   <textarea 
                     value={excerpt}
                     onChange={(e) => setExcerpt(e.target.value)}
-                    className="w-full p-3 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] focus:outline-none focus:translate-x-1 focus:translate-y-1 focus:shadow-none focus:bg-yellow-50 transition-all font-bold text-black text-sm h-24 resize-none"
+                    className="w-full p-3 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:outline-none focus:translate-x-1 focus:translate-y-1 focus:shadow-none focus:bg-yellow-50 transition-all font-bold text-black text-sm h-24 resize-none"
                     placeholder="Short description for preview cards..."
                   />
                 </div>
@@ -670,7 +670,7 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
                 <div>
                   <label className="block text-xs font-black uppercase tracking-widest mb-2">Featured Image</label>
                   <div className="flex items-center gap-4">
-                    <label className="cursor-pointer bg-white border-4 border-black px-4 py-2 font-bold text-xs uppercase tracking-widest shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] hover:bg-yellow-50 hover:text-black hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all">
+                    <label className="cursor-pointer bg-white border-4 border-black px-4 py-2 font-bold text-xs uppercase tracking-widest shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-yellow-50 hover:text-black hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all">
                       {uploadingImage ? 'Uploading...' : 'Upload Image'}
                       <input type="file" accept="image/*" className="hidden" onChange={handleFeaturedImageUpload} disabled={uploadingImage} />
                     </label>
@@ -688,17 +688,17 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
             </div>
 
             <div className="flex flex-col gap-4 h-[600px]">
-              <div className="p-2 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] flex items-center gap-2 flex-wrap">
-                <button type="button" onClick={() => applyHeading('<h1>')} title="Heading 1" className="p-2 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] hover:bg-yellow-50 hover:text-black hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all"><Heading1 size={16} /></button>
-                <button type="button" onClick={() => applyHeading('<h2>')} title="Heading 2" className="p-2 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] hover:bg-yellow-50 hover:text-black hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all"><Heading2 size={16} /></button>
-                <button type="button" onClick={() => applyHeading('<h3>')} title="Heading 3" className="p-2 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] hover:bg-yellow-50 hover:text-black hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all"><Heading3 size={16} /></button>
+              <div className="p-2 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center gap-2 flex-wrap">
+                <button type="button" onClick={() => applyHeading('<h1>')} title="Heading 1" className="p-2 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-yellow-50 hover:text-black hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all"><Heading1 size={16} /></button>
+                <button type="button" onClick={() => applyHeading('<h2>')} title="Heading 2" className="p-2 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-yellow-50 hover:text-black hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all"><Heading2 size={16} /></button>
+                <button type="button" onClick={() => applyHeading('<h3>')} title="Heading 3" className="p-2 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-yellow-50 hover:text-black hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all"><Heading3 size={16} /></button>
                 <div className="w-px h-6 bg-black mx-1"></div>
-                <button type="button" onClick={() => applyStyle('bold')} title="Bold" className="p-2 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] hover:bg-yellow-50 hover:text-black hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all"><Bold size={16} /></button>
-                <button type="button" onClick={() => applyStyle('italic')} title="Italic" className="p-2 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] hover:bg-yellow-50 hover:text-black hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all"><Italic size={16} /></button>
+                <button type="button" onClick={() => applyStyle('bold')} title="Bold" className="p-2 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-yellow-50 hover:text-black hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all"><Bold size={16} /></button>
+                <button type="button" onClick={() => applyStyle('italic')} title="Italic" className="p-2 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-yellow-50 hover:text-black hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all"><Italic size={16} /></button>
                 <div className="w-px h-6 bg-black mx-1"></div>
-                <button type="button" onClick={applyLink} title="Link" className="p-2 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] hover:bg-yellow-50 hover:text-black hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all"><LinkIcon size={16} /></button>
+                <button type="button" onClick={applyLink} title="Link" className="p-2 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-yellow-50 hover:text-black hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all"><LinkIcon size={16} /></button>
                 
-                <label className="cursor-pointer p-2 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] hover:bg-yellow-50 hover:text-black hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all flex items-center justify-center" title="Upload Image to Content">
+                <label className="cursor-pointer p-2 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-yellow-50 hover:text-black hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all flex items-center justify-center" title="Upload Image to Content">
                   <ImageIcon size={16} />
                   <input type="file" accept="image/*" className="hidden" onChange={handleContentImageUpload} />
                 </label>
@@ -708,21 +708,21 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
                 ref={editorRef}
                 contentEditable
                 onInput={updateContentFromDom}
-                className="flex-1 w-full p-6 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] focus:outline-none focus:translate-x-1 focus:translate-y-1 focus:shadow-none focus:bg-yellow-50 transition-all font-bold text-black overflow-y-auto font-sans text-base leading-relaxed prose prose-lg max-w-none 
+                className="flex-1 w-full p-6 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:outline-none focus:translate-x-1 focus:translate-y-1 focus:shadow-none focus:bg-yellow-50 transition-all font-bold text-black overflow-y-auto font-sans text-base leading-relaxed prose prose-lg max-w-none 
                   prose-headings:text-black prose-headings:font-black prose-headings:tracking-tight prose-headings:my-4
                   prose-p:font-bold prose-p:leading-relaxed prose-p:text-black prose-p:my-3
                   prose-strong:font-black prose-strong:text-black
                   prose-a:text-[#ef4444] prose-a:font-black prose-a:underline
                   prose-em:italic prose-em:text-[#ef4444]
-                  prose-img:border-4 prose-img:border-black prose-img:shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] prose-img:my-6
-                  prose-blockquote:border-4 prose-blockquote:border-black prose-blockquote:shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] prose-blockquote:bg-white prose-blockquote:p-8 prose-blockquote:font-black prose-blockquote:italic
+                  prose-img:border-4 prose-img:border-black prose-img:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] prose-img:my-6
+                  prose-blockquote:border-4 prose-blockquote:border-black prose-blockquote:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] prose-blockquote:bg-white prose-blockquote:p-8 prose-blockquote:font-black prose-blockquote:italic
                   prose-li:font-bold"
               />
             </div>
           </div>
 
           {/* Preview Column */}
-          <div className="bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] h-[calc(100vh-140px)] sticky top-6 overflow-hidden flex flex-col">
+          <div className="bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] h-[calc(100vh-140px)] sticky top-6 overflow-hidden flex flex-col">
             <div className="p-4 bg-black text-white">
               <h2 className="font-black uppercase tracking-widest text-sm flex items-center gap-2">
                 <Type size={16} /> Live Preview
@@ -742,13 +742,13 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
                     {title || 'Post Title Goes Here'}
                   </h1>
                   
-                  <p className="text-lg font-bold leading-relaxed text-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] p-6 mb-12 bg-white">
+                  <p className="text-lg font-bold leading-relaxed text-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-6 mb-12 bg-white">
                     {excerpt || 'Your engaging post excerpt will appear here. It sets the tone for the article.'}
                   </p>
                 </header>
 
                 {featuredImage && (
-                  <div className="aspect-video w-full border-4 border-black shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] bg-white overflow-hidden mb-16">
+                  <div className="aspect-video w-full border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-white overflow-hidden mb-16">
                     <img src={featuredImage} alt={title} className="w-full h-full object-cover" />
                   </div>
                 )}
@@ -759,8 +759,8 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
                   prose-strong:font-black prose-strong:text-black
                   prose-a:text-[#ef4444] prose-a:font-black prose-a:underline
                   prose-em:italic prose-em:text-[#ef4444]
-                  prose-img:border-4 prose-img:border-black prose-img:shadow-[4px_4px_0px_0px_rgba(239,68,68,1)]
-                  prose-blockquote:border-4 prose-blockquote:border-black prose-blockquote:shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] prose-blockquote:bg-white prose-blockquote:p-8 prose-blockquote:font-black prose-blockquote:italic
+                  prose-img:border-4 prose-img:border-black prose-img:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]
+                  prose-blockquote:border-4 prose-blockquote:border-black prose-blockquote:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] prose-blockquote:bg-white prose-blockquote:p-8 prose-blockquote:font-black prose-blockquote:italic
                   prose-li:font-bold
                   ">
                   <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>
@@ -776,7 +776,7 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
       {/* Neo-brutalist Multi-language Translation Modal */}
       {isTranslateModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] max-w-lg w-full p-8 relative">
+          <div className="bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] max-w-lg w-full p-8 relative">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-2xl font-black uppercase tracking-tight">
                 🌎 Translate & Publish
@@ -806,7 +806,7 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
                 .map((l) => (
                   <label 
                     key={l.code} 
-                    className="flex items-center gap-3 p-3 bg-white border-4 border-black font-black uppercase text-xs cursor-pointer shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] hover:bg-yellow-50 hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all select-none"
+                    className="flex items-center gap-3 p-3 bg-white border-4 border-black font-black uppercase text-xs cursor-pointer shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-yellow-50 hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all select-none"
                   >
                     <input 
                       type="checkbox"
@@ -828,13 +828,13 @@ export default function AdminEditor({ isNew = true, postId, lang = 'en' }: Admin
             <div className="flex gap-4">
               <button
                 onClick={() => setIsTranslateModalOpen(false)}
-                className="flex-1 py-3 bg-white text-black border-4 border-black font-black uppercase text-xs hover:bg-yellow-50 hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all shadow-[4px_4px_0px_0px_rgba(239,68,68,1)]"
+                className="flex-1 py-3 bg-white text-black border-4 border-black font-black uppercase text-xs hover:bg-yellow-50 hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
               >
                 Cancel
               </button>
               <button
                 onClick={executeTranslations}
-                className="flex-1 py-3 bg-[#ef4444] text-black border-4 border-black font-black uppercase text-xs hover:bg-yellow-50 hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all shadow-[4px_4px_0px_0px_rgba(239,68,68,1)]"
+                className="flex-1 py-3 bg-[#ef4444] text-black border-4 border-black font-black uppercase text-xs hover:bg-yellow-50 hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
               >
                 Start Translation
               </button>

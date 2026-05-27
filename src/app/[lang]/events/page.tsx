@@ -99,7 +99,7 @@ export default async function EventsPage({ params: { lang } }: { params: { lang:
         </div>
 
         {/* Community Call to Action */}
-        <div className="mt-24 bg-black p-12 border-4 border-black text-white text-center shadow-[16px_16px_0px_0px_rgba(239,68,68,1)]">
+        <div className="mt-24 bg-black p-12 border-4 border-black text-white text-center shadow-[16px_16px_0px_0px_rgba(0,0,0,1)]">
           <h2 className="text-4xl font-black uppercase italic tracking-tighter mb-4">Hosting an Event?</h2>
           <p className="text-xl font-bold mb-8 text-slate-400">Put your summit on the map and reach 500k+ AI professionals globally.</p>
           <SubmitEventModal lang={lang} />
