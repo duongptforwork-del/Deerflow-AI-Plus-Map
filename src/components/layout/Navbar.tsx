@@ -73,11 +73,11 @@ export default function Navbar({ lang }: { lang: string }) {
   ];
 
   return (
-    <header className="bg-white border-b-2 border-black py-4 sticky top-0 z-50">
+    <header className="bg-white border-b-4 border-black py-4 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex flex-col md:flex-row justify-between items-center gap-6">
           <Link href={`/${lang}`} className="flex items-center gap-3 group">
-            <div className="bg-black border-2 border-black p-1.5 group-hover:-rotate-6 transition-transform shadow-[4px_4px_0px_0px_rgba(239,68,68,1)]">
+            <div className="bg-black border-4 border-black p-1.5 group-hover:-rotate-6 transition-transform shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] group-hover:translate-x-1 group-hover:translate-y-1 group-hover:shadow-none">
               <div className="w-9 h-9 relative invert">
                 <Image 
                   src="/logo.png" 
@@ -98,7 +98,7 @@ export default function Navbar({ lang }: { lang: string }) {
           <div className="flex items-center gap-6">
             <nav className="hidden lg:block">
               <ul className="flex items-center gap-1 font-black text-sm uppercase italic">
-                <li><Link href={`/${lang}`} className="px-3 py-2 hover:bg-black hover:text-white transition-colors">{
+                <li><Link href={`/${lang}`} className="px-3 py-2 hover:bg-yellow-50 transition-colors">{
                   { vi: 'Trang Chủ', en: 'Home', ko: '홈', ja: 'ホーム', fr: 'Accueil' }[lang] || 'Home'
                 }</Link></li>
                 
@@ -106,18 +106,18 @@ export default function Navbar({ lang }: { lang: string }) {
                   if (section.slug === 'news') {
                     return (
                       <li key={section.slug} className="relative group py-2">
-                        <Link href={`/${lang}/${section.slug}`} className="px-3 py-2 hover:bg-black hover:text-white transition-colors flex items-center gap-1">
+                        <Link href={`/${lang}/${section.slug}`} className="px-3 py-2 hover:bg-yellow-50 transition-colors flex items-center gap-1">
                           {section.name} <ChevronIcon size={14} className="group-hover:rotate-180 transition-transform duration-200" />
                         </Link>
                         
                         {categories.length > 0 && (
                           <div className="absolute left-0 mt-2 pt-2 w-56 opacity-0 translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto transition-all duration-200 z-50">
-                            <div className="bg-white border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] flex flex-col">
+                            <div className="bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] flex flex-col">
                               {categories.map((cat) => (
                                 <Link 
                                   key={cat.slug} 
                                   href={`/${lang}/category/${cat.slug}`} 
-                                  className="px-4 py-3 hover:bg-black hover:text-white text-xs font-black uppercase tracking-widest border-b-2 border-black last:border-0 transition-colors normal-case"
+                                  className="px-4 py-3 hover:bg-yellow-50 text-xs font-black uppercase tracking-widest border-b-4 border-black last:border-0 transition-colors normal-case"
                                 >
                                   {cat.name}
                                 </Link>
@@ -131,7 +131,7 @@ export default function Navbar({ lang }: { lang: string }) {
 
                   return (
                     <li key={section.slug}>
-                      <Link href={`/${lang}/${section.slug}`} className="px-3 py-2 hover:bg-black hover:text-white transition-colors">
+                      <Link href={`/${lang}/${section.slug}`} className="px-3 py-2 hover:bg-yellow-50 transition-colors">
                         {section.name}
                       </Link>
                     </li>
@@ -145,7 +145,7 @@ export default function Navbar({ lang }: { lang: string }) {
               <div className="relative">
                 <button 
                   onClick={() => setLangDropdownOpen(!langDropdownOpen)}
-                  className="flex items-center gap-1.5 px-3 py-2 border-2 border-black font-black uppercase text-xs hover:bg-black hover:text-white transition-colors bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+                  className="flex items-center gap-1.5 px-3 py-2 border-4 border-black font-black uppercase text-xs hover:bg-yellow-50 hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all bg-white shadow-[4px_4px_0px_0px_rgba(239,68,68,1)]"
                 >
                   <span>{languages.find(l => l.code === lang)?.flag || '🇺🇸'}</span>
                   <span>{lang.toUpperCase()}</span>
@@ -155,7 +155,7 @@ export default function Navbar({ lang }: { lang: string }) {
                 {langDropdownOpen && (
                   <>
                     <div className="fixed inset-0 z-40" onClick={() => setLangDropdownOpen(false)} />
-                    <div className="absolute right-0 mt-2 w-40 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] z-50 flex flex-col">
+                    <div className="absolute right-0 mt-2 w-40 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] z-50 flex flex-col">
                       {languages.map((l) => (
                         <button
                           key={l.code}
@@ -163,8 +163,8 @@ export default function Navbar({ lang }: { lang: string }) {
                             handleLanguageChange(l.code);
                             setLangDropdownOpen(false);
                           }}
-                          className={`flex items-center gap-2 px-4 py-2.5 text-xs font-black uppercase tracking-wider text-left border-b-2 border-black last:border-0 hover:bg-black hover:text-white transition-colors ${
-                            lang === l.code ? 'bg-[#ef4444] text-white' : 'text-black bg-white'
+                          className={`flex items-center gap-2 px-4 py-2.5 text-xs font-black uppercase tracking-wider text-left border-b-4 border-black last:border-0 hover:bg-yellow-50 transition-colors ${
+                            lang === l.code ? 'bg-[#ef4444] text-white hover:text-black' : 'text-black bg-white'
                           }`}
                         >
                           <span>{l.flag}</span>

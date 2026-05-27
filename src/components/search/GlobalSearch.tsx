@@ -60,7 +60,7 @@ export default function GlobalSearch({ lang }: { lang: string }) {
       vi: 'Cẩm nang chiến lược',
       en: 'Strategic Guides',
       ko: '전략 가이드',
-      ja: '戦略ガイド',
+      ja: '전략 가이드',
       fr: 'Guides stratégiques'
     }[lang] || 'Strategic Guides',
     select: {
@@ -148,11 +148,11 @@ export default function GlobalSearch({ lang }: { lang: string }) {
     <>
       <button 
         onClick={() => setIsOpen(true)}
-        className="flex items-center gap-4 px-4 py-2 border-2 border-black bg-white hover:bg-slate-50 transition-colors shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none translate-y-0 hover:translate-x-[2px] hover:translate-y-[2px]"
+        className="flex items-center gap-4 px-4 py-2 border-4 border-black bg-white hover:bg-yellow-50 transition-all shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] hover:shadow-none translate-y-0 hover:translate-x-1 hover:translate-y-1"
       >
         <Search size={18} />
         <span className="font-black text-xs uppercase hidden lg:inline">{t.search_btn}</span>
-        <kbd className="hidden lg:flex items-center gap-1 px-1.5 py-0.5 border border-slate-300 rounded bg-slate-100 text-[10px] font-mono">
+        <kbd className="hidden lg:flex items-center gap-1 px-1.5 py-0.5 border-4 border-black bg-white text-[10px] font-mono shadow-[2px_2px_0px_0px_rgba(239,68,68,1)]">
           ⌘K
         </kbd>
       </button>
@@ -161,20 +161,20 @@ export default function GlobalSearch({ lang }: { lang: string }) {
         <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-start justify-center pt-[10vh] px-4">
           <div 
             ref={searchRef}
-            className="w-full max-w-2xl bg-white border-4 border-black shadow-[16px_16px_0px_0px_rgba(0,0,0,1)] flex flex-col"
+            className="w-full max-w-2xl bg-white border-4 border-black shadow-[16px_16px_0px_0px_rgba(239,68,68,1)] flex flex-col"
           >
-            <div className="flex items-center border-b-4 border-black p-4 bg-slate-50">
-              <Search className="mr-4 text-slate-400" />
+            <div className="flex items-center border-b-4 border-black p-4 bg-white">
+              <Search className="mr-4 text-black/50" />
               <input 
                 autoFocus
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder={t.search_placeholder}
-                className="flex-grow bg-transparent border-none outline-none font-black text-xl placeholder:text-slate-300 uppercase tracking-tighter"
+                className="flex-grow bg-transparent border-none outline-none font-black text-xl placeholder:text-black/30 uppercase tracking-tighter"
               />
               <button 
                 onClick={() => setIsOpen(false)}
-                className="p-2 hover:bg-black hover:text-white transition-colors"
+                className="p-2 border-4 border-transparent hover:border-black hover:bg-yellow-50 hover:text-black hover:shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] transition-all hover:-translate-x-1 hover:-translate-y-1"
               >
                 <X size={20} />
               </button>
@@ -188,7 +188,7 @@ export default function GlobalSearch({ lang }: { lang: string }) {
                 </div>
               ) : query.length < 2 ? (
                 <div className="py-12 text-center">
-                  <p className="font-black text-xs uppercase text-slate-400 italic">{t.enter_min}</p>
+                  <p className="font-black text-xs uppercase text-black/50 italic">{t.enter_min}</p>
                 </div>
               ) : results.posts.length === 0 && results.guides.length === 0 ? (
                 <div className="py-12 text-center">
@@ -199,15 +199,15 @@ export default function GlobalSearch({ lang }: { lang: string }) {
                 <div className="space-y-8">
                   {results.posts.length > 0 && (
                     <section>
-                      <h3 className="font-black text-[10px] uppercase tracking-[0.2em] text-slate-400 mb-4 flex items-center gap-2">
+                      <h3 className="font-black text-[10px] uppercase tracking-[0.2em] text-black/50 mb-4 flex items-center gap-2">
                         <span className="w-2 h-2 bg-[#ef4444]"></span> {t.news_updates}
                       </h3>
-                      <div className="space-y-2">
+                      <div className="space-y-4">
                         {results.posts.map((post) => (
                           <button
                             key={post.slug}
                             onClick={() => handleNavigate(post.section, post.slug)}
-                            className="w-full text-left p-4 border-2 border-black hover:bg-black hover:text-white transition-all group"
+                            className="block w-full text-left p-4 border-4 border-black bg-white shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 hover:bg-yellow-50 hover:text-black transition-all group"
                           >
                             <h4 className="font-black text-lg uppercase leading-none mb-1">{post.title}</h4>
                             <p className="text-[10px] font-bold line-clamp-1 opacity-60 uppercase">{post.excerpt}</p>
@@ -219,15 +219,15 @@ export default function GlobalSearch({ lang }: { lang: string }) {
 
                   {results.guides.length > 0 && (
                     <section>
-                      <h3 className="font-black text-[10px] uppercase tracking-[0.2em] text-slate-400 mb-4 flex items-center gap-2">
-                        <span className="w-2 h-2 bg-blue-500"></span> {t.strategic_guides}
+                      <h3 className="font-black text-[10px] uppercase tracking-[0.2em] text-black/50 mb-4 flex items-center gap-2">
+                        <span className="w-2 h-2 bg-[#ef4444]"></span> {t.strategic_guides}
                       </h3>
-                      <div className="space-y-2">
+                      <div className="space-y-4">
                         {results.guides.map((guide) => (
                           <button
                             key={guide.slug}
                             onClick={() => handleNavigate(guide.section, guide.slug)}
-                            className="w-full text-left p-4 border-2 border-black hover:bg-[#ef4444] hover:text-white transition-all group"
+                            className="block w-full text-left p-4 border-4 border-black bg-white shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 hover:bg-yellow-50 hover:text-black transition-all group"
                           >
                             <h4 className="font-black text-lg uppercase leading-none mb-1">{guide.title}</h4>
                             <p className="text-[10px] font-bold line-clamp-1 opacity-60 uppercase">{guide.excerpt}</p>
@@ -240,10 +240,10 @@ export default function GlobalSearch({ lang }: { lang: string }) {
               )}
             </div>
 
-            <div className="border-t-4 border-black p-3 bg-slate-50 flex justify-between items-center px-6">
+            <div className="border-t-4 border-black p-3 bg-white flex justify-between items-center px-6">
               <div className="flex gap-4">
-                <span className="text-[9px] font-black uppercase text-slate-400"><kbd className="border border-slate-300 px-1 rounded bg-white mr-1 text-black">ENTER</kbd> {t.select}</span>
-                <span className="text-[9px] font-black uppercase text-slate-400"><kbd className="border border-slate-300 px-1 rounded bg-white mr-1 text-black">ESC</kbd> {t.close}</span>
+                <span className="text-[9px] font-black uppercase text-black/50"><kbd className="border-4 border-black px-1 bg-white mr-1 text-black shadow-[2px_2px_0px_0px_rgba(239,68,68,1)]">ENTER</kbd> {t.select}</span>
+                <span className="text-[9px] font-black uppercase text-black/50"><kbd className="border-4 border-black px-1 bg-white mr-1 text-black shadow-[2px_2px_0px_0px_rgba(239,68,68,1)]">ESC</kbd> {t.close}</span>
               </div>
               <span className="text-[9px] font-black uppercase italic text-[#ef4444]">{t.brand_search}</span>
             </div>

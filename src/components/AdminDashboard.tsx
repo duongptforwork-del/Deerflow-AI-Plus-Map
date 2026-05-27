@@ -208,7 +208,7 @@ const AdminDashboard = ({ posts = [], lang = 'en' }: { posts?: any[], lang?: str
   if (!isAuthorized) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center p-6 font-sans">
-        <div className="bg-white p-8 border-4 border-black shadow-[12px_12px_0px_0px_rgba(239,68,68,1)] max-w-md w-full">
+        <div className="bg-white p-8 border-4 border-black shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] max-w-md w-full">
           <div className="flex justify-center mb-6">
             <div className="w-16 h-16 bg-[#ef4444] flex items-center justify-center text-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(239,68,68,1)]">
               <Lock size={32} />
@@ -258,23 +258,24 @@ const AdminDashboard = ({ posts = [], lang = 'en' }: { posts?: any[], lang?: str
 
   return (
     <div className="flex h-screen bg-white text-black font-sans">
-      <aside className="w-64 bg-white border-r-4 border-black flex flex-col">
-        <div className="p-6 border-b-4 border-black">
+      <aside className="w-64 bg-white flex flex-col shrink-0">
+        <div className="p-6">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-[#ef4444] border-4 border-black flex items-center justify-center text-white font-bold">A+</div>
             <span className="font-display font-black text-xl tracking-tight">AI Plus Admin</span>
           </div>
         </div>
+        <div className="h-1 w-full bg-black shrink-0" />
         
         <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
           {menuItems.map((item) => (
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id)}
-              className={`w-full flex items-center gap-3 px-4 py-3 border-4 border-transparent transition-all font-black uppercase text-[10px] tracking-widest ${
+              className={`w-full flex items-center gap-3 px-4 py-3 border-4 border-black transition-all font-black uppercase text-[10px] tracking-widest ${
                 activeTab === item.id 
-                ? 'bg-black text-white border-black shadow-[4px_4px_0px_0px_rgba(239,68,68,1)]' 
-                : 'text-black hover:bg-yellow-50 hover:text-black'
+                ? 'bg-yellow-50 translate-x-1 translate-y-1' 
+                : 'bg-white text-black shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] hover:bg-yellow-50 hover:translate-x-1 hover:translate-y-1 hover:shadow-none'
               }`}
             >
               <item.icon size={16} />
@@ -283,26 +284,29 @@ const AdminDashboard = ({ posts = [], lang = 'en' }: { posts?: any[], lang?: str
           ))}
         </nav>
 
-        <div className="p-4 border-t-4 border-black">
+        <div className="h-1 w-full bg-black shrink-0" />
+        <div className="p-4">
           <button 
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-4 py-3 text-black hover:text-[#ef4444] transition-colors font-black uppercase text-xs tracking-widest"
+            className="w-full flex items-center gap-3 px-4 py-3 bg-white border-4 border-black text-black shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] hover:bg-yellow-50 hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all font-black uppercase text-[10px] tracking-widest"
           >
             <LogOut size={18} />
             <span>Logout</span>
           </button>
         </div>
       </aside>
+      
+      <div className="w-1 bg-black h-full shrink-0" />
 
       <main className="flex-1 flex flex-col overflow-hidden">
-        <header className="h-20 bg-white border-b-4 border-black flex items-center justify-between px-8">
+        <header className="h-20 bg-white flex items-center justify-between px-8 shrink-0">
           <div className="flex items-center gap-4 flex-1">
             <div className="relative w-96">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-black" size={18} />
               <input 
                 type="text" 
                 placeholder="Search articles..." 
-                className="w-full pl-10 pr-4 py-2 bg-white border-4 border-black focus:outline-none focus:bg-white transition-all font-bold"
+                className="w-full pl-10 pr-4 py-2 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] focus:outline-none focus:translate-x-1 focus:translate-y-1 focus:shadow-none transition-all font-bold text-black"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -316,6 +320,7 @@ const AdminDashboard = ({ posts = [], lang = 'en' }: { posts?: any[], lang?: str
             </div>
           </div>
         </header>
+        <div className="h-1 w-full bg-black shrink-0" />
 
         <div className="flex-1 overflow-y-auto p-8">
           <div className="max-w-6xl mx-auto">
@@ -327,7 +332,7 @@ const AdminDashboard = ({ posts = [], lang = 'en' }: { posts?: any[], lang?: str
               
               <button 
                 onClick={() => router.push(`/${lang}/xyz_safe/new`)}
-                className="flex items-center gap-2 bg-[#ef4444] text-white px-6 py-3 border-4 border-black font-black uppercase tracking-widest shadow-[6px_6px_0px_0px_rgba(239,68,68,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all"
+                className="flex items-center gap-2 bg-[#ef4444] text-white px-6 py-3 border-4 border-black font-black uppercase tracking-widest shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all"
               >
                 <Plus size={20} />
                 <span>New Post</span>
@@ -337,47 +342,47 @@ const AdminDashboard = ({ posts = [], lang = 'en' }: { posts?: any[], lang?: str
             {['posts', 'news', 'compare', 'guide', 'events'].includes(activeTab) && (
               <>
                 <div className="grid grid-cols-4 gap-6 mb-10">
-                  <div className="bg-white p-6 border-4 border-black shadow-[6px_6px_0px_0px_rgba(239,68,68,1)]">
+                  <div className="bg-white p-6 border-4 border-black shadow-[4px_4px_0px_0px_rgba(239,68,68,1)]">
                     <p className="text-[10px] font-black uppercase tracking-widest text-black">Filtered Result</p>
                     <p className="text-3xl font-display font-black text-black leading-none mt-2">{filteredPosts.length}</p>
                   </div>
-                  <div className="bg-white p-6 border-4 border-black shadow-[6px_6px_0px_0px_rgba(239,68,68,1)]">
+                  <div className="bg-white p-6 border-4 border-black shadow-[4px_4px_0px_0px_rgba(239,68,68,1)]">
                     <p className="text-[10px] font-black uppercase tracking-widest text-black">Published</p>
                     <p className="text-3xl font-display font-black text-[#ef4444] leading-none mt-2">{filteredPosts.filter(p => p.is_published).length}</p>
                   </div>
                 </div>
 
-                <div className="bg-white border-4 border-black shadow-[10px_10px_0px_0px_rgba(239,68,68,1)] mb-10">
+                <div className="bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] mb-10">
                   <table className="w-full text-left">
-                    <thead className="bg-black text-white">
+                    <thead className="bg-black text-white border-b-4 border-black">
                       <tr>
-                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest">Title</th>
-                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest">Section</th>
-                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest">Status</th>
-                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest">Date</th>
-                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-right">Actions</th>
+                        <th className="px-6 py-4 text-xs font-black uppercase tracking-widest border-r-4 border-black last:border-r-0">Title</th>
+                        <th className="px-6 py-4 text-xs font-black uppercase tracking-widest border-r-4 border-black last:border-r-0">Section</th>
+                        <th className="px-6 py-4 text-xs font-black uppercase tracking-widest border-r-4 border-black last:border-r-0">Status</th>
+                        <th className="px-6 py-4 text-xs font-black uppercase tracking-widest border-r-4 border-black last:border-r-0">Date</th>
+                        <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-right">Actions</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y-2 divide-black">
+                    <tbody className="divide-y-4 divide-black">
                       {filteredPosts.map((post) => (
-                        <tr key={post.id} className="hover:bg-yellow-50 transition-colors group">
-                          <td className="px-6 py-4">
+                        <tr key={post.id} className="hover:bg-yellow-50 transition-all group cursor-pointer bg-white">
+                          <td className="px-6 py-4 border-r-4 border-black">
                             <p className="font-black text-black leading-tight uppercase text-sm">{post.title}</p>
                             <p className="text-[10px] font-bold text-black mt-1 uppercase tracking-widest">/{post.slug}</p>
                           </td>
-                          <td className="px-6 py-4">
+                          <td className="px-6 py-4 border-r-4 border-black">
                             <span className="px-2 py-0.5 border-4 border-black bg-white text-[10px] font-black uppercase tracking-widest">
                               {post.section || 'news'}
                             </span>
                           </td>
-                          <td className="px-6 py-4">
+                          <td className="px-6 py-4 border-r-4 border-black">
                             <span className={`px-2 py-0.5 border-4 border-black text-[10px] font-black uppercase tracking-widest ${
-                              post.is_published ? 'bg-emerald-400' : 'bg-amber-400'
+                              post.is_published ? 'bg-[#ef4444] text-white' : 'bg-white text-black'
                             }`}>
                               {post.is_published ? 'Published' : 'Draft'}
                             </span>
                           </td>
-                          <td className="px-6 py-4 text-[10px] font-black uppercase text-black">
+                          <td className="px-6 py-4 text-[10px] font-black uppercase text-black border-r-4 border-black">
                             {post.created_at ? new Date(post.created_at).toLocaleDateString() : 'N/A'}
                           </td>
                           <td className="px-6 py-4 text-right relative">
@@ -386,28 +391,28 @@ const AdminDashboard = ({ posts = [], lang = 'en' }: { posts?: any[], lang?: str
                                 e.stopPropagation();
                                 setOpenMenuId(openMenuId === post.id ? null : post.id);
                               }}
-                              className="p-2 text-black hover:bg-black hover:text-white transition-all border-4 border-transparent hover:border-black"
+                              className="p-1 bg-white border-4 border-black text-black shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 hover:bg-yellow-50 transition-all"
                             >
                               <MoreVertical size={18} />
                             </button>
                             
                             {openMenuId === post.id && (
-                              <div className="absolute right-6 top-12 w-48 bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(239,68,68,1)] z-50 flex flex-col items-start overflow-hidden">
+                              <div className="absolute right-6 top-12 w-48 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] z-50 flex flex-col p-2 gap-2">
                                 <button 
                                   onClick={() => router.push(`/${lang}/xyz_safe/edit/${post.id}`)}
-                                  className="w-full text-left px-4 py-3 text-[10px] font-black uppercase tracking-widest text-black hover:bg-[#ef4444] hover:text-white transition-colors border-b-2 border-black"
+                                  className="w-full text-left px-4 py-2 text-[10px] font-black uppercase tracking-widest text-black bg-white border-4 border-black hover:bg-yellow-50 hover:translate-x-1 hover:translate-y-1 transition-all"
                                 >
                                   Edit Post
                                 </button>
                                 <button 
                                   onClick={() => handleTogglePublish(post.id, post.is_published)}
-                                  className="w-full text-left px-4 py-3 text-[10px] font-black uppercase tracking-widest text-black hover:bg-black hover:text-white transition-colors border-b-2 border-black"
+                                  className="w-full text-left px-4 py-2 text-[10px] font-black uppercase tracking-widest text-black bg-white border-4 border-black hover:bg-yellow-50 hover:translate-x-1 hover:translate-y-1 transition-all"
                                 >
                                   {post.is_published ? 'Unpublish' : 'Publish Now'}
                                 </button>
                                 <button 
                                   onClick={() => handleDeletePost(post.id)}
-                                  className="w-full text-left px-4 py-3 text-[10px] font-black uppercase tracking-widest text-[#ef4444] hover:bg-[#ef4444] hover:text-white transition-colors"
+                                  className="w-full text-left px-4 py-2 text-[10px] font-black uppercase tracking-widest text-white bg-[#ef4444] border-4 border-black hover:bg-white hover:text-black hover:translate-x-1 hover:translate-y-1 transition-all"
                                 >
                                   Delete Post
                                 </button>
@@ -417,7 +422,7 @@ const AdminDashboard = ({ posts = [], lang = 'en' }: { posts?: any[], lang?: str
                         </tr>
                       ))}
                       {filteredPosts.length === 0 && (
-                        <tr>
+                        <tr className="bg-white">
                           <td colSpan={5} className="px-6 py-16 text-center text-black font-black uppercase tracking-widest">
                             No content found for this section.
                           </td>
@@ -440,7 +445,7 @@ const AdminDashboard = ({ posts = [], lang = 'en' }: { posts?: any[], lang?: str
                   {!showCategoryForm && (
                     <button 
                       onClick={() => setShowCategoryForm(true)}
-                      className="flex items-center gap-2 bg-[#ef4444] text-white px-6 py-3 border-4 border-black font-black uppercase tracking-widest shadow-[6px_6px_0px_0px_rgba(239,68,68,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all"
+                      className="flex items-center gap-2 bg-[#ef4444] text-white px-6 py-3 border-4 border-black font-black uppercase tracking-widest shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all"
                     >
                       <Plus size={20} />
                       <span>New Category</span>
@@ -449,10 +454,13 @@ const AdminDashboard = ({ posts = [], lang = 'en' }: { posts?: any[], lang?: str
                 </div>
 
                 {showCategoryForm && (
-                  <form onSubmit={handleSaveCategory} className="bg-white border-4 border-black shadow-[10px_10px_0px_0px_rgba(239,68,68,1)] p-8 mb-10 space-y-6">
-                    <h3 className="font-display font-black text-xl uppercase border-b-2 border-black pb-2">
-                      {editingCategory ? 'Edit Category' : 'Create New Category'}
-                    </h3>
+                  <form onSubmit={handleSaveCategory} className="bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] p-8 mb-10 space-y-6">
+                    <div className="pb-4">
+                      <h3 className="font-display font-black text-xl uppercase">
+                        {editingCategory ? 'Edit Category' : 'Create New Category'}
+                      </h3>
+                    </div>
+                    <div className="h-1 w-full bg-black mb-6" />
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
@@ -462,7 +470,7 @@ const AdminDashboard = ({ posts = [], lang = 'en' }: { posts?: any[], lang?: str
                           value={catName}
                           onChange={handleCatNameChange}
                           placeholder="e.g. Technology, AI Agents..."
-                          className="w-full p-3 border-4 border-black font-bold outline-none focus:bg-yellow-50"
+                          className="w-full p-3 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] focus:outline-none focus:translate-x-1 focus:translate-y-1 focus:shadow-none transition-all font-bold text-black"
                           required
                         />
                       </div>
@@ -474,7 +482,7 @@ const AdminDashboard = ({ posts = [], lang = 'en' }: { posts?: any[], lang?: str
                           value={catSlug}
                           onChange={(e) => setCatSlug(slugify(e.target.value))}
                           placeholder="e.g. technology, ai-agents..."
-                          className="w-full p-3 border-4 border-black font-bold outline-none focus:bg-yellow-50"
+                          className="w-full p-3 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] focus:outline-none focus:translate-x-1 focus:translate-y-1 focus:shadow-none transition-all font-bold text-black"
                           required
                         />
                       </div>
@@ -486,7 +494,7 @@ const AdminDashboard = ({ posts = [], lang = 'en' }: { posts?: any[], lang?: str
                         <select 
                           value={catLang}
                           onChange={(e) => setCatLang(e.target.value)}
-                          className="w-full p-3 border-4 border-black font-bold uppercase tracking-widest bg-white outline-none"
+                          className="w-full p-3 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] focus:outline-none focus:translate-x-1 focus:translate-y-1 focus:shadow-none transition-all font-bold uppercase tracking-widest text-black"
                         >
                           <option value="en">English</option>
                           <option value="vi">Vietnamese</option>
@@ -501,7 +509,7 @@ const AdminDashboard = ({ posts = [], lang = 'en' }: { posts?: any[], lang?: str
                           value={catDescription}
                           onChange={(e) => setCatDescription(e.target.value)}
                           placeholder="Brief description of this category (useful for SEO)..."
-                          className="w-full p-3 border-4 border-black font-bold outline-none focus:bg-yellow-50 h-12 resize-none"
+                          className="w-full p-3 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] focus:outline-none focus:translate-x-1 focus:translate-y-1 focus:shadow-none transition-all font-bold text-black resize-y min-h-[48px]"
                         />
                       </div>
                     </div>
@@ -510,7 +518,7 @@ const AdminDashboard = ({ posts = [], lang = 'en' }: { posts?: any[], lang?: str
                       <button 
                         type="submit"
                         disabled={isSavingCategory}
-                        className="flex items-center gap-2 bg-[#ef4444] text-white px-6 py-3 border-4 border-black font-black uppercase tracking-widest shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5 transition-all"
+                        className="flex items-center gap-2 bg-[#ef4444] text-white px-6 py-3 border-4 border-black font-black uppercase tracking-widest shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all"
                       >
                         {isSavingCategory ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
                         Save Category
@@ -519,7 +527,7 @@ const AdminDashboard = ({ posts = [], lang = 'en' }: { posts?: any[], lang?: str
                       <button 
                         type="button"
                         onClick={resetCategoryForm}
-                        className="px-6 py-3 bg-white border-4 border-black font-black uppercase tracking-widest shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5 transition-all"
+                        className="px-6 py-3 bg-white border-4 border-black font-black uppercase tracking-widest shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] hover:bg-yellow-50 hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all"
                       >
                         Cancel
                       </button>
@@ -527,18 +535,18 @@ const AdminDashboard = ({ posts = [], lang = 'en' }: { posts?: any[], lang?: str
                   </form>
                 )}
 
-                <div className="bg-white border-4 border-black shadow-[10px_10px_0px_0px_rgba(239,68,68,1)] overflow-hidden mb-10">
+                <div className="bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] overflow-hidden mb-10">
                   <table className="w-full text-left">
-                    <thead className="bg-black text-white">
+                    <thead className="bg-black text-white border-b-4 border-black">
                       <tr>
-                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest">Name</th>
-                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest">Slug</th>
-                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest">Language</th>
-                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest">Description</th>
-                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-right">Actions</th>
+                        <th className="px-6 py-4 text-xs font-black uppercase tracking-widest border-r-4 border-black last:border-r-0">Name</th>
+                        <th className="px-6 py-4 text-xs font-black uppercase tracking-widest border-r-4 border-black last:border-r-0">Slug</th>
+                        <th className="px-6 py-4 text-xs font-black uppercase tracking-widest border-r-4 border-black last:border-r-0">Language</th>
+                        <th className="px-6 py-4 text-xs font-black uppercase tracking-widest border-r-4 border-black last:border-r-0">Description</th>
+                        <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-right">Actions</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y-2 divide-black">
+                    <tbody className="divide-y-4 divide-black">
                       {loadingCategories ? (
                         <tr>
                           <td colSpan={5} className="px-6 py-16 text-center">
@@ -547,21 +555,21 @@ const AdminDashboard = ({ posts = [], lang = 'en' }: { posts?: any[], lang?: str
                         </tr>
                       ) : (
                         categories.filter(c => c.lang === lang).map((cat) => (
-                          <tr key={cat.id} className="hover:bg-yellow-50 transition-colors">
-                            <td className="px-6 py-4 font-black uppercase text-sm">{cat.name}</td>
-                            <td className="px-6 py-4 text-[10px] font-bold text-black tracking-wider">/category/{cat.slug}</td>
-                            <td className="px-6 py-4 text-xs font-black uppercase tracking-widest">{cat.lang}</td>
-                            <td className="px-6 py-4 text-xs text-black font-medium max-w-xs truncate">{cat.description || 'N/A'}</td>
+                          <tr key={cat.id} className="hover:bg-yellow-50 transition-colors bg-white">
+                            <td className="px-6 py-4 font-black uppercase text-sm border-r-4 border-black text-black">{cat.name}</td>
+                            <td className="px-6 py-4 text-[10px] font-black text-black uppercase tracking-widest border-r-4 border-black">/category/{cat.slug}</td>
+                            <td className="px-6 py-4 text-xs font-black text-black uppercase tracking-widest border-r-4 border-black">{cat.lang}</td>
+                            <td className="px-6 py-4 text-xs text-black font-black uppercase tracking-widest max-w-xs truncate border-r-4 border-black">{cat.description || 'N/A'}</td>
                             <td className="px-6 py-4 text-right space-x-2">
                               <button 
                                 onClick={() => startEditCategory(cat)}
-                                className="px-3 py-1.5 border-4 border-black bg-white hover:bg-black hover:text-white transition-colors text-[10px] font-black uppercase tracking-widest"
+                                className="px-3 py-1.5 border-4 border-black bg-white shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] hover:bg-yellow-50 hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all text-[10px] font-black uppercase tracking-widest"
                               >
                                 Edit
                               </button>
                               <button 
                                 onClick={() => handleDeleteCategory(cat.id)}
-                                className="px-3 py-1.5 border-4 border-[#ef4444] text-[#ef4444] bg-white hover:bg-[#ef4444] hover:text-white transition-colors text-[10px] font-black uppercase tracking-widest"
+                                className="px-3 py-1.5 border-4 border-black text-white bg-[#ef4444] shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] hover:bg-white hover:text-black hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all text-[10px] font-black uppercase tracking-widest"
                               >
                                 Delete
                               </button>
@@ -570,7 +578,7 @@ const AdminDashboard = ({ posts = [], lang = 'en' }: { posts?: any[], lang?: str
                         ))
                       )}
                       {!loadingCategories && categories.filter(c => c.lang === lang).length === 0 && (
-                        <tr>
+                        <tr className="bg-white">
                           <td colSpan={5} className="px-6 py-16 text-center text-black font-black uppercase tracking-widest">
                             No categories found for this language.
                           </td>
@@ -583,8 +591,8 @@ const AdminDashboard = ({ posts = [], lang = 'en' }: { posts?: any[], lang?: str
             )}
 
             {['dashboard', 'media', 'settings'].includes(activeTab) && (
-              <div className="bg-white border-4 border-dashed border-black p-24 flex flex-col items-center justify-center text-center">
-                <div className="w-20 h-20 bg-yellow-50 border-4 border-black flex items-center justify-center text-black mb-6 shadow-[6px_6px_0px_0px_rgba(239,68,68,1)]">
+              <div className="bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] p-24 flex flex-col items-center justify-center text-center">
+                <div className="w-20 h-20 bg-yellow-50 border-4 border-black flex items-center justify-center text-black mb-6 shadow-[4px_4px_0px_0px_rgba(239,68,68,1)]">
                   <Settings size={40} />
                 </div>
                 <h3 className="text-2xl font-display font-black text-black uppercase">Coming Soon</h3>
