@@ -207,15 +207,15 @@ const AdminDashboard = ({ posts = [], lang = 'en' }: { posts?: any[], lang?: str
 
   if (!isAuthorized) {
     return (
-      <div className="min-h-screen bg-[#F3F4F6] flex items-center justify-center p-6 font-sans">
-        <div className="bg-white p-8 border-4 border-black shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] max-w-md w-full">
+      <div className="min-h-screen bg-white flex items-center justify-center p-6 font-sans">
+        <div className="bg-white p-8 border-4 border-black shadow-[12px_12px_0px_0px_rgba(239,68,68,1)] max-w-md w-full">
           <div className="flex justify-center mb-6">
-            <div className="w-16 h-16 bg-[#ef4444] flex items-center justify-center text-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+            <div className="w-16 h-16 bg-[#ef4444] flex items-center justify-center text-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(239,68,68,1)]">
               <Lock size={32} />
             </div>
           </div>
           <h1 className="font-display font-black text-2xl mb-2 uppercase tracking-tight text-center">Admin Access</h1>
-          <p className="text-slate-500 text-center text-sm mb-6 font-bold text-slate-500 uppercase tracking-widest">Identify Yourself, Sếp.</p>
+          <p className="text-black text-center text-sm mb-6 font-bold text-black uppercase tracking-widest">Identify Yourself, Sếp.</p>
           <form onSubmit={handleLogin} className="space-y-4">
             <input 
               type="password" 
@@ -228,7 +228,7 @@ const AdminDashboard = ({ posts = [], lang = 'en' }: { posts?: any[], lang?: str
             />
             <button 
               disabled={isChecking}
-              className="w-full bg-[#ef4444] text-white p-4 font-black uppercase tracking-widest border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all disabled:opacity-50"
+              className="w-full bg-[#ef4444] text-white p-4 font-black uppercase tracking-widest border-4 border-black shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all disabled:opacity-50"
             >
               {isChecking ? 'Verifying...' : 'Unlock Dashboard'}
             </button>
@@ -257,11 +257,11 @@ const AdminDashboard = ({ posts = [], lang = 'en' }: { posts?: any[], lang?: str
   });
 
   return (
-    <div className="flex h-screen bg-[#F3F4F6] text-slate-900 font-sans">
+    <div className="flex h-screen bg-white text-black font-sans">
       <aside className="w-64 bg-white border-r-4 border-black flex flex-col">
         <div className="p-6 border-b-4 border-black">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-[#ef4444] border-2 border-black flex items-center justify-center text-white font-bold">A+</div>
+            <div className="w-8 h-8 bg-[#ef4444] border-4 border-black flex items-center justify-center text-white font-bold">A+</div>
             <span className="font-display font-black text-xl tracking-tight">AI Plus Admin</span>
           </div>
         </div>
@@ -271,10 +271,10 @@ const AdminDashboard = ({ posts = [], lang = 'en' }: { posts?: any[], lang?: str
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id)}
-              className={`w-full flex items-center gap-3 px-4 py-3 border-2 border-transparent transition-all font-black uppercase text-[10px] tracking-widest ${
+              className={`w-full flex items-center gap-3 px-4 py-3 border-4 border-transparent transition-all font-black uppercase text-[10px] tracking-widest ${
                 activeTab === item.id 
                 ? 'bg-black text-white border-black shadow-[4px_4px_0px_0px_rgba(239,68,68,1)]' 
-                : 'text-slate-500 hover:bg-slate-100 hover:text-black'
+                : 'text-black hover:bg-yellow-50 hover:text-black'
               }`}
             >
               <item.icon size={16} />
@@ -286,7 +286,7 @@ const AdminDashboard = ({ posts = [], lang = 'en' }: { posts?: any[], lang?: str
         <div className="p-4 border-t-4 border-black">
           <button 
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-4 py-3 text-slate-500 hover:text-[#ef4444] transition-colors font-black uppercase text-xs tracking-widest"
+            className="w-full flex items-center gap-3 px-4 py-3 text-black hover:text-[#ef4444] transition-colors font-black uppercase text-xs tracking-widest"
           >
             <LogOut size={18} />
             <span>Logout</span>
@@ -302,7 +302,7 @@ const AdminDashboard = ({ posts = [], lang = 'en' }: { posts?: any[], lang?: str
               <input 
                 type="text" 
                 placeholder="Search articles..." 
-                className="w-full pl-10 pr-4 py-2 bg-[#F3F4F6] border-2 border-black focus:outline-none focus:bg-white transition-all font-bold"
+                className="w-full pl-10 pr-4 py-2 bg-white border-4 border-black focus:outline-none focus:bg-white transition-all font-bold"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -310,7 +310,7 @@ const AdminDashboard = ({ posts = [], lang = 'en' }: { posts?: any[], lang?: str
           </div>
           
           <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white bg-black px-3 py-1.5 border-2 border-black shadow-[4px_4px_0px_0px_rgba(239,68,68,1)]">
+            <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white bg-black px-3 py-1.5 border-4 border-black shadow-[4px_4px_0px_0px_rgba(239,68,68,1)]">
               <Globe size={14} />
               <span>{lang === 'en' ? 'EN' : 'VI'}</span>
             </div>
@@ -322,12 +322,12 @@ const AdminDashboard = ({ posts = [], lang = 'en' }: { posts?: any[], lang?: str
             <div className="flex items-center justify-between mb-10">
               <div>
                 <h1 className="text-4xl font-display font-black text-black tracking-tight uppercase leading-none">{activeTab}</h1>
-                <p className="text-slate-500 mt-2 font-bold italic uppercase text-xs tracking-widest">Managing {activeTab} content unification.</p>
+                <p className="text-black mt-2 font-bold italic uppercase text-xs tracking-widest">Managing {activeTab} content unification.</p>
               </div>
               
               <button 
                 onClick={() => router.push(`/${lang}/xyz_safe/new`)}
-                className="flex items-center gap-2 bg-[#ef4444] text-white px-6 py-3 border-4 border-black font-black uppercase tracking-widest shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all"
+                className="flex items-center gap-2 bg-[#ef4444] text-white px-6 py-3 border-4 border-black font-black uppercase tracking-widest shadow-[6px_6px_0px_0px_rgba(239,68,68,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all"
               >
                 <Plus size={20} />
                 <span>New Post</span>
@@ -337,17 +337,17 @@ const AdminDashboard = ({ posts = [], lang = 'en' }: { posts?: any[], lang?: str
             {['posts', 'news', 'compare', 'guide', 'events'].includes(activeTab) && (
               <>
                 <div className="grid grid-cols-4 gap-6 mb-10">
-                  <div className="bg-white p-6 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Filtered Result</p>
+                  <div className="bg-white p-6 border-4 border-black shadow-[6px_6px_0px_0px_rgba(239,68,68,1)]">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-black">Filtered Result</p>
                     <p className="text-3xl font-display font-black text-black leading-none mt-2">{filteredPosts.length}</p>
                   </div>
-                  <div className="bg-white p-6 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Published</p>
+                  <div className="bg-white p-6 border-4 border-black shadow-[6px_6px_0px_0px_rgba(239,68,68,1)]">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-black">Published</p>
                     <p className="text-3xl font-display font-black text-[#ef4444] leading-none mt-2">{filteredPosts.filter(p => p.is_published).length}</p>
                   </div>
                 </div>
 
-                <div className="bg-white border-4 border-black shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] mb-10">
+                <div className="bg-white border-4 border-black shadow-[10px_10px_0px_0px_rgba(239,68,68,1)] mb-10">
                   <table className="w-full text-left">
                     <thead className="bg-black text-white">
                       <tr>
@@ -360,24 +360,24 @@ const AdminDashboard = ({ posts = [], lang = 'en' }: { posts?: any[], lang?: str
                     </thead>
                     <tbody className="divide-y-2 divide-black">
                       {filteredPosts.map((post) => (
-                        <tr key={post.id} className="hover:bg-slate-50 transition-colors group">
+                        <tr key={post.id} className="hover:bg-yellow-50 transition-colors group">
                           <td className="px-6 py-4">
                             <p className="font-black text-black leading-tight uppercase text-sm">{post.title}</p>
-                            <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-widest">/{post.slug}</p>
+                            <p className="text-[10px] font-bold text-black mt-1 uppercase tracking-widest">/{post.slug}</p>
                           </td>
                           <td className="px-6 py-4">
-                            <span className="px-2 py-0.5 border-2 border-black bg-white text-[10px] font-black uppercase tracking-widest">
+                            <span className="px-2 py-0.5 border-4 border-black bg-white text-[10px] font-black uppercase tracking-widest">
                               {post.section || 'news'}
                             </span>
                           </td>
                           <td className="px-6 py-4">
-                            <span className={`px-2 py-0.5 border-2 border-black text-[10px] font-black uppercase tracking-widest ${
+                            <span className={`px-2 py-0.5 border-4 border-black text-[10px] font-black uppercase tracking-widest ${
                               post.is_published ? 'bg-emerald-400' : 'bg-amber-400'
                             }`}>
                               {post.is_published ? 'Published' : 'Draft'}
                             </span>
                           </td>
-                          <td className="px-6 py-4 text-[10px] font-black uppercase text-slate-500">
+                          <td className="px-6 py-4 text-[10px] font-black uppercase text-black">
                             {post.created_at ? new Date(post.created_at).toLocaleDateString() : 'N/A'}
                           </td>
                           <td className="px-6 py-4 text-right relative">
@@ -386,13 +386,13 @@ const AdminDashboard = ({ posts = [], lang = 'en' }: { posts?: any[], lang?: str
                                 e.stopPropagation();
                                 setOpenMenuId(openMenuId === post.id ? null : post.id);
                               }}
-                              className="p-2 text-black hover:bg-black hover:text-white transition-all border-2 border-transparent hover:border-black"
+                              className="p-2 text-black hover:bg-black hover:text-white transition-all border-4 border-transparent hover:border-black"
                             >
                               <MoreVertical size={18} />
                             </button>
                             
                             {openMenuId === post.id && (
-                              <div className="absolute right-6 top-12 w-48 bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] z-50 flex flex-col items-start overflow-hidden">
+                              <div className="absolute right-6 top-12 w-48 bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(239,68,68,1)] z-50 flex flex-col items-start overflow-hidden">
                                 <button 
                                   onClick={() => router.push(`/${lang}/xyz_safe/edit/${post.id}`)}
                                   className="w-full text-left px-4 py-3 text-[10px] font-black uppercase tracking-widest text-black hover:bg-[#ef4444] hover:text-white transition-colors border-b-2 border-black"
@@ -418,7 +418,7 @@ const AdminDashboard = ({ posts = [], lang = 'en' }: { posts?: any[], lang?: str
                       ))}
                       {filteredPosts.length === 0 && (
                         <tr>
-                          <td colSpan={5} className="px-6 py-16 text-center text-slate-400 font-black uppercase tracking-widest">
+                          <td colSpan={5} className="px-6 py-16 text-center text-black font-black uppercase tracking-widest">
                             No content found for this section.
                           </td>
                         </tr>
@@ -434,13 +434,13 @@ const AdminDashboard = ({ posts = [], lang = 'en' }: { posts?: any[], lang?: str
                 <div className="flex items-center justify-between mb-10">
                   <div>
                     <h1 className="text-4xl font-display font-black text-black tracking-tight uppercase leading-none">Categories</h1>
-                    <p className="text-slate-500 mt-2 font-bold italic uppercase text-xs tracking-widest">Manage article categories for multilingual news feeds.</p>
+                    <p className="text-black mt-2 font-bold italic uppercase text-xs tracking-widest">Manage article categories for multilingual news feeds.</p>
                   </div>
                   
                   {!showCategoryForm && (
                     <button 
                       onClick={() => setShowCategoryForm(true)}
-                      className="flex items-center gap-2 bg-[#ef4444] text-white px-6 py-3 border-4 border-black font-black uppercase tracking-widest shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all"
+                      className="flex items-center gap-2 bg-[#ef4444] text-white px-6 py-3 border-4 border-black font-black uppercase tracking-widest shadow-[6px_6px_0px_0px_rgba(239,68,68,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all"
                     >
                       <Plus size={20} />
                       <span>New Category</span>
@@ -449,7 +449,7 @@ const AdminDashboard = ({ posts = [], lang = 'en' }: { posts?: any[], lang?: str
                 </div>
 
                 {showCategoryForm && (
-                  <form onSubmit={handleSaveCategory} className="bg-white border-4 border-black shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] p-8 mb-10 space-y-6">
+                  <form onSubmit={handleSaveCategory} className="bg-white border-4 border-black shadow-[10px_10px_0px_0px_rgba(239,68,68,1)] p-8 mb-10 space-y-6">
                     <h3 className="font-display font-black text-xl uppercase border-b-2 border-black pb-2">
                       {editingCategory ? 'Edit Category' : 'Create New Category'}
                     </h3>
@@ -462,7 +462,7 @@ const AdminDashboard = ({ posts = [], lang = 'en' }: { posts?: any[], lang?: str
                           value={catName}
                           onChange={handleCatNameChange}
                           placeholder="e.g. Technology, AI Agents..."
-                          className="w-full p-3 border-2 border-black font-bold outline-none focus:bg-slate-50"
+                          className="w-full p-3 border-4 border-black font-bold outline-none focus:bg-yellow-50"
                           required
                         />
                       </div>
@@ -474,7 +474,7 @@ const AdminDashboard = ({ posts = [], lang = 'en' }: { posts?: any[], lang?: str
                           value={catSlug}
                           onChange={(e) => setCatSlug(slugify(e.target.value))}
                           placeholder="e.g. technology, ai-agents..."
-                          className="w-full p-3 border-2 border-black font-bold outline-none focus:bg-slate-50"
+                          className="w-full p-3 border-4 border-black font-bold outline-none focus:bg-yellow-50"
                           required
                         />
                       </div>
@@ -486,7 +486,7 @@ const AdminDashboard = ({ posts = [], lang = 'en' }: { posts?: any[], lang?: str
                         <select 
                           value={catLang}
                           onChange={(e) => setCatLang(e.target.value)}
-                          className="w-full p-3 border-2 border-black font-bold uppercase tracking-widest bg-white outline-none"
+                          className="w-full p-3 border-4 border-black font-bold uppercase tracking-widest bg-white outline-none"
                         >
                           <option value="en">English</option>
                           <option value="vi">Vietnamese</option>
@@ -501,7 +501,7 @@ const AdminDashboard = ({ posts = [], lang = 'en' }: { posts?: any[], lang?: str
                           value={catDescription}
                           onChange={(e) => setCatDescription(e.target.value)}
                           placeholder="Brief description of this category (useful for SEO)..."
-                          className="w-full p-3 border-2 border-black font-bold outline-none focus:bg-slate-50 h-12 resize-none"
+                          className="w-full p-3 border-4 border-black font-bold outline-none focus:bg-yellow-50 h-12 resize-none"
                         />
                       </div>
                     </div>
@@ -510,7 +510,7 @@ const AdminDashboard = ({ posts = [], lang = 'en' }: { posts?: any[], lang?: str
                       <button 
                         type="submit"
                         disabled={isSavingCategory}
-                        className="flex items-center gap-2 bg-[#ef4444] text-white px-6 py-3 border-4 border-black font-black uppercase tracking-widest shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5 transition-all"
+                        className="flex items-center gap-2 bg-[#ef4444] text-white px-6 py-3 border-4 border-black font-black uppercase tracking-widest shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5 transition-all"
                       >
                         {isSavingCategory ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
                         Save Category
@@ -519,7 +519,7 @@ const AdminDashboard = ({ posts = [], lang = 'en' }: { posts?: any[], lang?: str
                       <button 
                         type="button"
                         onClick={resetCategoryForm}
-                        className="px-6 py-3 bg-white border-4 border-black font-black uppercase tracking-widest shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5 transition-all"
+                        className="px-6 py-3 bg-white border-4 border-black font-black uppercase tracking-widest shadow-[4px_4px_0px_0px_rgba(239,68,68,1)] hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5 transition-all"
                       >
                         Cancel
                       </button>
@@ -527,7 +527,7 @@ const AdminDashboard = ({ posts = [], lang = 'en' }: { posts?: any[], lang?: str
                   </form>
                 )}
 
-                <div className="bg-white border-4 border-black shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] overflow-hidden mb-10">
+                <div className="bg-white border-4 border-black shadow-[10px_10px_0px_0px_rgba(239,68,68,1)] overflow-hidden mb-10">
                   <table className="w-full text-left">
                     <thead className="bg-black text-white">
                       <tr>
@@ -547,21 +547,21 @@ const AdminDashboard = ({ posts = [], lang = 'en' }: { posts?: any[], lang?: str
                         </tr>
                       ) : (
                         categories.filter(c => c.lang === lang).map((cat) => (
-                          <tr key={cat.id} className="hover:bg-slate-50 transition-colors">
+                          <tr key={cat.id} className="hover:bg-yellow-50 transition-colors">
                             <td className="px-6 py-4 font-black uppercase text-sm">{cat.name}</td>
-                            <td className="px-6 py-4 text-[10px] font-bold text-slate-500 tracking-wider">/category/{cat.slug}</td>
+                            <td className="px-6 py-4 text-[10px] font-bold text-black tracking-wider">/category/{cat.slug}</td>
                             <td className="px-6 py-4 text-xs font-black uppercase tracking-widest">{cat.lang}</td>
-                            <td className="px-6 py-4 text-xs text-slate-500 font-medium max-w-xs truncate">{cat.description || 'N/A'}</td>
+                            <td className="px-6 py-4 text-xs text-black font-medium max-w-xs truncate">{cat.description || 'N/A'}</td>
                             <td className="px-6 py-4 text-right space-x-2">
                               <button 
                                 onClick={() => startEditCategory(cat)}
-                                className="px-3 py-1.5 border-2 border-black bg-white hover:bg-black hover:text-white transition-colors text-[10px] font-black uppercase tracking-widest"
+                                className="px-3 py-1.5 border-4 border-black bg-white hover:bg-black hover:text-white transition-colors text-[10px] font-black uppercase tracking-widest"
                               >
                                 Edit
                               </button>
                               <button 
                                 onClick={() => handleDeleteCategory(cat.id)}
-                                className="px-3 py-1.5 border-2 border-[#ef4444] text-[#ef4444] bg-white hover:bg-[#ef4444] hover:text-white transition-colors text-[10px] font-black uppercase tracking-widest"
+                                className="px-3 py-1.5 border-4 border-[#ef4444] text-[#ef4444] bg-white hover:bg-[#ef4444] hover:text-white transition-colors text-[10px] font-black uppercase tracking-widest"
                               >
                                 Delete
                               </button>
@@ -571,7 +571,7 @@ const AdminDashboard = ({ posts = [], lang = 'en' }: { posts?: any[], lang?: str
                       )}
                       {!loadingCategories && categories.filter(c => c.lang === lang).length === 0 && (
                         <tr>
-                          <td colSpan={5} className="px-6 py-16 text-center text-slate-400 font-black uppercase tracking-widest">
+                          <td colSpan={5} className="px-6 py-16 text-center text-black font-black uppercase tracking-widest">
                             No categories found for this language.
                           </td>
                         </tr>
@@ -584,11 +584,11 @@ const AdminDashboard = ({ posts = [], lang = 'en' }: { posts?: any[], lang?: str
 
             {['dashboard', 'media', 'settings'].includes(activeTab) && (
               <div className="bg-white border-4 border-dashed border-black p-24 flex flex-col items-center justify-center text-center">
-                <div className="w-20 h-20 bg-slate-50 border-4 border-black flex items-center justify-center text-black mb-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
+                <div className="w-20 h-20 bg-yellow-50 border-4 border-black flex items-center justify-center text-black mb-6 shadow-[6px_6px_0px_0px_rgba(239,68,68,1)]">
                   <Settings size={40} />
                 </div>
                 <h3 className="text-2xl font-display font-black text-black uppercase">Coming Soon</h3>
-                <p className="text-slate-500 max-w-xs mt-3 font-bold uppercase text-[10px] tracking-widest">Feature under development by Sếp.</p>
+                <p className="text-black max-w-xs mt-3 font-bold uppercase text-[10px] tracking-widest">Feature under development by Sếp.</p>
               </div>
             )}
           </div>
