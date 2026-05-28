@@ -2,608 +2,608 @@
 
 import React, { useState, useEffect } from 'react';
 import { 
-  LayoutDashboard, 
-  FileText, 
-  Calendar, 
-  Image as ImageIcon, 
-  Settings, 
-  Plus, 
-  Search, 
-  Globe,
-  Lock,
-  LogOut,
-  MoreVertical,
-  Loader2,
-  FolderOpen,
-  Save
+ LayoutDashboard, 
+ FileText, 
+ Calendar, 
+ Image as ImageIcon, 
+ Settings, 
+ Plus, 
+ Search, 
+ Globe,
+ Lock,
+ LogOut,
+ MoreVertical,
+ Loader2,
+ FolderOpen,
+ Save
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { verifyPassword, setAdminSession, clearAdminSession, getAdminSession } from '@/utils/auth';
 
 const slugify = (str: string) => {
-  return String(str)
-    .normalize('NFKD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/đ/g, 'd')
-    .replace(/Đ/g, 'D')
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9 -]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-');
+ return String(str)
+ .normalize('NFKD')
+ .replace(/[\u0300-\u036f]/g, '')
+ .replace(/đ/g, 'd')
+ .replace(/Đ/g, 'D')
+ .trim()
+ .toLowerCase()
+ .replace(/[^a-z0-9 -]/g, '')
+ .replace(/\s+/g, '-')
+ .replace(/-+/g, '-');
 };
 
 const AdminDashboard = ({ posts = [], lang = 'en' }: { posts?: any[], lang?: string }) => {
-  const router = useRouter();
-  const [activeTab, setActiveTab] = useState('posts');
-  const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
-  const [password, setPassword] = useState('');
-  const [isChecking, setIsChecking] = useState(false);
-  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
+ const router = useRouter();
+ const [activeTab, setActiveTab] = useState('posts');
+ const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
+ const [password, setPassword] = useState('');
+ const [isChecking, setIsChecking] = useState(false);
+ const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+ const [searchTerm, setSearchTerm] = useState('');
 
-  // Category Management States
-  const [categories, setCategories] = useState<any[]>([]);
-  const [loadingCategories, setLoadingCategories] = useState(false);
-  const [showCategoryForm, setShowCategoryForm] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<any>(null);
-  const [catName, setCatName] = useState('');
-  const [catSlug, setCatSlug] = useState('');
-  const [catDescription, setCatDescription] = useState('');
-  const [catLang, setCatLang] = useState(lang);
-  const [isSavingCategory, setIsSavingCategory] = useState(false);
+ // Category Management States
+ const [categories, setCategories] = useState<any[]>([]);
+ const [loadingCategories, setLoadingCategories] = useState(false);
+ const [showCategoryForm, setShowCategoryForm] = useState(false);
+ const [editingCategory, setEditingCategory] = useState<any>(null);
+ const [catName, setCatName] = useState('');
+ const [catSlug, setCatSlug] = useState('');
+ const [catDescription, setCatDescription] = useState('');
+ const [catLang, setCatLang] = useState(lang);
+ const [isSavingCategory, setIsSavingCategory] = useState(false);
 
-  const fetchCategories = async () => {
-    setLoadingCategories(true);
-    const { data, error } = await supabase
-      .from('categories')
-      .select('*')
-      .order('name', { ascending: true });
-    if (data && !error) {
-      setCategories(data);
-    }
-    setLoadingCategories(false);
-  };
+ const fetchCategories = async () => {
+ setLoadingCategories(true);
+ const { data, error } = await supabase
+ .from('categories')
+ .select('*')
+ .order('name', { ascending: true });
+ if (data && !error) {
+ setCategories(data);
+ }
+ setLoadingCategories(false);
+ };
 
-  const handleSaveCategory = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!catName || !catSlug) {
-      alert('Tên danh mục và Slug là bắt buộc!');
-      return;
-    }
-    setIsSavingCategory(true);
+ const handleSaveCategory = async (e: React.FormEvent) => {
+ e.preventDefault();
+ if (!catName || !catSlug) {
+ alert('Tên danh mục và Slug là bắt buộc!');
+ return;
+ }
+ setIsSavingCategory(true);
 
-    const categoryData = {
-      name: catName,
-      slug: catSlug,
-      description: catDescription,
-      lang: catLang
-    };
+ const categoryData = {
+ name: catName,
+ slug: catSlug,
+ description: catDescription,
+ lang: catLang
+ };
 
-    if (editingCategory) {
-      const { error } = await supabase
-        .from('categories')
-        .update(categoryData)
-        .eq('id', editingCategory.id);
+ if (editingCategory) {
+ const { error } = await supabase
+ .from('categories')
+ .update(categoryData)
+ .eq('id', editingCategory.id);
 
-      if (error) {
-        alert('Lỗi khi sửa danh mục: ' + error.message);
-      } else {
-        alert('Cập nhật danh mục thành công!');
-        fetchCategories();
-        resetCategoryForm();
-      }
-    } else {
-      const { error } = await supabase
-        .from('categories')
-        .insert([categoryData]);
+ if (error) {
+ alert('Lỗi khi sửa danh mục: ' + error.message);
+ } else {
+ alert('Cập nhật danh mục thành công!');
+ fetchCategories();
+ resetCategoryForm();
+ }
+ } else {
+ const { error } = await supabase
+ .from('categories')
+ .insert([categoryData]);
 
-      if (error) {
-        alert('Lỗi khi tạo danh mục: ' + error.message);
-      } else {
-        alert('Tạo danh mục thành công!');
-        fetchCategories();
-        resetCategoryForm();
-      }
-    }
-    setIsSavingCategory(false);
-  };
+ if (error) {
+ alert('Lỗi khi tạo danh mục: ' + error.message);
+ } else {
+ alert('Tạo danh mục thành công!');
+ fetchCategories();
+ resetCategoryForm();
+ }
+ }
+ setIsSavingCategory(false);
+ };
 
-  const handleDeleteCategory = async (id: string) => {
-    if (confirm('Sếp chắc chắn muốn xóa danh mục này? Các bài viết liên quan sẽ bị mất liên kết.')) {
-      const { error } = await supabase.from('categories').delete().eq('id', id);
-      if (error) {
-        alert('Lỗi khi xóa danh mục: ' + error.message);
-      } else {
-        fetchCategories();
-      }
-    }
-  };
+ const handleDeleteCategory = async (id: string) => {
+ if (confirm('Sếp chắc chắn muốn xóa danh mục này? Các bài viết liên quan sẽ bị mất liên kết.')) {
+ const { error } = await supabase.from('categories').delete().eq('id', id);
+ if (error) {
+ alert('Lỗi khi xóa danh mục: ' + error.message);
+ } else {
+ fetchCategories();
+ }
+ }
+ };
 
-  const startEditCategory = (cat: any) => {
-    setEditingCategory(cat);
-    setCatName(cat.name || '');
-    setCatSlug(cat.slug || '');
-    setCatDescription(cat.description || '');
-    setCatLang(cat.lang || lang);
-    setShowCategoryForm(true);
-  };
+ const startEditCategory = (cat: any) => {
+ setEditingCategory(cat);
+ setCatName(cat.name || '');
+ setCatSlug(cat.slug || '');
+ setCatDescription(cat.description || '');
+ setCatLang(cat.lang || lang);
+ setShowCategoryForm(true);
+ };
 
-  const resetCategoryForm = () => {
-    setEditingCategory(null);
-    setCatName('');
-    setCatSlug('');
-    setCatDescription('');
-    setCatLang(lang);
-    setShowCategoryForm(false);
-  };
+ const resetCategoryForm = () => {
+ setEditingCategory(null);
+ setCatName('');
+ setCatSlug('');
+ setCatDescription('');
+ setCatLang(lang);
+ setShowCategoryForm(false);
+ };
 
-  const handleCatNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setCatName(e.target.value);
-    if (!editingCategory) {
-      setCatSlug(slugify(e.target.value));
-    }
-  };
+ const handleCatNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+ setCatName(e.target.value);
+ if (!editingCategory) {
+ setCatSlug(slugify(e.target.value));
+ }
+ };
 
-  const handleDeletePost = async (id: string) => {
-    if (confirm('Sếp chắc chắn muốn xóa bài này chứ?')) {
-      const { error } = await supabase.from('posts').delete().eq('id', id);
-      if (error) {
-        alert('Lỗi khi xóa bài: ' + error.message);
-      } else {
-        router.refresh();
-      }
-    }
-  };
+ const handleDeletePost = async (id: string) => {
+ if (confirm('Sếp chắc chắn muốn xóa bài này chứ?')) {
+ const { error } = await supabase.from('posts').delete().eq('id', id);
+ if (error) {
+ alert('Lỗi khi xóa bài: ' + error.message);
+ } else {
+ router.refresh();
+ }
+ }
+ };
 
-  const handleTogglePublish = async (id: string, currentStatus: boolean) => {
-    const { error } = await supabase
-      .from('posts')
-      .update({ is_published: !currentStatus })
-      .eq('id', id);
-    
-    if (error) {
-      alert('Lỗi khi cập nhật trạng thái: ' + error.message);
-    } else {
-      router.refresh();
-    }
-  };
+ const handleTogglePublish = async (id: string, currentStatus: boolean) => {
+ const { error } = await supabase
+ .from('posts')
+ .update({ is_published: !currentStatus })
+ .eq('id', id);
+ 
+ if (error) {
+ alert('Lỗi khi cập nhật trạng thái: ' + error.message);
+ } else {
+ router.refresh();
+ }
+ };
 
-  useEffect(() => {
-    const handleClickOutside = () => setOpenMenuId(null);
-    window.addEventListener('click', handleClickOutside);
-    return () => window.removeEventListener('click', handleClickOutside);
-  }, []);
+ useEffect(() => {
+ const handleClickOutside = () => setOpenMenuId(null);
+ window.addEventListener('click', handleClickOutside);
+ return () => window.removeEventListener('click', handleClickOutside);
+ }, []);
 
-  useEffect(() => {
-    const authorized = getAdminSession();
-    setIsAuthorized(authorized);
-    if (authorized) {
-      fetchCategories();
-    }
-  }, []);
+ useEffect(() => {
+ const authorized = getAdminSession();
+ setIsAuthorized(authorized);
+ if (authorized) {
+ fetchCategories();
+ }
+ }, []);
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsChecking(true);
-    const isValid = await verifyPassword(password);
-    if (isValid) {
-      setAdminSession();
-      setIsAuthorized(true);
-    } else {
-      alert('Sai mật khẩu rồi Sếp ơi!');
-    }
-    setIsChecking(false);
-  };
+ const handleLogin = async (e: React.FormEvent) => {
+ e.preventDefault();
+ setIsChecking(true);
+ const isValid = await verifyPassword(password);
+ if (isValid) {
+ setAdminSession();
+ setIsAuthorized(true);
+ } else {
+ alert('Sai mật khẩu rồi Sếp ơi!');
+ }
+ setIsChecking(false);
+ };
 
-  const handleLogout = () => {
-    clearAdminSession();
-    setIsAuthorized(false);
-    router.refresh();
-  };
+ const handleLogout = () => {
+ clearAdminSession();
+ setIsAuthorized(false);
+ router.refresh();
+ };
 
-  if (isAuthorized === null) return null;
+ if (isAuthorized === null) return null;
 
-  if (!isAuthorized) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center p-6 font-sans">
-        <div className="bg-white p-8 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] max-w-md w-full">
-          <div className="flex justify-center mb-6">
-            <div className="w-16 h-16 bg-[#ef4444] flex items-center justify-center text-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-              <Lock size={32} />
-            </div>
-          </div>
-          <h1 className="font-display font-black text-2xl mb-2 uppercase tracking-tight text-center">Admin Access</h1>
-          <p className="text-black text-center text-sm mb-6 font-bold text-black uppercase tracking-widest">Identify Yourself, Sếp.</p>
-          <form onSubmit={handleLogin} className="space-y-4">
-            <input 
-              type="password" 
-              placeholder="Password..."
-              className="w-full border-4 border-black p-4 outline-none font-bold text-center tracking-widest"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              autoFocus
-              disabled={isChecking}
-            />
-            <button 
-              disabled={isChecking}
-              className="w-full bg-[#ef4444] text-white p-4 font-black uppercase tracking-widest border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-1 active:translate-y-1 active:shadow-none transition-all disabled:opacity-50"
-            >
-              {isChecking ? 'Verifying...' : 'Unlock Dashboard'}
-            </button>
-          </form>
-        </div>
-      </div>
-    );
-  }
-  
-  const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'posts', label: 'All Posts', icon: FileText },
-    { id: 'news', label: 'News Feed', icon: FileText },
-    { id: 'categories', label: 'Categories', icon: FolderOpen },
-    { id: 'compare', label: 'Comparison', icon: FileText },
-    { id: 'guide', label: 'Guides', icon: FileText },
-    { id: 'events', label: 'Events', icon: Calendar },
-    { id: 'media', label: 'Media', icon: ImageIcon },
-    { id: 'settings', label: 'Settings', icon: Settings },
-  ];
+ if (!isAuthorized) {
+ return (
+ <div className="min-h-screen bg-white flex items-center justify-center p-6 font-sans">
+ <div className="bg-white p-8 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] max-w-md w-full">
+ <div className="flex justify-center mb-6">
+ <div className="w-16 h-16 bg-[#ef4444] flex items-center justify-center text-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+ <Lock size={32} />
+ </div>
+ </div>
+ <h1 className="font-display font-black text-2xl mb-2 uppercase tracking-tight text-center">Admin Access</h1>
+ <p className="text-black text-center text-sm mb-6 font-bold text-black uppercase tracking-widest">Identify Yourself, Sếp.</p>
+ <form onSubmit={handleLogin} className="space-y-4">
+ <input 
+ type="password"
+ placeholder="Password..."
+ className="w-full border-4 border-black p-4 outline-none font-bold text-center tracking-widest shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+ value={password}
+ onChange={(e) => setPassword(e.target.value)}
+ autoFocus
+ disabled={isChecking}
+ />
+ <button 
+ disabled={isChecking}
+ className="w-full bg-[#ef4444] text-black p-4 font-black uppercase tracking-widest border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] disabled:opacity-50"
+ >
+ {isChecking ? 'Verifying...' : 'Unlock Dashboard'}
+ </button>
+ </form>
+ </div>
+ </div>
+ );
+ }
+ 
+ const menuItems = [
+ { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+ { id: 'posts', label: 'All Posts', icon: FileText },
+ { id: 'news', label: 'News Feed', icon: FileText },
+ { id: 'categories', label: 'Categories', icon: FolderOpen },
+ { id: 'compare', label: 'Comparison', icon: FileText },
+ { id: 'guide', label: 'Guides', icon: FileText },
+ { id: 'events', label: 'Events', icon: Calendar },
+ { id: 'media', label: 'Media', icon: ImageIcon },
+ { id: 'settings', label: 'Settings', icon: Settings },
+ ];
 
-  const filteredPosts = posts.filter(post => {
-    const matchesSearch = post.title.toLowerCase().includes(searchTerm.toLowerCase());
-    if (activeTab === 'posts' || activeTab === 'dashboard') return matchesSearch;
-    return matchesSearch && post.section === activeTab;
-  });
+ const filteredPosts = posts.filter(post => {
+ const matchesSearch = post.title.toLowerCase().includes(searchTerm.toLowerCase());
+ if (activeTab === 'posts' || activeTab === 'dashboard') return matchesSearch;
+ return matchesSearch && post.section === activeTab;
+ });
 
-  return (
-    <div className="flex h-screen bg-white text-black font-sans">
-      <aside className="w-64 bg-white flex flex-col shrink-0">
-        <div className="p-6">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-[#ef4444] border-4 border-black flex items-center justify-center text-white font-bold">A+</div>
-            <span className="font-display font-black text-xl tracking-tight">AI Plus Admin</span>
-          </div>
-        </div>
-        <div className="h-1 w-full bg-black shrink-0" />
-        
-        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-          {menuItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => setActiveTab(item.id)}
-              className={`w-full flex items-center gap-3 px-4 py-3 border-4 border-black transition-all font-black uppercase text-[10px] tracking-widest ${
-                activeTab === item.id 
-                ? 'bg-yellow-50 translate-x-1 translate-y-1' 
-                : 'bg-white text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-yellow-50 hover:translate-x-1 hover:translate-y-1 hover:shadow-none'
-              }`}
-            >
-              <item.icon size={16} />
-              <span>{item.label}</span>
-            </button>
-          ))}
-        </nav>
+ return (
+ <div className="flex h-screen bg-white text-black font-sans">
+ <aside className="w-64 bg-white flex flex-col shrink-0">
+ <div className="p-6">
+ <div className="flex items-center gap-2">
+ <div className="w-8 h-8 bg-[#ef4444] border-4 border-black flex items-center justify-center text-black font-bold">A+</div>
+ <span className="font-display font-black text-xl tracking-tight">AI Plus Admin</span>
+ </div>
+ </div>
+ <div className="h-1 w-full bg-black shrink-0"/>
+ 
+ <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+ {menuItems.map((item) => (
+ <button
+ key={item.id}
+ onClick={() => setActiveTab(item.id)}
+ className={`w-full flex items-center gap-3 px-4 py-3 border-4 border-black font-black uppercase text-[10px] tracking-widest group ${
+ activeTab === item.id 
+ ? 'bg-yellow-50 text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]' 
+ : 'bg-white text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] '
+ }`}
+ >
+ <item.icon size={16} />
+ <span className="group-hover:text-[#ef4444] transition-colors">{item.label}</span>
+ </button>
+ ))}
+ </nav>
 
-        <div className="h-1 w-full bg-black shrink-0" />
-        <div className="p-4">
-          <button 
-            onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-4 py-3 bg-white border-4 border-black text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-yellow-50 hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all font-black uppercase text-[10px] tracking-widest"
-          >
-            <LogOut size={18} />
-            <span>Logout</span>
-          </button>
-        </div>
-      </aside>
-      
-      <div className="w-1 bg-black h-full shrink-0" />
+ <div className="h-1 w-full bg-black shrink-0"/>
+ <div className="p-4">
+ <button 
+ onClick={handleLogout}
+ className="w-full flex items-center gap-3 px-4 py-3 bg-white border-4 border-black text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] font-black uppercase text-[10px] tracking-widest group"
+ >
+ <LogOut size={18} />
+ <span className="group-hover:text-[#ef4444] transition-colors">Logout</span>
+ </button>
+ </div>
+ </aside>
+ 
+ <div className="w-1 bg-black h-full shrink-0"/>
 
-      <main className="flex-1 flex flex-col overflow-hidden">
-        <header className="h-20 bg-white flex items-center justify-between px-8 shrink-0">
-          <div className="flex items-center gap-4 flex-1">
-            <div className="relative w-96">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-black" size={18} />
-              <input 
-                type="text" 
-                placeholder="Search articles..." 
-                className="w-full pl-10 pr-4 py-2 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:outline-none focus:translate-x-1 focus:translate-y-1 focus:shadow-none transition-all font-bold text-black"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white bg-black px-3 py-1.5 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-              <Globe size={14} />
-              <span>{lang === 'en' ? 'EN' : 'VI'}</span>
-            </div>
-          </div>
-        </header>
-        <div className="h-1 w-full bg-black shrink-0" />
+ <main className="flex-1 flex flex-col overflow-hidden">
+ <header className="h-20 bg-white flex items-center justify-between px-8 shrink-0">
+ <div className="flex items-center gap-4 flex-1">
+ <div className="relative w-96">
+ <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-black"size={18} />
+ <input 
+ type="text"
+ placeholder="Search articles..."
+ className="w-full pl-10 pr-4 py-2 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] outline-none  font-bold text-black"
+ value={searchTerm}
+ onChange={(e) => setSearchTerm(e.target.value)}
+ />
+ </div>
+ </div>
+ 
+ <div className="flex items-center gap-6">
+ <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-white bg-black px-3 py-1.5 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+ <Globe size={14} />
+ <span>{lang === 'en' ? 'EN' : 'VI'}</span>
+ </div>
+ </div>
+ </header>
+ <div className="h-1 w-full bg-black shrink-0"/>
 
-        <div className="flex-1 overflow-y-auto p-8">
-          <div className="max-w-6xl mx-auto">
-            <div className="flex items-center justify-between mb-10">
-              <div>
-                <h1 className="text-4xl font-display font-black text-black tracking-tight uppercase leading-none">{activeTab}</h1>
-                <p className="text-black mt-2 font-bold italic uppercase text-xs tracking-widest">Managing {activeTab} content unification.</p>
-              </div>
-              
-              <button 
-                onClick={() => router.push(`/${lang}/xyz_safe/new`)}
-                className="flex items-center gap-2 bg-[#ef4444] text-white px-6 py-3 border-4 border-black font-black uppercase tracking-widest shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all"
-              >
-                <Plus size={20} />
-                <span>New Post</span>
-              </button>
-            </div>
+ <div className="flex-1 overflow-y-auto p-8">
+ <div className="max-w-6xl mx-auto">
+ <div className="flex items-center justify-between mb-10">
+ <div>
+ <h1 className="text-4xl font-display font-black text-black tracking-tight uppercase leading-none">{activeTab}</h1>
+ <p className="text-black mt-2 font-bold italic uppercase text-xs tracking-widest">Managing {activeTab} content unification.</p>
+ </div>
+ 
+ <button 
+ onClick={() => router.push(`/${lang}/xyz_safe/new`)}
+ className="flex items-center gap-2 bg-[#ef4444] text-black px-6 py-3 border-4 border-black font-black uppercase tracking-widest shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+ >
+ <Plus size={20} />
+ <span>New Post</span>
+ </button>
+ </div>
 
-            {['posts', 'news', 'compare', 'guide', 'events'].includes(activeTab) && (
-              <>
-                <div className="grid grid-cols-4 gap-6 mb-10">
-                  <div className="bg-white p-6 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-black">Filtered Result</p>
-                    <p className="text-3xl font-display font-black text-black leading-none mt-2">{filteredPosts.length}</p>
-                  </div>
-                  <div className="bg-white p-6 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-black">Published</p>
-                    <p className="text-3xl font-display font-black text-[#ef4444] leading-none mt-2">{filteredPosts.filter(p => p.is_published).length}</p>
-                  </div>
-                </div>
+ {['posts', 'news', 'compare', 'guide', 'events'].includes(activeTab) && (
+ <>
+ <div className="grid grid-cols-4 gap-6 mb-10">
+ <div className="bg-white p-6 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+ <p className="text-[10px] font-black uppercase tracking-widest text-black">Filtered Result</p>
+ <p className="text-3xl font-display font-black text-black leading-none mt-2">{filteredPosts.length}</p>
+ </div>
+ <div className="bg-white p-6 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+ <p className="text-[10px] font-black uppercase tracking-widest text-black">Published</p>
+ <p className="text-3xl font-display font-black text-[#ef4444] leading-none mt-2">{filteredPosts.filter(p => p.is_published).length}</p>
+ </div>
+ </div>
 
-                <div className="bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] mb-10">
-                  <table className="w-full text-left">
-                    <thead className="bg-black text-white border-b-4 border-black">
-                      <tr>
-                        <th className="px-6 py-4 text-xs font-black uppercase tracking-widest border-r-4 border-black last:border-r-0">Title</th>
-                        <th className="px-6 py-4 text-xs font-black uppercase tracking-widest border-r-4 border-black last:border-r-0">Section</th>
-                        <th className="px-6 py-4 text-xs font-black uppercase tracking-widest border-r-4 border-black last:border-r-0">Status</th>
-                        <th className="px-6 py-4 text-xs font-black uppercase tracking-widest border-r-4 border-black last:border-r-0">Date</th>
-                        <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-right">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y-4 divide-black">
-                      {filteredPosts.map((post) => (
-                        <tr key={post.id} className="hover:bg-yellow-50 transition-all group cursor-pointer bg-white">
-                          <td className="px-6 py-4 border-r-4 border-black">
-                            <p className="font-black text-black leading-tight uppercase text-sm">{post.title}</p>
-                            <p className="text-[10px] font-bold text-black mt-1 uppercase tracking-widest">/{post.slug}</p>
-                          </td>
-                          <td className="px-6 py-4 border-r-4 border-black">
-                            <span className="px-2 py-0.5 border-4 border-black bg-white text-[10px] font-black uppercase tracking-widest">
-                              {post.section || 'news'}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 border-r-4 border-black">
-                            <span className={`px-2 py-0.5 border-4 border-black text-[10px] font-black uppercase tracking-widest ${
-                              post.is_published ? 'bg-[#ef4444] text-white' : 'bg-white text-black'
-                            }`}>
-                              {post.is_published ? 'Published' : 'Draft'}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 text-[10px] font-black uppercase text-black border-r-4 border-black">
-                            {post.created_at ? new Date(post.created_at).toLocaleDateString() : 'N/A'}
-                          </td>
-                          <td className="px-6 py-4 text-right relative">
-                            <button 
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setOpenMenuId(openMenuId === post.id ? null : post.id);
-                              }}
-                              className="p-1 bg-white border-4 border-black text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 hover:bg-yellow-50 transition-all"
-                            >
-                              <MoreVertical size={18} />
-                            </button>
-                            
-                            {openMenuId === post.id && (
-                              <div className="absolute right-6 top-12 w-48 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] z-50 flex flex-col p-2 gap-2">
-                                <button 
-                                  onClick={() => router.push(`/${lang}/xyz_safe/edit/${post.id}`)}
-                                  className="w-full text-left px-4 py-2 text-[10px] font-black uppercase tracking-widest text-black bg-white border-4 border-black hover:bg-yellow-50 hover:translate-x-1 hover:translate-y-1 transition-all"
-                                >
-                                  Edit Post
-                                </button>
-                                <button 
-                                  onClick={() => handleTogglePublish(post.id, post.is_published)}
-                                  className="w-full text-left px-4 py-2 text-[10px] font-black uppercase tracking-widest text-black bg-white border-4 border-black hover:bg-yellow-50 hover:translate-x-1 hover:translate-y-1 transition-all"
-                                >
-                                  {post.is_published ? 'Unpublish' : 'Publish Now'}
-                                </button>
-                                <button 
-                                  onClick={() => handleDeletePost(post.id)}
-                                  className="w-full text-left px-4 py-2 text-[10px] font-black uppercase tracking-widest text-white bg-[#ef4444] border-4 border-black hover:bg-white hover:text-black hover:translate-x-1 hover:translate-y-1 transition-all"
-                                >
-                                  Delete Post
-                                </button>
-                              </div>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                      {filteredPosts.length === 0 && (
-                        <tr className="bg-white">
-                          <td colSpan={5} className="px-6 py-16 text-center text-black font-black uppercase tracking-widest">
-                            No content found for this section.
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </>
-            )}
+ <div className="bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] mb-10">
+ <table className="w-full text-left">
+ <thead className="bg-black text-white border-b-4 border-black">
+ <tr>
+ <th className="px-6 py-4 text-xs font-black uppercase tracking-widest border-r-4 border-black last:border-r-0">Title</th>
+ <th className="px-6 py-4 text-xs font-black uppercase tracking-widest border-r-4 border-black last:border-r-0">Section</th>
+ <th className="px-6 py-4 text-xs font-black uppercase tracking-widest border-r-4 border-black last:border-r-0">Status</th>
+ <th className="px-6 py-4 text-xs font-black uppercase tracking-widest border-r-4 border-black last:border-r-0">Date</th>
+ <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-right">Actions</th>
+ </tr>
+ </thead>
+ <tbody className="divide-y-4 divide-black">
+ {filteredPosts.map((post) => (
+ <tr key={post.id} className="group cursor-pointer bg-white">
+ <td className="px-6 py-4 border-r-4 border-black">
+ <p className="font-black text-black leading-tight uppercase text-sm group-hover:text-[#ef4444] transition-colors">{post.title}</p>
+ <p className="text-[10px] font-bold text-black mt-1 uppercase tracking-widest group-hover:text-[#ef4444] transition-colors">/{post.slug}</p>
+ </td>
+ <td className="px-6 py-4 border-r-4 border-black">
+ <span className="px-2 py-0.5 border-4 border-black bg-white text-[10px] font-black uppercase tracking-widest group-hover:text-[#ef4444] transition-colors">
+ {post.section || 'news'}
+ </span>
+ </td>
+ <td className="px-6 py-4 border-r-4 border-black">
+ <span className={`px-2 py-0.5 border-4 border-black text-[10px] font-black uppercase tracking-widest ${
+ post.is_published ? 'bg-[#ef4444] text-black' : 'bg-white text-black group-hover:text-[#ef4444] transition-colors'
+ }`}>
+ {post.is_published ? 'Published' : 'Draft'}
+ </span>
+ </td>
+ <td className="px-6 py-4 text-[10px] font-black uppercase text-black border-r-4 border-black">
+ {post.created_at ? new Date(post.created_at).toLocaleDateString() : 'N/A'}
+ </td>
+ <td className="px-6 py-4 text-right relative">
+ <button 
+ onClick={(e) => {
+ e.stopPropagation();
+ setOpenMenuId(openMenuId === post.id ? null : post.id);
+ }}
+ className="p-1 bg-white border-4 border-black text-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] group"
+ >
+ <MoreVertical size={18} className="group-hover:text-[#ef4444] transition-colors" />
+ </button>
+ 
+ {openMenuId === post.id && (
+ <div className="absolute right-6 top-12 w-48 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] z-50 flex flex-col p-2 gap-2">
+ <button 
+ onClick={() => router.push(`/${lang}/xyz_safe/edit/${post.id}`)}
+ className="w-full text-left px-4 py-2 text-[10px] font-black uppercase tracking-widest text-black bg-white border-4 border-black group"
+ >
+ <span className="group-hover:text-[#ef4444] transition-colors">Edit Post</span>
+ </button>
+ <button 
+ onClick={() => handleTogglePublish(post.id, post.is_published)}
+ className={`w-full text-left px-4 py-2 text-[10px] font-black uppercase tracking-widest border-4 border-black ${post.is_published ? 'bg-[#ef4444] text-black' : 'bg-white text-black group'}`}
+ >
+ <span className={post.is_published ? '' : 'group-hover:text-[#ef4444] transition-colors'}>{post.is_published ? 'Unpublish' : 'Publish Now'}</span>
+ </button>
+ <button 
+ onClick={() => handleDeletePost(post.id)}
+ className="w-full text-left px-4 py-2 text-[10px] font-black uppercase tracking-widest text-black bg-[#ef4444] border-4 border-black"
+ >
+ Delete Post
+ </button>
+ </div>
+ )}
+ </td>
+ </tr>
+ ))}
+ {filteredPosts.length === 0 && (
+ <tr className="bg-white">
+ <td colSpan={5} className="px-6 py-16 text-center text-black font-black uppercase tracking-widest">
+ No content found for this section.
+ </td>
+ </tr>
+ )}
+ </tbody>
+ </table>
+ </div>
+ </>
+ )}
 
-            {activeTab === 'categories' && (
-              <>
-                <div className="flex items-center justify-between mb-10">
-                  <div>
-                    <h1 className="text-4xl font-display font-black text-black tracking-tight uppercase leading-none">Categories</h1>
-                    <p className="text-black mt-2 font-bold italic uppercase text-xs tracking-widest">Manage article categories for multilingual news feeds.</p>
-                  </div>
-                  
-                  {!showCategoryForm && (
-                    <button 
-                      onClick={() => setShowCategoryForm(true)}
-                      className="flex items-center gap-2 bg-[#ef4444] text-white px-6 py-3 border-4 border-black font-black uppercase tracking-widest shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all"
-                    >
-                      <Plus size={20} />
-                      <span>New Category</span>
-                    </button>
-                  )}
-                </div>
+ {activeTab === 'categories' && (
+ <>
+ <div className="flex items-center justify-between mb-10">
+ <div>
+ <h1 className="text-4xl font-display font-black text-black tracking-tight uppercase leading-none">Categories</h1>
+ <p className="text-black mt-2 font-bold italic uppercase text-xs tracking-widest">Manage article categories for multilingual news feeds.</p>
+ </div>
+ 
+ {!showCategoryForm && (
+ <button 
+ onClick={() => setShowCategoryForm(true)}
+ className="flex items-center gap-2 bg-[#ef4444] text-black px-6 py-3 border-4 border-black font-black uppercase tracking-widest shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+ >
+ <Plus size={20} />
+ <span>New Category</span>
+ </button>
+ )}
+ </div>
 
-                {showCategoryForm && (
-                  <form onSubmit={handleSaveCategory} className="bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-8 mb-10 space-y-6">
-                    <div className="pb-4">
-                      <h3 className="font-display font-black text-xl uppercase">
-                        {editingCategory ? 'Edit Category' : 'Create New Category'}
-                      </h3>
-                    </div>
-                    <div className="h-1 w-full bg-black mb-6" />
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <label className="block text-xs font-black uppercase tracking-widest mb-2">Category Name</label>
-                        <input 
-                          type="text" 
-                          value={catName}
-                          onChange={handleCatNameChange}
-                          placeholder="e.g. Technology, AI Agents..."
-                          className="w-full p-3 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:outline-none focus:translate-x-1 focus:translate-y-1 focus:shadow-none transition-all font-bold text-black"
-                          required
-                        />
-                      </div>
-                      
-                      <div>
-                        <label className="block text-xs font-black uppercase tracking-widest mb-2">Slug</label>
-                        <input 
-                          type="text" 
-                          value={catSlug}
-                          onChange={(e) => setCatSlug(slugify(e.target.value))}
-                          placeholder="e.g. technology, ai-agents..."
-                          className="w-full p-3 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:outline-none focus:translate-x-1 focus:translate-y-1 focus:shadow-none transition-all font-bold text-black"
-                          required
-                        />
-                      </div>
-                    </div>
+ {showCategoryForm && (
+ <form onSubmit={handleSaveCategory} className="bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-8 mb-10 space-y-6">
+ <div className="pb-4">
+ <h3 className="font-display font-black text-xl uppercase">
+ {editingCategory ? 'Edit Category' : 'Create New Category'}
+ </h3>
+ </div>
+ <div className="h-1 w-full bg-black mb-6"/>
+ 
+ <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+ <div>
+ <label className="block text-xs font-black uppercase tracking-widest mb-2">Category Name</label>
+ <input 
+ type="text"
+ value={catName}
+ onChange={handleCatNameChange}
+ placeholder="e.g. Technology, AI Agents..."
+ className="w-full p-3 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] outline-none  font-bold text-black"
+ required
+ />
+ </div>
+ 
+ <div>
+ <label className="block text-xs font-black uppercase tracking-widest mb-2">Slug</label>
+ <input 
+ type="text"
+ value={catSlug}
+ onChange={(e) => setCatSlug(slugify(e.target.value))}
+ placeholder="e.g. technology, ai-agents..."
+ className="w-full p-3 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] outline-none  font-bold text-black"
+ required
+ />
+ </div>
+ </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <label className="block text-xs font-black uppercase tracking-widest mb-2">Language</label>
-                        <select 
-                          value={catLang}
-                          onChange={(e) => setCatLang(e.target.value)}
-                          className="w-full p-3 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:outline-none focus:translate-x-1 focus:translate-y-1 focus:shadow-none transition-all font-bold uppercase tracking-widest text-black"
-                        >
-                          <option value="en">English</option>
-                          <option value="vi">Vietnamese</option>
-                          <option value="de">German</option>
-                          <option value="hi">Hindi</option>
-                        </select>
-                      </div>
+ <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+ <div>
+ <label className="block text-xs font-black uppercase tracking-widest mb-2">Language</label>
+ <select 
+ value={catLang}
+ onChange={(e) => setCatLang(e.target.value)}
+ className="w-full p-3 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] outline-none  font-bold uppercase tracking-widest text-black"
+ >
+ <option value="en">English</option>
+ <option value="vi">Vietnamese</option>
+ <option value="de">German</option>
+ <option value="hi">Hindi</option>
+ </select>
+ </div>
 
-                      <div>
-                        <label className="block text-xs font-black uppercase tracking-widest mb-2">Description</label>
-                        <textarea 
-                          value={catDescription}
-                          onChange={(e) => setCatDescription(e.target.value)}
-                          placeholder="Brief description of this category (useful for SEO)..."
-                          className="w-full p-3 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:outline-none focus:translate-x-1 focus:translate-y-1 focus:shadow-none transition-all font-bold text-black resize-y min-h-[48px]"
-                        />
-                      </div>
-                    </div>
+ <div>
+ <label className="block text-xs font-black uppercase tracking-widest mb-2">Description</label>
+ <textarea 
+ value={catDescription}
+ onChange={(e) => setCatDescription(e.target.value)}
+ placeholder="Brief description of this category (useful for SEO)..."
+ className="w-full p-3 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] outline-none  font-bold text-black resize-y min-h-[48px]"
+ />
+ </div>
+ </div>
 
-                    <div className="flex gap-4">
-                      <button 
-                        type="submit"
-                        disabled={isSavingCategory}
-                        className="flex items-center gap-2 bg-[#ef4444] text-white px-6 py-3 border-4 border-black font-black uppercase tracking-widest shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all"
-                      >
-                        {isSavingCategory ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
-                        Save Category
-                      </button>
-                      
-                      <button 
-                        type="button"
-                        onClick={resetCategoryForm}
-                        className="px-6 py-3 bg-white border-4 border-black font-black uppercase tracking-widest shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-yellow-50 hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </form>
-                )}
+ <div className="flex gap-4">
+ <button 
+ type="submit"
+ disabled={isSavingCategory}
+ className="flex items-center gap-2 bg-[#ef4444] text-black px-6 py-3 border-4 border-black font-black uppercase tracking-widest shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+ >
+ {isSavingCategory ? <Loader2 className="animate-spin"size={18} /> : <Save size={18} />}
+ Save Category
+ </button>
+ 
+ <button 
+ type="button"
+ onClick={resetCategoryForm}
+ className="px-6 py-3 bg-white border-4 border-black font-black uppercase tracking-widest shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] group"
+ >
+ <span className="group-hover:text-[#ef4444] transition-colors">Cancel</span>
+ </button>
+ </div>
+ </form>
+ )}
 
-                <div className="bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] overflow-hidden mb-10">
-                  <table className="w-full text-left">
-                    <thead className="bg-black text-white border-b-4 border-black">
-                      <tr>
-                        <th className="px-6 py-4 text-xs font-black uppercase tracking-widest border-r-4 border-black last:border-r-0">Name</th>
-                        <th className="px-6 py-4 text-xs font-black uppercase tracking-widest border-r-4 border-black last:border-r-0">Slug</th>
-                        <th className="px-6 py-4 text-xs font-black uppercase tracking-widest border-r-4 border-black last:border-r-0">Language</th>
-                        <th className="px-6 py-4 text-xs font-black uppercase tracking-widest border-r-4 border-black last:border-r-0">Description</th>
-                        <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-right">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y-4 divide-black">
-                      {loadingCategories ? (
-                        <tr>
-                          <td colSpan={5} className="px-6 py-16 text-center">
-                            <Loader2 className="animate-spin inline-block mr-2" /> Loading categories...
-                          </td>
-                        </tr>
-                      ) : (
-                        categories.filter(c => c.lang === lang).map((cat) => (
-                          <tr key={cat.id} className="hover:bg-yellow-50 transition-colors bg-white">
-                            <td className="px-6 py-4 font-black uppercase text-sm border-r-4 border-black text-black">{cat.name}</td>
-                            <td className="px-6 py-4 text-[10px] font-black text-black uppercase tracking-widest border-r-4 border-black">/category/{cat.slug}</td>
-                            <td className="px-6 py-4 text-xs font-black text-black uppercase tracking-widest border-r-4 border-black">{cat.lang}</td>
-                            <td className="px-6 py-4 text-xs text-black font-black uppercase tracking-widest max-w-xs truncate border-r-4 border-black">{cat.description || 'N/A'}</td>
-                            <td className="px-6 py-4 text-right space-x-2">
-                              <button 
-                                onClick={() => startEditCategory(cat)}
-                                className="px-3 py-1.5 border-4 border-black bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-yellow-50 hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all text-[10px] font-black uppercase tracking-widest"
-                              >
-                                Edit
-                              </button>
-                              <button 
-                                onClick={() => handleDeleteCategory(cat.id)}
-                                className="px-3 py-1.5 border-4 border-black text-white bg-[#ef4444] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-white hover:text-black hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all text-[10px] font-black uppercase tracking-widest"
-                              >
-                                Delete
-                              </button>
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                      {!loadingCategories && categories.filter(c => c.lang === lang).length === 0 && (
-                        <tr className="bg-white">
-                          <td colSpan={5} className="px-6 py-16 text-center text-black font-black uppercase tracking-widest">
-                            No categories found for this language.
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </>
-            )}
+ <div className="bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] overflow-hidden mb-10">
+ <table className="w-full text-left">
+ <thead className="bg-black text-white border-b-4 border-black">
+ <tr>
+ <th className="px-6 py-4 text-xs font-black uppercase tracking-widest border-r-4 border-black last:border-r-0">Name</th>
+ <th className="px-6 py-4 text-xs font-black uppercase tracking-widest border-r-4 border-black last:border-r-0">Slug</th>
+ <th className="px-6 py-4 text-xs font-black uppercase tracking-widest border-r-4 border-black last:border-r-0">Language</th>
+ <th className="px-6 py-4 text-xs font-black uppercase tracking-widest border-r-4 border-black last:border-r-0">Description</th>
+ <th className="px-6 py-4 text-xs font-black uppercase tracking-widest text-right">Actions</th>
+ </tr>
+ </thead>
+ <tbody className="divide-y-4 divide-black">
+ {loadingCategories ? (
+ <tr>
+ <td colSpan={5} className="px-6 py-16 text-center">
+ <Loader2 className="animate-spin inline-block mr-2"/> Loading categories...
+ </td>
+ </tr>
+ ) : (
+ categories.filter(c => c.lang === lang).map((cat) => (
+ <tr key={cat.id} className="bg-white group">
+ <td className="px-6 py-4 font-black uppercase text-sm border-r-4 border-black text-black group-hover:text-[#ef4444] transition-colors">{cat.name}</td>
+ <td className="px-6 py-4 text-[10px] font-black text-black uppercase tracking-widest border-r-4 border-black group-hover:text-[#ef4444] transition-colors">/category/{cat.slug}</td>
+ <td className="px-6 py-4 text-xs font-black text-black uppercase tracking-widest border-r-4 border-black group-hover:text-[#ef4444] transition-colors">{cat.lang}</td>
+ <td className="px-6 py-4 text-xs text-black font-black uppercase tracking-widest max-w-xs truncate border-r-4 border-black group-hover:text-[#ef4444] transition-colors">{cat.description || 'N/A'}</td>
+ <td className="px-6 py-4 text-right space-x-2">
+ <button 
+ onClick={() => startEditCategory(cat)}
+ className="px-3 py-1.5 border-4 border-black bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-[10px] font-black uppercase tracking-widest group"
+ >
+ <span className="group-hover:text-[#ef4444] transition-colors">Edit</span>
+ </button>
+ <button 
+ onClick={() => handleDeleteCategory(cat.id)}
+ className="px-3 py-1.5 border-4 border-black text-black bg-[#ef4444] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-[10px] font-black uppercase tracking-widest"
+ >
+ Delete
+ </button>
+ </td>
+ </tr>
+ ))
+ )}
+ {!loadingCategories && categories.filter(c => c.lang === lang).length === 0 && (
+ <tr className="bg-white">
+ <td colSpan={5} className="px-6 py-16 text-center text-black font-black uppercase tracking-widest">
+ No categories found for this language.
+ </td>
+ </tr>
+ )}
+ </tbody>
+ </table>
+ </div>
+ </>
+ )}
 
-            {['dashboard', 'media', 'settings'].includes(activeTab) && (
-              <div className="bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-24 flex flex-col items-center justify-center text-center">
-                <div className="w-20 h-20 bg-yellow-50 border-4 border-black flex items-center justify-center text-black mb-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                  <Settings size={40} />
-                </div>
-                <h3 className="text-2xl font-display font-black text-black uppercase">Coming Soon</h3>
-                <p className="text-black max-w-xs mt-3 font-bold uppercase text-[10px] tracking-widest">Feature under development by Sếp.</p>
-              </div>
-            )}
-          </div>
-        </div>
-      </main>
-    </div>
-  );
+ {['dashboard', 'media', 'settings'].includes(activeTab) && (
+ <div className="bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-24 flex flex-col items-center justify-center text-center">
+ <div className="w-20 h-20 bg-yellow-50 border-4 border-black flex items-center justify-center text-black mb-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+ <Settings size={40} />
+ </div>
+ <h3 className="text-2xl font-display font-black text-black uppercase">Coming Soon</h3>
+ <p className="text-black max-w-xs mt-3 font-bold uppercase text-[10px] tracking-widest">Feature under development by Sếp.</p>
+ </div>
+ )}
+ </div>
+ </div>
+ </main>
+ </div>
+ );
 };
 
 export default AdminDashboard;
