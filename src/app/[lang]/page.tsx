@@ -233,54 +233,7 @@ export default async function HomePage({ params: { lang } }: { params: { lang: s
           </div>
         </section>
 
-        {/* Compare & AI Guide */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 mb-24">
-          <section>
-            <SectionHeader title={t.compare_ai} lang={lang} href={`/${lang}/compare`} />
-            <div className="space-y-8">
-              {(comparePosts || []).length > 0 ? comparePosts?.map((post) => (
-                <div key={post.id} className="flex gap-6 items-start group">
-                  <div className="w-24 h-24 flex-shrink-0 border-2 border-black overflow-hidden shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-white">
-                    <img src={post.featured_image || ''} className="w-full h-full object-cover" alt="" />
-                  </div>
-                  <div>
-                    <h4 className="text-lg font-black leading-tight group-hover:text-[#ef4444]">
-                      <Link href={`/${lang}/compare/${post.slug}`}>{post.title}</Link>
-                    </h4>
-                    <p className="text-xs font-bold text-slate-500 mt-2 line-clamp-2">{post.excerpt}</p>
-                  </div>
-                </div>
-              )) : (
-                <div className="p-8 border-2 border-dashed border-black/20 text-center font-bold text-slate-400 uppercase text-xs">
-                  Coming Soon
-                </div>
-              )}
-            </div>
-          </section>
-
-          <section>
-            <SectionHeader title={t.ai_guide} lang={lang} href={`/${lang}/guide`} />
-            <div className="space-y-8">
-               {(guidePosts || []).length > 0 ? guidePosts?.map((post) => (
-                <div key={post.id} className="flex gap-6 items-start group">
-                  <div className="w-24 h-24 flex-shrink-0 border-2 border-black overflow-hidden shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-white">
-                    <img src={post.featured_image || ''} className="w-full h-full object-cover" alt="" />
-                  </div>
-                  <div>
-                    <h4 className="text-lg font-black leading-tight group-hover:text-[#ef4444]">
-                      <Link href={`/${lang}/guide/${post.slug}`}>{post.title}</Link>
-                    </h4>
-                    <p className="text-xs font-bold text-slate-500 mt-2 line-clamp-2">{post.excerpt}</p>
-                  </div>
-                </div>
-              )) : (
-                <div className="p-8 border-2 border-dashed border-black/20 text-center font-bold text-slate-400 uppercase text-xs">
-                  Updating...
-                </div>
-              )}
-            </div>
-          </section>
-        </div>
+        {/* Compare & AI Guide sections removed per request */}
 
         {/* AI Events Section */}
         <section className="mb-24">
