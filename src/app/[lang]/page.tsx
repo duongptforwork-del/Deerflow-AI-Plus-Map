@@ -265,19 +265,7 @@ export default async function HomePage({ params: { lang } }: { params: { lang: s
         </section>
 
         {/* Dynamic Section-based blocks */}
-        <NewsSection 
-          lang={lang} 
-          section="compare" 
-          title={t.ai_tools_title} 
-          limit={4} 
-        />
-        
-        <NewsSection 
-          lang={lang} 
-          section="guide" 
-          title={t.tutorials_title} 
-          limit={4} 
-        />
+        {/* Deep Comparisons and AI Learning Guides sections removed */}
       </main>
     </div>
   );
